@@ -1,1 +1,30 @@
-{}
+{
+  "nav": {
+    "home": "Home",
+    "contact": "Contact"
+  },
+  "menu": {
+    "title": "Our Menu",
+    "all": "All",
+    "noItems": "No items in the menu",
+    "off": "OFF",
+    "ourMenu": "Our Menu",
+    "enjoyFood": "Enjoy the best food in a peaceful atmosphere and colors that inspire rejuvenation and relaxation."
+  },
+  "footer": {
+    "rights": "All rights reserved.",
+    "designedBy": "Designed by",
+    "followUs": "Follow Us",
+    "workingHours": "Working Hours",
+    "closed": "Closed",
+    "days": {
+      "sunday": "Sunday",
+      "monday": "Monday",
+      "tuesday": "Tuesday",
+      "wednesday": "Wednesday",
+      "thursday": "Thursday",
+      "friday": "Friday",
+      "saturday": "Saturday"
+    }
+  }
+}

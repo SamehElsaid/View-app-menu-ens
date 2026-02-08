@@ -1,12 +1,9 @@
 "use client";
-import { useAppSelector } from '@/store/hooks';
+import { useAppSelector } from "@/store/hooks";
+import Default from "@/components/Templates/Default";
 
 export default function Page() {
-  const menu = useAppSelector((state) => state.menu.menu);
-  console.log(menu);
-  return (
-    <div>
-      
-    </div>
-  )
+  const theme = useAppSelector((state) => state.menu.theme);
+
+  return <main>{theme === "default" && <Default />}</main>;
 }
