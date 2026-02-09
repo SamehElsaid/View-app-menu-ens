@@ -43,26 +43,14 @@ export default function MenuSection({ currency }: { currency: string }) {
   const [isModalOpen, setIsModalOpen] = useState(0);
 
   const storeMenuItems = useAppSelector((state) => state.menu.menu);
+  const storeCategories = useAppSelector((state) => state.menu.categories);
 
   const menuItems = useMemo(() => storeMenuItems ?? [], [storeMenuItems]);
 
-  // Derive categories from menu items
-  const categories = useMemo(() => {
-    const catMap = new Map<number, Category>();
-    menuItems.forEach((item: MenuItem) => {
-      if (!catMap.has(item.categoryId)) {
-        catMap.set(item.categoryId, {
-          id: item.categoryId,
-          name:
-            locale === "ar"
-              ? item.categoryNameAr || item.categoryName
-              : item.categoryNameEn || item.categoryName,
-          nameAr: item.categoryNameAr,
-        });
-      }
-    });
-    return Array.from(catMap.values());
-  }, [menuItems, locale]);
+  const categories = useMemo(
+    () => [...(storeCategories ?? [])],
+    [storeCategories],
+  );
 
   // Group items by category
   const allCategoriesArray = useMemo(() => {
@@ -111,7 +99,11 @@ export default function MenuSection({ currency }: { currency: string }) {
                 name={GetCategoryIcon(category as Category)}
                 className="text-sm sm:text-base"
               />
-              <span className="ms-1">{category.name}</span>
+              <span className="ms-1">
+                {locale === "ar"
+                  ? category.nameAr || category.name
+                  : category.name}
+              </span>
             </button>
           ))}
         </div>

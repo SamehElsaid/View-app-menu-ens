@@ -38,6 +38,17 @@ export interface MenuInfo {
   workingHours: WorkingHours | null;
 }
 
+export interface MenuCustomizations {
+  primaryColor: string;
+  secondaryColor: string;
+  backgroundColor: string;
+  textColor: string;
+  heroTitleAr: string;
+  heroSubtitleAr: string;
+  heroTitleEn: string;
+  heroSubtitleEn: string;
+}
+
 export interface MenuItem {
   id: number;
   name: string;
@@ -57,4 +68,37 @@ export interface MenuItem {
   discountPercent: number | null;
   available: boolean;
   sortOrder: number;
+}
+
+export interface Category {
+  id: number;
+  name: string;
+  nameAr?: string;
+  nameEn?: string;
+  image?: string | null;
+  sortOrder?: number;
+}
+
+export interface FooterProps {
+  menuName: string;
+  menuLogo?: string;
+  footerLogo?: string;
+  footerDescriptionEn?: string;
+  footerDescriptionAr?: string;
+  socialFacebook?: string;
+  socialInstagram?: string;
+  socialTwitter?: string;
+  socialWhatsapp?: string;
+  addressEn?: string;
+  addressAr?: string;
+  phone?: string;
+  workingHours?: {
+    sunday?: { open?: string; close?: string; closed?: boolean };
+    monday?: { open?: string; close?: string; closed?: boolean };
+    tuesday?: { open?: string; close?: string; closed?: boolean };
+    wednesday?: { open?: string; close?: string; closed?: boolean };
+    thursday?: { open?: string; close?: string; closed?: boolean };
+    friday?: { open?: string; close?: string; closed?: boolean };
+    saturday?: { open?: string; close?: string; closed?: boolean };
+  };
 }

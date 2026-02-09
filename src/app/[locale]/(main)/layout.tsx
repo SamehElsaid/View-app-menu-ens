@@ -1,13 +1,15 @@
 import Header from "@/components/Global/Header";
 import UseDispatchMenu from "@/hooks/UseDispatchMenu";
 import { axiosGet } from "@/shared/axiosCall";
-import { MenuItem, MenuInfo } from "@/types/menu";
+import { MenuItem, MenuInfo, MenuCustomizations, Category } from "@/types/menu";
 import { Ad } from "@/types/Ad";
 
 type MenuResponse = {
   menu: MenuInfo;
   items: MenuItem[];
   ads: Ad[];
+  customizations: MenuCustomizations | null;
+  categories: Category[];
 };
 
 const getMenu = async (locale: string) => {
@@ -38,6 +40,8 @@ export default async function MainLayout({
         menu={(data?.items as MenuItem[]) ?? null}
         menuInfo={(data?.menu as MenuInfo) ?? null}
         ads={(data?.ads as Ad[]) ?? null}
+        menuCustomizations={(data?.customizations as MenuCustomizations) ?? null}
+        categories={(data?.categories as Category[]) ?? null}
       />
       <Header />
       {children}
