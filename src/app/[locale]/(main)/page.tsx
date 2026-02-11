@@ -2,6 +2,8 @@
 import { useAppSelector } from "@/store/hooks";
 import Default from "@/components/Templates/Default";
 import SkyTemplate from "@/components/Templates/SkyTemplate";
+import NeonTemplate from "@/components/Templates/NeonTemplate";
+import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
 
 export default function Page() {
   const menu = useAppSelector((state) => state.menu);
@@ -12,6 +14,8 @@ export default function Page() {
     <main>
       {theme === "default" && <Default />}
       {theme === "sky" && <SkyTemplate />}
+      {theme === "neon" && <NeonTemplate />}
+      {theme === "coffee" && <CoffeeTemplate />}
     </main>
   );
 }

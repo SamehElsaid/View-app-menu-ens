@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Icon } from "./Icon";
 
 import { WorkingHours, MenuInfo } from "@/types/menu";
+import LoadImage from "@/components/ImageLoad";
 
 const DAY_KEYS: (keyof WorkingHours)[] = [
   "sunday",
@@ -71,9 +72,11 @@ export default function Footer({
       <div className="flex items-center justify-center gap-2 text-purple-600 mb-8">
         <div className="text-2xl font-black tracking-tighter flex items-center gap-2 justify-center">
           {menuInfo?.footerLogo ? (
-            <img
+            <LoadImage
               src={menuInfo?.footerLogo || ""}
               alt={menuInfo?.name || ""}
+              disableLazy={true}
+              fill
               className="relative w-10 h-10 rounded-full object-contain transition-transform duration-300 group-hover:scale-110"
             />
           ) : (

@@ -75,8 +75,11 @@ export interface Category {
   name: string;
   nameAr?: string;
   nameEn?: string;
+  description?: string;
+  descriptionAr?: string;
   image?: string | null;
   sortOrder?: number;
+  menuItems: MenuItem[];
 }
 
 export interface FooterProps {

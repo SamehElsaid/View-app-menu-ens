@@ -7,6 +7,7 @@ function LoadImage({
   className,
   width,
   height,
+  fill = false,
   disableLazy = false,
   ...props
 }: {
@@ -15,6 +16,7 @@ function LoadImage({
   className: string;
   width?: number;
   height?: number;
+  fill?: boolean;
   disableLazy: boolean;
   [key: string]: unknown;
 }): React.ReactNode {
@@ -29,10 +31,12 @@ function LoadImage({
       <LazyLoadImage
         src={resizeUrl}
         alt={alt}
-        className={className}
+        className={`${fill ? "absolute inset-0 w-full h-full" : ""} ${className}`.trim()}
         placeholderSrc={placeholder.src}
         effect="blur"
         visibleByDefault={disableLazy}
+        width={fill ? "100%" : width}
+        height={fill ? "100%" : height}
         {...props}
       />
     </>

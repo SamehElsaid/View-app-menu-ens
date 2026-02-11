@@ -140,7 +140,7 @@ function SwiperCategory({
 
   return (
     <div
-      className={`mb-20 sticky  z-50 text-black ${isGray ? "bg-white/20 backdrop-blur-sm lg:top-[100px] top-[60px] " : "bg-white lg:top-[80px] top-[60px] "} `}
+      className={`mb-20 sticky  z-50 text-black ${isGray ? "bg-white/20 backdrop-blur-sm lg:top-[100px] top-[60px] " : "bg-white lg:top-20 top-[60px] "} `}
     >
       <div className="overflow-hidden py-5 px-5  " ref={emblaRef}>
         <div className="flex gap-4" style={{ direction: direction }}>
