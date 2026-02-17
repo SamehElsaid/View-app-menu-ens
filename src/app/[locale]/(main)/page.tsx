@@ -7,7 +7,6 @@ import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
 
 export default function Page() {
   const menu = useAppSelector((state) => state.menu);
-  console.log(menu);
   const theme = useAppSelector((state) => state.menu.theme);
 
   return (

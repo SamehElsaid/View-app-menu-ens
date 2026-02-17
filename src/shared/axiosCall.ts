@@ -19,7 +19,7 @@ const getApiKey = async () => {
     const utcTimestamp = dataTime.fx_dyn;
     const fx_dyn = decryptDataApi(
       utcTimestamp,
-      process.env.NEXT_PUBLIC_SECRET_KEY as string
+      process.env.NEXT_PUBLIC_SECRET_KEY as string,
     );
     return fx_dyn;
   } catch {
@@ -34,20 +34,17 @@ export const axiosGet = async <T>(
   locale: string,
   token?: string,
   params?: Record<string, unknown>,
-  close?: boolean
+  close?: boolean,
 ): Promise<ApiResponse<T>> => {
   const authToken = Cookies.get("sub") ?? "";
   const tokenDecrypted = decryptData(authToken) as DecryptedToken;
-
-  console.log(url)
-  console.log(tokenDecrypted);
 
   const utcTime = await getApiKey();
   const apiKey = `${process.env.NEXT_PUBLIC_SECRET_KEY}///${utcTime}`;
 
   const apiKeyEncrypt = encryptDataApi(
     apiKey,
-    process.env.NEXT_PUBLIC_SECRET_KEY as string
+    process.env.NEXT_PUBLIC_SECRET_KEY as string,
   );
 
   try {
@@ -64,7 +61,7 @@ export const axiosGet = async <T>(
     }
     const fetchData = await axios.get<T>(
       `${process.env.NEXT_PUBLIC_BASE_URL}${url}`,
-      header
+      header,
     );
 
     return { data: fetchData.data, status: true };
@@ -88,7 +85,7 @@ export const axiosPost = async <T, U>(
   locale: string,
   data: T,
   file?: boolean,
-  close?: boolean
+  close?: boolean,
 ) => {
   const authToken = Cookies.get("sub") ?? "";
   const tokenDecrypted = decryptData(authToken) as DecryptedToken;
@@ -102,10 +99,8 @@ export const axiosPost = async <T, U>(
 
   const apiKeyEncrypt = encryptDataApi(
     apiKey,
-    process.env.NEXT_PUBLIC_SECRET_KEY as string
+    process.env.NEXT_PUBLIC_SECRET_KEY as string,
   );
-
-  console.log(apiKeyEncrypt);
 
   if (close) {
     delete headerToken.Authorization;
@@ -122,7 +117,7 @@ export const axiosPost = async <T, U>(
           "Accept-Language": locale,
           "X-API-KEY": apiKeyEncrypt,
         },
-      }
+      },
     );
 
     return { data: fetchData.data as unknown as U, status: true };
@@ -138,7 +133,7 @@ export const axiosPost = async <T, U>(
 export const getFromGetServerSideProps = async <T>(
   url: string,
   newHeaders: AxiosRequestConfig = {},
-  locale: string
+  locale: string,
 ): Promise<ApiResponse<T>> => {
   const headers = { ...newHeaders.headers, "Accept-Language": locale };
 
@@ -147,7 +142,7 @@ export const getFromGetServerSideProps = async <T>(
       `${process.env.NEXT_PUBLIC_BASE_URL}/${url}`,
       {
         headers,
-      }
+      },
     );
 
     return { data: fetchData.data, status: true };

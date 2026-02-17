@@ -42,13 +42,13 @@ export default function ClientNavigationSwiper({
 
   useEffect(() => {
     // Find active slide index and scroll to it
-    const activeIndex = clientNavigationItems.findIndex(
-      (item: ClientNavigationItem) => isActive(item.href)
+    const activeIndex = clientNavigationItems.findIndex((item: ClientNavigationItem) =>
+      isActive(`/specialist/clients/${clientId}/${item.key}`)
     );
     if (activeIndex !== -1 && swiperRef.current) {
       swiperRef.current.slideTo(activeIndex);
     }
-  }, [isActive]);
+  }, [isActive, clientId]);
 
   // Update hrefs with clientId
   const navigationItemsWithId = clientNavigationItems.map((item) => ({

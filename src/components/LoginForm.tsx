@@ -42,22 +42,24 @@ export default function LoginForm() {
   const locale = useLocale();
   const [loading, setLoading] = useState(false);
   const onSubmit = async (data: LoginSchema) => {
-    console.log(data);
     setLoading(true);
 
-    const response = await axiosPost<LoginSchema, LoginResponse>("/auth/login", locale, data, false, true);
+    const response = await axiosPost<LoginSchema, LoginResponse>(
+      "/auth/login",
+      locale,
+      data,
+      false,
+      true,
+    );
     if (response.status) {
-      console.log(response.data);
       // toast.success(t("auth.loginSuccess"));
 
       const { accessToken, refreshToken, user } = response.data;
-
 
       const saveTokens = {
         token: accessToken ?? "",
         refreshToken: refreshToken ?? "",
       };
-
 
       const encryptedData = encryptData(saveTokens);
 
@@ -71,12 +73,9 @@ export default function LoginForm() {
       if (user) {
         dispatch(SET_ACTIVE_USER(user));
       }
-
     } else {
       setLoading(false);
     }
-
-
   };
 
   return (
@@ -125,24 +124,20 @@ export default function LoginForm() {
       </h2>
 
       <div className="flex w-full mt-8">
-        <CustomBtn
-          text={t("auth.login")}
-          type="submit"
-          loading={loading}
-        />
-
+        <CustomBtn text={t("auth.login")} type="submit" loading={loading} />
       </div>
       <div className="mt-12 flex flex-col items-center">
         <div className="flex items-center gap-4 w-full mb-4">
           <div className="h-px flex-1 bg-slate-100" />
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t("auth.orLoginWith")}</span>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            {t("auth.orLoginWith")}
+          </span>
           <div className="h-px flex-1 bg-slate-100" />
         </div>
         <div className="flex gap-6">
           <button className="w-14 h-14 text-xl hover:bg-accent-purple/10! rounded-full glass-input flex items-center justify-center  transition-all shadow-sm">
             <FaGoogle className="text-accent-purple" />
           </button>
-
         </div>
       </div>
       <div className="flex items-center justify-center mt-6">
@@ -150,8 +145,10 @@ export default function LoginForm() {
           href="/auth/register"
           className="text-sm font-medium  text-center hover:text-accent-purple/80 transition-all duration-200"
         >
-          {t("auth.dontHaveAccount")} {" "}
-          <span className="font-bold underline text-accent-purple">{t("auth.register")}</span>
+          {t("auth.dontHaveAccount")}{" "}
+          <span className="font-bold underline text-accent-purple">
+            {t("auth.register")}
+          </span>
         </LinkTo>
       </div>
     </form>
