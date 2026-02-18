@@ -6,7 +6,6 @@ import NeonTemplate from "@/components/Templates/NeonTemplate";
 import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
 
 export default function Page() {
-  const menu = useAppSelector((state) => state.menu);
   const theme = useAppSelector((state) => state.menu.theme);
 
   return (
