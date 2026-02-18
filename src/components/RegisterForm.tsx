@@ -28,7 +28,9 @@ export default function RegisterForm() {
       password: "",
       confirmPassword: "",
     },
-    resolver: yupResolver(registerSchema(t)) as unknown as Resolver<RegisterSchema>,
+    resolver: yupResolver(
+      registerSchema(t),
+    ) as unknown as Resolver<RegisterSchema>,
     mode: "onChange",
   });
 
@@ -60,14 +62,19 @@ export default function RegisterForm() {
       phoneNumber: data.phone,
       password: data.password,
     };
-    const response = await axiosPost<typeof dataSend, unknown>("/auth/signup", locale, dataSend, false, true);
+    const response = await axiosPost<typeof dataSend, unknown>(
+      "/auth/signup",
+      locale,
+      dataSend,
+      false,
+      true,
+    );
     if (response.status) {
       toast.success(t("auth.registerSuccess"));
       router.push("/auth/login");
     } else {
       setLoading(false);
     }
-
   };
 
   return (
@@ -188,7 +195,9 @@ export default function RegisterForm() {
           className="text-sm font-medium  text-center hover:text-accent-purple/80 transition-all duration-200"
         >
           {t("auth.haveAccount")}{" "}
-          <span className="font-bold underline text-accent-purple">{t("auth.login")}</span>
+          <span className="font-bold underline text-accent-purple">
+            {t("auth.login")}
+          </span>
         </LinkTo>
       </div>
     </form>
