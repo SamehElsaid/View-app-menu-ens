@@ -7,14 +7,13 @@ import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
 
 export default function Page() {
   const theme = useAppSelector((state) => state.menu.theme);
-
+  console.log(theme);
   return (
     <main>
       {theme === "default" && <Default />}
       {theme === "sky" && <SkyTemplate />}
       {theme === "neon" && <NeonTemplate />}
       {theme === "coffee" && <CoffeeTemplate />}
-      {theme === "dark" && <DarkTemplate />}
     </main>
   );
 }
