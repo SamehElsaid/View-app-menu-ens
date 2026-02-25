@@ -1,6 +1,7 @@
 import { useLocale } from "next-intl";
 import { Icon } from "../components/Icon";
 import LoadImage from "@/components/ImageLoad";
+import { BiSolidCategory } from "react-icons/bi";
 
 interface Category {
   id?: number;
@@ -34,16 +35,26 @@ export default function MenuCategoryButton({
       {category.name === "View All" ? (
         <Icon name="grid-line" className="text-2xl" />
       ) : (
-        <></>
-      )}
-      {category.image && (
-        <LoadImage
-          src={category.image}
-          alt={category.name || ""}
-          disableLazy={false}
-          fill
-          className="w-10 border-4 border-white h-10 rounded-full object-cover"
-        />
+        <>
+          {category.image ? (
+            <div className="w-10 h-10 rounded-full overflow-hidden border-4 border-white shrink-0">
+              <LoadImage
+                src={category.image}
+                alt={category.name || ""}
+                disableLazy={false}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div
+              className={`w-10 h-10 rounded-full border-2 border-white flex items-center justify-center shrink-0 ${
+                isActive ? "text-white" : "text-(--bg-main)"
+              }`}
+            >
+              <BiSolidCategory className="text-xl" />
+            </div>
+          )}
+        </>
       )}
       {locale === "ar" ? category.nameAr || category.name : category.name}
     </button>

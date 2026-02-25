@@ -106,6 +106,16 @@ export default function MenuCard({
             <span className="text-lg font-black tracking-tighter">
               {item.price} {getCurrency()}
             </span>
+            {item.originalPrice && item.discountPercent && (
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs text-white/80 line-through">
+                  {item.originalPrice} {getCurrency()}
+                </span>
+                <span className="text-xs font-black bg-white text-(--bg-main) px-2 py-0.5 rounded-full">
+                  -{item.discountPercent}%
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

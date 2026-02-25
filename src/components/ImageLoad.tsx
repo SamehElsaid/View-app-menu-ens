@@ -1,6 +1,28 @@
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import placeholder from "@/components/img/30690.png";
 
+const resolveImageUrl = (src: string): string => {
+  if (!src) return placeholder.src;
+
+  // Keep absolute and data URLs as-is
+  if (
+    src.startsWith("http://") ||
+    src.startsWith("https://") ||
+    src.startsWith("data:")
+  ) {
+    return src;
+  }
+
+  const baseApi = process.env.NEXT_PUBLIC_BASE_URL;
+  if (!baseApi) return src;
+
+  // Remove trailing `/api` to get the backend host
+  const baseHost = baseApi.replace(/\/api\/?$/, "");
+
+  const normalizedPath = src.startsWith("/") ? src : `/${src}`;
+  return `${baseHost}${normalizedPath}`;
+};
+
 function LoadImage({
   src,
   alt,
@@ -21,10 +43,13 @@ function LoadImage({
   [key: string]: unknown;
 }): React.ReactNode {
   // function to resize image using canvas and return Blob URL
+  const normalizedSrc = resolveImageUrl(src);
   const resizeUrl =
     height && width
-      ? `/api/resize?url=${src}&width=${width}&height=${height}`
-      : src;
+      ? `/api/resize?url=${encodeURIComponent(
+          normalizedSrc,
+        )}&width=${width}&height=${height}`
+      : normalizedSrc;
 
   return (
     <>
