@@ -4,6 +4,7 @@ import { axiosGet } from "@/shared/axiosCall";
 import { MenuItem, MenuInfo, MenuCustomizations, Category } from "@/types/menu";
 import { Ad } from "@/types/Ad";
 import { headers } from "next/headers";
+import { Metadata } from "next";
 
 type MenuResponse = {
   menu: MenuInfo;
@@ -37,6 +38,19 @@ const getMenu = async (locale: string) => {
   return null;
 };
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const data = await getMenu(locale);
+  const menuName = data?.menu?.name;
+  return {
+    title: menuName || "ENSmenu",
+    description: data?.menu?.description || "ENSmenu is a platform for creating digital menus for restaurants and cafes",
+  };
+}
 
 export default async function MainLayout({
   children,
