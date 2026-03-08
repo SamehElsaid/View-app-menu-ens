@@ -14,11 +14,9 @@ type MenuResponse = {
   categories: Category[];
 };
 
-
 const getMenu = async (locale: string) => {
   const headersList = await headers();
   const host = headersList.get("host") || "";
-
 
   // memos.ensmenu.com
   const subdomain = host.split(".")[0];
@@ -29,7 +27,7 @@ const getMenu = async (locale: string) => {
 
   const response = await axiosGet<{ data: MenuResponse }>(
     `/public/menu/${slug}`,
-    locale
+    locale,
   );
 
   if (response.status) {
@@ -38,17 +36,51 @@ const getMenu = async (locale: string) => {
   return null;
 };
 
+const defaultMetadata: Record<string, { title: string; description: string }> =
+  {
+    en: {
+      title: "ENSmenu",
+      description:
+        "ENSmenu is a platform for creating digital menus for restaurants and cafes",
+    },
+    ar: {
+      title: "ENSmenu",
+      description: "ENSmenu منصة لإنشاء القوائم الرقمية للمطاعم والمقاهي",
+    },
+  };
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
+  const lang = locale === "ar" ? "ar" : "en";
+  const defaults = defaultMetadata[lang] ?? defaultMetadata.en;
   const data = await getMenu(locale);
-  const menuName = data?.menu?.name;
+  const title = data?.menu?.name ?? defaults.title;
+  const description = data?.menu?.description ?? defaults.description;
+
   return {
-    title: menuName || "ENSmenu",
-    description: data?.menu?.description || "ENSmenu is a platform for creating digital menus for restaurants and cafes",
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      locale: lang === "ar" ? "ar_SA" : "en_US",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+    alternates: {
+      languages: {
+        en: "/en",
+        ar: "/ar",
+      },
+    },
   };
 }
 
@@ -68,7 +100,9 @@ export default async function MainLayout({
         menu={(data?.items as MenuItem[]) ?? null}
         menuInfo={(data?.menu as MenuInfo) ?? null}
         ads={(data?.ads as Ad[]) ?? null}
-        menuCustomizations={(data?.customizations as MenuCustomizations) ?? null}
+        menuCustomizations={
+          (data?.customizations as MenuCustomizations) ?? null
+        }
         categories={(data?.categories as Category[]) ?? null}
       />
       <Header />
