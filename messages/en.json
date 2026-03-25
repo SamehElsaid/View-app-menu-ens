@@ -11,6 +11,18 @@
     "ourMenu": "Our Menu",
     "enjoyFood": "Enjoy the best food in a peaceful atmosphere and colors that inspire rejuvenation and relaxation."
   },
+  "staffCall": {
+    "button": "Call staff",
+    "tableLabel": "Table {table}",
+    "success": "Staff notified — table {table}",
+    "noTable": "Add your table in the link (?table=)",
+    "noTableHint": "Add ?table=YOUR_TABLE to the menu URL",
+    "noMenu": "Could not identify the restaurant",
+    "configError": "Could not reach the server",
+    "rateLimit": "Please wait a moment and try again",
+    "invalidTable": "This table is not registered for this restaurant",
+    "error": "Could not send the request"
+  },
   "footer": {
     "rights": "All rights reserved.",
     "designedBy": "Designed by",
