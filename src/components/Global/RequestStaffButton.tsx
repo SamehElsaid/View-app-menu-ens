@@ -5,10 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { toast } from "react-toastify";
 import { useAppSelector } from "@/store/hooks";
-import { getGuestStaffSocket } from "@/lib/guestStaffSocket";
+import { getGuestStaffCallUrl } from "@/lib/staffCallApiUrl";
 import { FiBell } from "react-icons/fi";
 
-type CallStaffAck = {
+type StaffCallResponse = {
   ok?: boolean;
   error?: string;
 };
@@ -53,8 +53,8 @@ export default function RequestStaffButton() {
     }
     lastCallRef.current = now;
 
-    const sock = getGuestStaffSocket();
-    if (!sock) {
+    const url = getGuestStaffCallUrl();
+    if (!url) {
       toast.error(t("configError"));
       return;
     }
@@ -64,21 +64,21 @@ export default function RequestStaffButton() {
       tableNumber: tableFromUrl,
     };
 
-    const handleAck = (ack: CallStaffAck) => {
-      console.log("[staff-call] ack", ack);
+    const handleResponse = (data: StaffCallResponse) => {
+      console.log("[staff-call] response", data);
       setPending(false);
 
-      if (ack?.ok) {
+      if (data?.ok) {
         toast.success(t("success", { table: tableFromUrl }));
         return;
       }
 
-      if (ack?.error === "RATE_LIMIT") {
+      if (data?.error === "RATE_LIMIT") {
         toast.warning(t("rateLimit"));
         return;
       }
 
-      if (ack?.error === "INVALID_TABLE") {
+      if (data?.error === "INVALID_TABLE") {
         toast.error(t("invalidTable"));
         return;
       }
@@ -86,46 +86,48 @@ export default function RequestStaffButton() {
       toast.error(t("error"));
     };
 
-    console.log("[staff-call] emit", payload, {
-      socketId: sock.id,
-      connected: sock.connected,
-    });
+    console.log("[staff-call] POST", payload, { url });
 
     setPending(true);
 
-    // ✅ timeout لو مفيش رد
-    const timeout = setTimeout(() => {
-      setPending(false);
-      toast.error(t("timeout"));
-    }, 5000);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
 
-    const emitCall = () => {
-      sock.emit("guest:call_staff", payload, (ack: CallStaffAck) => {
+    void (async () => {
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
         clearTimeout(timeout);
-        handleAck(ack);
-      });
-    };
 
-    // ✅ تأكد من الاتصال
-    if (!sock.connected) {
-      sock.connect();
+        let data: StaffCallResponse = {};
+        try {
+          data = (await res.json()) as StaffCallResponse;
+        } catch {
+          /* non-JSON */
+        }
 
-      sock.once("connect", () => {
-        console.log("✅ socket connected before emit");
-        emitCall();
-      });
+        if (res.ok && data.ok) {
+          handleResponse(data);
+          return;
+        }
 
-      sock.once("connect_error", (err) => {
+        handleResponse(data);
+      } catch (e) {
         clearTimeout(timeout);
         setPending(false);
-        console.error("❌ socket connect error", err.message);
+        if ((e as Error)?.name === "AbortError") {
+          toast.error(t("timeout"));
+          return;
+        }
+        console.error("[staff-call] fetch error", e);
         toast.error(t("error"));
-      });
-
-      return;
-    }
-
-    emitCall();
+      }
+    })();
   }, [menuInfo, tableFromUrl, t, pending]);
 
   if (!isMenuActive) return null;
