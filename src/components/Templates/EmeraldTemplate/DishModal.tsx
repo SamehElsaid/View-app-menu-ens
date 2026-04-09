@@ -149,9 +149,7 @@ export default function DishModal({ dish, onClose }: {dish: MenuItem | null, onC
                 transition={{ delay: 0.25, duration: 0.4 }}
                 className="mb-6"
               >
-                <h3 className="font-sans text-xs font-700 uppercase tracking-[0.12em] text-amber-600 mb-3">
-                  {locale === "ar" ? "المواد الحساسة للمرضى" : "Allergens"}
-                </h3>
+               
                 <div className="flex flex-wrap gap-2">
                   {dish.allergens?.map((a: string) => (
                     <span

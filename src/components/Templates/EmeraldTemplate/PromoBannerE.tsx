@@ -1,144 +1,114 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useRef, useState } from "react";
+import Image from "next/image";
 import { useLocale } from "next-intl";
-import { motion, AnimatePresence } from "framer-motion";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import type { Swiper as SwiperType } from "swiper";
+import { useAppSelector } from "@/store/hooks";
+import { motion } from "framer-motion";
+import "swiper/css";
+import "swiper/css/pagination";
 
-interface Ad {
-  id: number;
-  title: string;
-  titleAr: string;
-  content: string;
-  contentAr: string;
-  imageUrl: string;
-  linkUrl: string;
-  position: string;
-}
+export default function PromoBannerE() {
+  const ads = useAppSelector((state) => state.menu.ads) ?? [];
+  const locale = useLocale();
+  const swiperRef = useRef<SwiperType | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
-interface PromoBannerProps {
-  menuId?: number;
-  ownerPlanType?: string;
-}
+  const sortedAds = [...ads]
+    .filter((ad) => ad.position === "banner" && ad.imageUrl)
+    .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
 
-export default function PromoBannerE({ menuId, ownerPlanType }: PromoBannerProps) {
-  const locale = useLocale() as "ar" | "en";
-  const [ads, setAds] = useState<Ad[]>([]);
-  const [loadingAds, setLoadingAds] = useState(true);
+  if (sortedAds.length === 0) return null;
 
-  const isOwnerFreePlan = ownerPlanType === "free" || !ownerPlanType;
-
-  useEffect(() => {
-    const fetchAds = async () => {
-      try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-        const endpoint = isOwnerFreePlan
-          ? `${apiUrl}/public/ads?position=banner&limit=5`
-          : `${apiUrl}/public/menu/${menuId}/ads?position=banner&limit=5`;
-        
-        if (!isOwnerFreePlan && !menuId) return;
-
-        const response = await fetch(endpoint);
-        if (response.ok) {
-          const data = await response.json();
-          setAds(data.data?.ads || []);
-        }
-      } catch (error) {
-        console.error("Ad fetch error:", error);
-      } finally {
-        setLoadingAds(false);
-      }
-    };
-    fetchAds();
-  }, [isOwnerFreePlan, menuId]);
-
-  const handleAdClick = async (ad: Ad) => {
+  const handleAdClick = async (ad: any) => {
     if (!ad.linkUrl) return;
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       fetch(`${apiUrl}/admin/ads/${ad.id}/click`, { method: "POST" });
-    } catch {}
+    } catch { }
     window.open(ad.linkUrl, "_blank", "noopener,noreferrer");
   };
 
-  if (loadingAds || ads.length === 0) return null;
-
-  const isSingle = ads.length === 1;
-
   return (
-    <section className="py-8 px-4">
-      <div className={`grid gap-5 ${isSingle ? "grid-cols-1" : "md:grid-cols-2"}`}>
-        <AnimatePresence>
-          {ads.map((ad, i) => {
-            const title = locale === "ar" ? ad.titleAr || ad.title : ad.title || ad.titleAr;
-            const content = locale === "ar" ? ad.contentAr || ad.content : ad.content || ad.contentAr;
+    <section className="py-10 px-4 max-w-[1200px] mx-auto">
+      <Swiper
+        modules={[Autoplay, Navigation, Pagination]}
+        loop={sortedAds.length > 1}
+        autoplay={{ delay: 6000, disableOnInteraction: false }}
+        onSlideChange={(swiper) => setSelectedIndex(swiper.realIndex)}
+        onSwiper={(swiper) => (swiperRef.current = swiper)}
+        className="rounded-[2.5rem] shadow-2xl overflow-hidden"
+      >
+        {sortedAds.map((ad, i) => {
+          const title = locale === "ar" ? ad.titleAr || ad.title : ad.title || ad.titleAr;
+          const content = locale === "ar" ? ad.contentAr || ad.content : ad.content || ad.contentAr;
 
-            return (
-              <motion.div
-                key={ad.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ duration: 0.5, delay: i * 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+          return (
+            <SwiperSlide key={ad.id}>
+              <div
+                className="relative w-full h-[300px] sm:h-[400px] md:h-[500px] cursor-pointer group"
                 onClick={() => handleAdClick(ad)}
-                className="group relative h-[200px] md:h-[240px] rounded-2xl overflow-hidden cursor-pointer
-                           shadow-[0_4px_24px_rgba(76,17,33,0.08)]
-                           hover:shadow-[0_12px_40px_rgba(76,17,33,0.16)]
-                           transition-shadow duration-400"
               >
-                <div className="absolute inset-0">
-                  {ad.imageUrl ? (
-                    <img
-                      src={ad.imageUrl}
-                      alt={title}
-                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#4c1121] via-[#6b1a30] to-[#9b2545]" />
-                  )}
-                </div>
+                <Image
+                  src={ad.imageUrl}
+                  alt={title}
+                  fill
+                  className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                  priority={i === 0}
+                />
 
-                <div className="absolute inset-0 bg-gradient-to-t from-[#2d0a12]/90 via-[#4c1121]/40 to-black/5" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#2d0a12]/90 via-[#2d0a12]/40 to-transparent rtl:bg-gradient-to-l" />
 
-                <div className="relative h-full flex flex-col justify-end p-5 md:p-7">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="w-5 h-[1.5px] bg-[#f5b0c4] rounded-full" />
-                    <span className="font-sans text-[10px] font-600 uppercase tracking-[0.15em] text-[#f5b0c4]">
-                      {locale === "ar" ? "عرض مميز" : "Featured"}
+                {/* Content */}
+                <div className="relative h-full flex flex-col justify-center p-8 md:p-20 text-white max-w-3xl">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    <span className="inline-block px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md text-[#f5b0c4] text-xs font-bold mb-6 tracking-widest uppercase">
+                      {locale === "ar" ? "اعلان" : "Sponsored"}
                     </span>
-                  </div>
 
-                  <h3 className="font-serif italic text-white text-lg md:text-xl font-700 leading-snug mb-1.5 line-clamp-2">
-                    {title}
-                  </h3>
+                    <h2 className="text-4xl md:text-6xl font-serif italic font-bold mb-6 leading-[1.1]">
+                      {title}
+                    </h2>
 
-                  {content && (
-                    <p className="font-sans text-white/70 text-xs md:text-sm leading-relaxed line-clamp-2 mb-3">
-                      {content}
-                    </p>
-                  )}
+                    {content && (
+                      <p className="text-lg md:text-xl text-white/80 mb-8 line-clamp-2 font-light max-w-xl">
+                        {content}
+                      </p>
+                    )}
 
-                  {ad.linkUrl && (
-                    <div className="flex items-center gap-2 mt-auto">
-                      <span className="font-sans text-[11px] font-600 tracking-wide text-[#f5b0c4] group-hover:text-white transition-colors duration-300">
-                        {locale === "ar" ? "اكتشف المزيد" : "Explore"}
-                      </span>
-                      <svg
-                        width="12" height="12" viewBox="0 0 12 12" fill="none"
-                        className="text-[#f5b0c4] group-hover:text-white group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5 rtl:rotate-180 transition-all duration-300"
-                      >
-                        <path d="M2.5 6h7M7 3.5L9.5 6 7 8.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                  )}
+                    {ad.linkUrl && (
+                      <div className="flex items-center gap-4 group/btn mt-auto">
+                        <div className="h-12 px-8 rounded-full bg-[#f5b0c4] text-[#4c1121] flex items-center justify-center font-bold transition-all group-hover/btn:bg-white cursor-pointer">
+                          {locale === "ar" ? "اكتشف الآن" : "Explore Now"}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
                 </div>
+              </div>
+            </SwiperSlide>
+          );
+        })}
+      </Swiper>
 
-                <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10 group-hover:ring-[#f5b0c4]/30 transition-all duration-400" />
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
+      {sortedAds.length > 1 && (
+        <div className="flex justify-center gap-3 mt-6">
+          {sortedAds.map((_, i) => (
+            <div
+              key={i}
+              className={`h-1.5 transition-all duration-500 rounded-full ${selectedIndex === i ? "w-10 bg-[#4c1121]" : "w-2 bg-stone-300"
+                }`}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

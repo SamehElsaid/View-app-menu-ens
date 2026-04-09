@@ -34,6 +34,9 @@ export default function MenuSection({items, categories }: {items: MenuItem[], ca
   const [activeCategory, setActiveCategory] = useState<number>(0);
   const locale = useLocale();
 
+  const filteredItems = activeCategory === 0 
+  ? items 
+  : items.filter(dish => dish.categoryId === activeCategory);
   return (
     <>
     <div className="mb-10">
@@ -65,14 +68,16 @@ export default function MenuSection({items, categories }: {items: MenuItem[], ca
         transition={{ duration: 0.2 }}
         className="font-sans text-sm text-stone-400 mb-8 font-500"
       >
-        {items.length} {items.length === 1 ? "dish" : "dishes"}
-        {activeCategory !== 0 && (
+       {filteredItems.length} {filteredItems.length === 1 ? locale === "ar" ? "طبق" : "dish" : locale === "ar" ? "اطباق" : "dishes"}
+          {activeCategory !== 0 && (
           <>
             {" "}
             in{" "}
             <span className="text-[#7d1d35]">
-              {categories.find((c) => c.id === activeCategory)?.name}
-            </span>
+            {locale === "ar" 
+                  ? categories.find((c) => c.id === activeCategory)?.nameAr 
+                  : categories.find((c) => c.id === activeCategory)?.nameEn}
+              </span>
           </>
         )}
       </motion.p>
@@ -87,9 +92,9 @@ export default function MenuSection({items, categories }: {items: MenuItem[], ca
         transition={{ duration: 0.2 }}
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"
       >
-        {items.map((dish: MenuItem, i: number) => (
-          <MenuCard key={dish.id} dish={dish} index={i} onClick={setSelectedDish} />
-        ))}
+       {filteredItems.map((dish: MenuItem, i: number) => (
+            <MenuCard key={dish.id} dish={dish} index={i} onClick={setSelectedDish} />
+          ))}
       </motion.div>
     </AnimatePresence>
 
