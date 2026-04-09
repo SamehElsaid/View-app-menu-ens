@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import Image from "next/image";
 import { useLocale } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
-
 interface MenuItem {
   id: number;
   name: string;
@@ -27,7 +26,7 @@ interface MenuItem {
   allergens?: string[];
 }
 
-export default function DishModal({ dish, onClose }: {dish: MenuItem | null, onClose: () => void}) {
+export default function DishModal({ dish, onClose, currency }: {dish: MenuItem | null, onClose: () => void, currency: string}) {
   const locale = useLocale() as "ar" | "en";
 
   useEffect(() => {
@@ -114,7 +113,7 @@ export default function DishModal({ dish, onClose }: {dish: MenuItem | null, onC
 
             <div className="absolute bottom-4 end-4 bg-white/95 backdrop-blur rounded-full px-4 py-1.5 shadow">
               <span className="font-serif font-700 text-[#4c1121] text-xl">
-                ${dish.price}
+                {currency} {dish.price}
               </span>
             </div>
           </div>

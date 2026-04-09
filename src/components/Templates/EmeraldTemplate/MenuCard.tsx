@@ -29,28 +29,12 @@ interface PropsMenuCard {
   dish: MenuItem;
   index: number;
   onClick: (dish: MenuItem) => void;
+  currency: string;
 }
 
-const badgeColors: Record<string, string> = {
-  "Chef's Pick": "bg-[#4c1121] text-white",
-  "اختيار الشيف": "bg-[#4c1121] text-white",
-  Seasonal: "bg-amber-100 text-amber-800",
-  "موسمي": "bg-amber-100 text-amber-800",
-  Signature: "bg-stone-900 text-white",
-  "مميز": "bg-stone-900 text-white",
-  Vegan: "bg-[#fce4ec] text-[#62162a]",
-  "نباتي": "bg-[#fce4ec] text-[#62162a]",
-  Sustainable: "bg-teal-100 text-teal-800",
-  "مستدام": "bg-teal-100 text-teal-800",
-  Premium: "bg-yellow-50 text-yellow-700",
-  "فاخر": "bg-yellow-50 text-yellow-700",
-  "Non-Alcoholic": "bg-sky-100 text-sky-700",
-  "بدون كحول": "bg-sky-100 text-sky-700",
-  "House Blend": "bg-[#fef1f5] text-[#7d1d35]",
-  "خلطة المنزل": "bg-[#fef1f5] text-[#7d1d35]",
-};
 
-export default function MenuCard({ dish, index, onClick }: PropsMenuCard) {
+
+export default function MenuCard({ dish, index, onClick, currency }: PropsMenuCard) {
   const locale = useLocale();
   const badgeText = dish.discountPercent ? `${dish.discountPercent}% off` : null;
 
@@ -78,15 +62,13 @@ export default function MenuCard({ dish, index, onClick }: PropsMenuCard) {
         />
         {badgeText && (
           <span
-            className={`absolute top-3 start-3 text-[11px] font-sans font-700 px-2.5 py-1
-              rounded-full tracking-wider uppercase
-              ${badgeColors[badgeText] ?? "bg-white/90 text-stone-700"}`}
+            className={`absolute top-3 start-3 text-[11px] font-sans font-700 px-2.5 py-1 rounded-full tracking-wider uppercase bg-white/90 text-stone-700`}
           >
             {badgeText}
           </span>
         )}
         <div className="absolute bottom-3 end-3 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
-          <span className="font-sans font-700 text-[#4c1121] text-sm">${dish.price}</span>
+          <span className="font-sans font-700 text-[#4c1121] text-sm">{currency} {dish.price}</span>
         </div>
       </div>
 

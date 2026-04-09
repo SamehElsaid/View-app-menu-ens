@@ -29,7 +29,7 @@ interface MenuItem {
   sortOrder: number;
 }
 
-export default function MenuSection({items, categories }: {items: MenuItem[], categories: Category[]}) {
+export default function MenuSection({items, categories, currency }: {items: MenuItem[], categories: Category[], currency: string}) {
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
   const [activeCategory, setActiveCategory] = useState<number>(0);
   const locale = useLocale();
@@ -93,12 +93,12 @@ export default function MenuSection({items, categories }: {items: MenuItem[], ca
         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8"
       >
        {filteredItems.map((dish: MenuItem, i: number) => (
-            <MenuCard key={dish.id} dish={dish} index={i} onClick={setSelectedDish} />
+            <MenuCard key={dish.id} dish={dish} index={i} onClick={setSelectedDish} currency={currency} />
           ))}
       </motion.div>
     </AnimatePresence>
 
-    <DishModal dish={selectedDish} onClose={() => setSelectedDish(null)} />
+    <DishModal dish={selectedDish} onClose={() => setSelectedDish(null)} currency={currency} />
   </>
   );
 }
