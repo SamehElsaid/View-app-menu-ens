@@ -7,6 +7,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import { useAppSelector } from "@/store/hooks";
+import type { Ad } from "@/types/Ad";
 import { motion } from "framer-motion";
 import "swiper/css";
 import "swiper/css/pagination";
@@ -23,7 +24,7 @@ export default function PromoBannerE() {
 
   if (sortedAds.length === 0) return null;
 
-  const handleAdClick = async (ad: any) => {
+  const handleAdClick = async (ad: Ad) => {
     if (!ad.linkUrl) return;
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;

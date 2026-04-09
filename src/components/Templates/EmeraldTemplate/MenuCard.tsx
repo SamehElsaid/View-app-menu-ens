@@ -32,17 +32,26 @@ interface PropsMenuCard {
   currency: string;
 }
 
-
-
-export default function MenuCard({ dish, index, onClick, currency }: PropsMenuCard) {
+export default function MenuCard({
+  dish,
+  index,
+  onClick,
+  currency,
+}: PropsMenuCard) {
   const locale = useLocale();
-  const badgeText = dish.discountPercent ? `${dish.discountPercent}% off` : null;
+  const badgeText = dish.discountPercent
+    ? `${dish.discountPercent}% off`
+    : null;
 
   return (
     <motion.article
       initial={{ opacity: 0, y: 28 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+      transition={{
+        duration: 0.5,
+        delay: index * 0.07,
+        ease: [0.22, 1, 0.36, 1],
+      }}
       className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_20px_rgba(76,17,33,0.06),0_1px_4px_rgba(0,0,0,0.04)] cursor-pointer group transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.34,1.2,0.64,1)] hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(76,17,33,0.14),0_4px_12px_rgba(0,0,0,0.06)]"
       onClick={() => onClick(dish)}
       role="button"
@@ -68,7 +77,9 @@ export default function MenuCard({ dish, index, onClick, currency }: PropsMenuCa
           </span>
         )}
         <div className="absolute bottom-3 end-3 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
-          <span className="font-sans font-700 text-[#4c1121] text-sm">{currency} {dish.price}</span>
+          <span className="font-sans font-700 text-[#4c1121] text-sm">
+            {currency} {dish.price}
+          </span>
         </div>
       </div>
 
@@ -97,7 +108,7 @@ export default function MenuCard({ dish, index, onClick, currency }: PropsMenuCa
           <span className="font-sans text-xs text-[#7d1d35] font-600 tracking-wide uppercase">
             {locale === "ar" ? "عرض التفاصيل" : "View Details"}
           </span>
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#4c1121] to-[#9b2545] flex items-center justify-center shadow-[0_4px_20px_rgba(155,37,69,0.4)] group-hover:scale-110 transition-transform duration-200">
+          <div className="w-7 h-7 rounded-full bg-linear-to-br from-[#4c1121] to-[#9b2545] flex items-center justify-center shadow-[0_4px_20px_rgba(155,37,69,0.4)] group-hover:scale-110 transition-transform duration-200">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path
                 d="M2 6h8M7 3l3 3-3 3"
