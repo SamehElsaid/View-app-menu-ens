@@ -10,7 +10,7 @@ function EmeraldTemplate() {
   const storeCategories = useAppSelector((state) => state.menu.categories);
 
   return (
-    <main className="min-h-screen bg-[#fafaf9] text-stone-900 antialiased scroll-smooth  pt-24 pb-28 md:pb-0">
+    <main className="min-h-screen bg-[#fafaf9] text-stone-900 antialiased scroll-smooth  pt-24  md:pb-0">
       <Navbar />
       <PromoBannerE />
       <section

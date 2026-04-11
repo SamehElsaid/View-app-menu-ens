@@ -277,7 +277,7 @@ h1,
 .display-3,
 .display-2,
 .display-1 {
-  @apply font-bold leading-tight mb-[10px]  dark:text-white;
+  @apply font-bold leading-tight mb-[10px];
 }
 .h6,
 h6,

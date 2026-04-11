@@ -15,7 +15,7 @@ export default function CategoryTabs({ categories, active, onChange }: Props) {
 
   return (
     <div
-      className="flex flex-wrap justify-center gap-2.5 pb-1 px-4 w-full"
+      className="flex overflow-x-auto md:flex-wrap md:justify-center gap-2.5 pb-2 px-4 w-full"
       role="tablist"
       aria-label="Menu categories"
     >
