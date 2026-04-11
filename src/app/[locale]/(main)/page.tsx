@@ -6,6 +6,7 @@ import Default from "@/components/Templates/Default";
 import SkyTemplate from "@/components/Templates/SkyTemplate";
 import NeonTemplate from "@/components/Templates/NeonTemplate";
 import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
+import EmeraldTemplate from "@/components/Templates/EmeraldTemplate";
 import { useLocale } from "next-intl";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
 
@@ -42,6 +43,7 @@ export default function Page() {
           {menu.theme === "sky" && <SkyTemplate />}
           {menu.theme === "neon" && <NeonTemplate />}
           {menu.theme === "coffee" && <CoffeeTemplate />}
+          {menu.theme === "emerald" && <EmeraldTemplate />}
           <Suspense fallback={null}>
             <RequestStaffButton />
           </Suspense>

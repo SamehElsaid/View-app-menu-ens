@@ -118,37 +118,30 @@ const PromoBanner = ({ menuId, ownerPlanType }: PromoBannerProps) => {
           return (
             <div
               key={ad.id}
-              className={`relative overflow-hidden rounded-xl group cursor-pointer animate-fade-in ${
-                ads.length === 1 ? "md:col-span-2" : ""
-              }`}
+              className={`group relative overflow-hidden cursor-pointer shadow-2xl
+                min-h-[320px] md:min-h-[420px] 
+                rounded-[2.5rem] 
+                transition-all duration-500
+                ${ads.length === 1 ? "col-span-full max-w-full" : "w-full"} 
+              `}
               style={{ animationDelay: `${index * 150}ms` }}
               onClick={() => handleAdClick(ad)}
             >
               {/* Background Image */}
-              <div className="relative h-48 md:h-56">
-                {ad.imageUrl ? (
-                  <img
-                    src={ad.imageUrl}
-                    alt={title}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                    onError={(e) => {
-                      // Hide image if it fails to load
+              <div className="absolute inset-0 h-full w-full">
+    {ad.imageUrl ? (
+      <img
+        src={ad.imageUrl}
+        alt={title}
+        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" onError={(e) => {
                       (e.target as HTMLImageElement).style.display = "none";
                     }}
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-[#F2B705]/20 to-[#17120F] flex items-center justify-center">
-                    <div className="text-center p-6">
-                      <div className="w-16 h-16 bg-[#F2B705]/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-3xl">🎯</span>
-                      </div>
-                    </div>
-                  </div>
+                  <div className="w-full h-full bg-gradient-to-br from-[#4c1121] to-[#9b2545]" />
                 )}
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#17120F]/90 via-[#17120F]/60 to-transparent" />
-
+                <div className="absolute inset-0 bg-gradient-to-t from-[#4c1121] via-[#4c1121]/50 to-transparent" />
                 {/* Content */}
                 <div className="absolute inset-0 flex flex-col justify-center p-6 md:p-8">
                   <h3 className="font-heading text-2xl md:text-3xl font-bold text-[#F4EEE7] mb-2">
