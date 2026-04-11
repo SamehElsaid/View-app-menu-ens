@@ -6,9 +6,9 @@ import {
   type ReactNode,
 } from "react";
 
-/** Original Emerald template palette (burgundy / rose) */
-export const NOIR_DEFAULT_PRIMARY = "#4c1121";
-export const NOIR_DEFAULT_SECONDARY = "#9b2545";
+/** Noir template palette (violet / cyan) */
+export const NOIR_DEFAULT_PRIMARY = "#7c3aed";
+export const NOIR_DEFAULT_SECONDARY = "#06b6d4";
 
 type NoirThemeValue = {
   primary: string;
