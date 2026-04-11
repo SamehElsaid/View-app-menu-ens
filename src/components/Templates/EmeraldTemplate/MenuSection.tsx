@@ -51,7 +51,7 @@ export default function MenuSection({items, categories, currency }: {items: Menu
       </h2>
     </div>
 
-    <div className="hidden md:block mb-12">
+    <div className="mb-8 md:mb-12">
       <CategoryTabs
         categories={categories}
         active={activeCategory}
