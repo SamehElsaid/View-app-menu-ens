@@ -44,9 +44,12 @@ export default function Page() {
           {menu.theme === "neon" && <NeonTemplate />}
           {menu.theme === "coffee" && <CoffeeTemplate />}
           {menu.theme === "emerald" && <EmeraldTemplate />}
-          <Suspense fallback={null}>
-            <RequestStaffButton />
-          </Suspense>
+          {menu.menuInfo?.ownerPlanType !== "free" &&
+            menu.menuInfo?.ownerPlanType !== null && (
+              <Suspense fallback={null}>
+                <RequestStaffButton />
+              </Suspense>
+            )}
         </>
       )}
     </main>
