@@ -7,6 +7,7 @@ import MenuCard from "./MenuCard";
 import DishModal from "./DishModal";
 import { useLocale } from "next-intl";
 import { Category } from "@/types/menu";
+import { useEmeraldTheme } from "./EmeraldThemeContext";
 
 
 interface MenuItem {
@@ -33,6 +34,7 @@ export default function MenuSection({items, categories, currency }: {items: Menu
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
   const [activeCategory, setActiveCategory] = useState<number>(0);
   const locale = useLocale();
+  const { primary, secondary } = useEmeraldTheme();
 
   const filteredItems = activeCategory === 0 
   ? items 
@@ -40,7 +42,10 @@ export default function MenuSection({items, categories, currency }: {items: Menu
   return (
     <>
     <div className="mb-10">
-      <p className="font-sans text-xs font-600 tracking-[0.18em] uppercase text-[#9b2545] mb-3">
+      <p
+        className="font-sans text-xs font-600 tracking-[0.18em] uppercase mb-3"
+        style={{ color: secondary }}
+      >
         {locale === "ar" ? "القائمة" : "Menu"}
       </p>
       <h2
@@ -73,7 +78,7 @@ export default function MenuSection({items, categories, currency }: {items: Menu
           <>
             {" "}
             in{" "}
-            <span className="text-[#7d1d35]">
+            <span style={{ color: primary }}>
             {locale === "ar" 
                   ? categories.find((c) => c.id === activeCategory)?.nameAr 
                   : categories.find((c) => c.id === activeCategory)?.nameEn}

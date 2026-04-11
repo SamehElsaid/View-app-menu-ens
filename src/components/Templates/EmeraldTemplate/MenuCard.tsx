@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useLocale } from "next-intl";
 import { motion } from "framer-motion";
+import { useEmeraldTheme } from "./EmeraldThemeContext";
+import { hexToRgba } from "./emeraldThemeUtils";
 
 interface MenuItem {
   id: number;
@@ -39,9 +41,15 @@ export default function MenuCard({
   currency,
 }: PropsMenuCard) {
   const locale = useLocale();
+  const { primary, secondary } = useEmeraldTheme();
   const badgeText = dish.discountPercent
     ? `${dish.discountPercent}% off`
     : null;
+
+  const cardShadow = `0 2px 20px ${hexToRgba(primary, 0.06)}, 0 1px 4px rgba(0,0,0,0.04)`;
+  const cardHoverShadow = `0 16px 48px ${hexToRgba(primary, 0.14)}, 0 4px 12px rgba(0,0,0,0.06)`;
+  const iconShadow = `0 4px 20px ${hexToRgba(primary, 0.4)}`;
+  const imageBg = hexToRgba(primary, 0.06);
 
   return (
     <motion.article
@@ -52,14 +60,29 @@ export default function MenuCard({
         delay: index * 0.07,
         ease: [0.22, 1, 0.36, 1],
       }}
-      className="bg-white rounded-2xl overflow-hidden shadow-[0_2px_20px_rgba(76,17,33,0.06),0_1px_4px_rgba(0,0,0,0.04)] cursor-pointer group transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.34,1.2,0.64,1)] hover:-translate-y-1 hover:shadow-[0_16px_48px_rgba(76,17,33,0.14),0_4px_12px_rgba(0,0,0,0.06)]"
+      className="bg-white rounded-2xl overflow-hidden cursor-pointer group transition-[transform,box-shadow] duration-300 ease-[cubic-bezier(0.34,1.2,0.64,1)] hover:-translate-y-1"
+      style={
+        {
+          boxShadow: cardShadow,
+          "--em-p": primary,
+        } as React.CSSProperties
+      }
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = cardHoverShadow;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = cardShadow;
+      }}
       onClick={() => onClick(dish)}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => e.key === "Enter" && onClick(dish)}
       aria-label={locale === "ar" ? dish.nameAr : dish.nameEn}
     >
-      <div className="relative h-52 overflow-hidden bg-[#fef1f5]">
+      <div
+        className="relative h-52 overflow-hidden"
+        style={{ backgroundColor: imageBg }}
+      >
         <Image
           src={dish.image}
           alt={locale === "ar" ? dish.nameAr : dish.nameEn}
@@ -77,14 +100,17 @@ export default function MenuCard({
           </span>
         )}
         <div className="absolute bottom-3 end-3 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
-          <span className="font-sans font-700 text-[#4c1121] text-sm">
+          <span
+            className="font-sans font-700 text-sm"
+            style={{ color: primary }}
+          >
             {currency} {dish.price}
           </span>
         </div>
       </div>
 
       <div className="p-5">
-        <h3 className="font-serif font-700 text-stone-900 text-lg leading-tight mb-2 group-hover:text-[#4c1121] transition-colors duration-200">
+        <h3 className="font-serif font-700 text-stone-900 text-lg leading-tight mb-2 transition-colors duration-200 group-hover:text-[var(--em-p)]">
           {locale === "ar" ? dish.nameAr : dish.nameEn}
         </h3>
         <p className="font-sans text-stone-500 text-sm leading-relaxed line-clamp-2">
@@ -105,10 +131,19 @@ export default function MenuCard({
         )}
 
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-stone-50">
-          <span className="font-sans text-xs text-[#7d1d35] font-600 tracking-wide uppercase">
+          <span
+            className="font-sans text-xs font-600 tracking-wide uppercase"
+            style={{ color: secondary }}
+          >
             {locale === "ar" ? "عرض التفاصيل" : "View Details"}
           </span>
-          <div className="w-7 h-7 rounded-full bg-linear-to-br from-[#4c1121] to-[#9b2545] flex items-center justify-center shadow-[0_4px_20px_rgba(155,37,69,0.4)] group-hover:scale-110 transition-transform duration-200">
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-200"
+            style={{
+              background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
+              boxShadow: iconShadow,
+            }}
+          >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path
                 d="M2 6h8M7 3l3 3-3 3"

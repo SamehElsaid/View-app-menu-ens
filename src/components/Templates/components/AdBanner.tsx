@@ -42,10 +42,13 @@ export default function AdVBanner() {
   };
 
   return (
-    <section className="py-6 sm:py-8 relative overflow-hidden mb-16">
+    <section
+      className="py-4 sm:py-6 relative overflow-hidden mb-10"
+      aria-label={locale === "ar" ? "إعلانات" : "Advertisements"}
+    >
       <div className="container mx-auto px-4 sm:px-6">
         <div dir={direction} className="relative">
-          <div className="rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl">
+          <div className="rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl ring-1 ring-black/10 ring-offset-1 ring-offset-stone-50">
             <Swiper
               modules={[Autoplay, Navigation, Pagination]}
               dir={direction}
@@ -80,7 +83,7 @@ export default function AdVBanner() {
                 return (
                   <SwiperSlide key={ad.id}>
                     <div
-                      className={`relative w-full h-[300px] sm:h-[400px] md:h-[500px] cursor-pointer group ${
+                      className={`relative w-full h-[220px] sm:h-[300px] md:h-[380px] cursor-pointer group ${
                         ad.linkUrl
                           ? "hover:scale-[1.02] transition-transform duration-300"
                           : ""
@@ -97,31 +100,41 @@ export default function AdVBanner() {
                           priority
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
                         />
-                        {/* Gradient Overlay */}
-                        <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/60 to-black/40" />
+                        {/* Gradient Overlay — أغمق على الجانب النصّي لقراءة أوضح */}
+                        <div className="absolute inset-0 bg-linear-to-r from-black/90 via-black/65 to-black/35" />
+                      </div>
+
+                      {/* شارة إعلان ثابتة أعلى الصورة */}
+                      <div
+                        className={`absolute top-2.5 z-20 flex items-center gap-1.5 rounded-full border border-white/80 bg-black/75 px-2 py-1 text-white shadow-md backdrop-blur-sm sm:top-3 sm:px-2.5 sm:py-1 ${
+                          rtl ? "left-3 sm:left-5" : "right-3 sm:right-5"
+                        }`}
+                      >
+                        <span
+                          className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.85)]"
+                          aria-hidden
+                        />
+                        <span className="text-[10px] font-bold uppercase tracking-wider sm:text-[11px]">
+                          {locale === "ar" ? "إعلان" : "Ad"}
+                        </span>
                       </div>
 
                       {/* Content */}
                       <div
-                        className={`relative z-10 h-full flex flex-col justify-center items-start p-6 sm:p-8 md:p-12 text-white ${
+                        className={`relative z-10 h-full flex flex-col justify-center items-start p-5 pt-14 sm:p-7 sm:pt-16 md:p-10 md:pt-12 text-white ${
                           sortedAds.length > 1
                             ? "pl-14 pr-14 sm:pl-16 sm:pr-16 md:pl-20 md:pr-20"
                             : ""
                         }`}
                       >
-                        {/* Badge */}
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-600/90 backdrop-blur-sm text-white text-xs sm:text-sm font-bold mb-4">
-                          <span>{locale === "ar" ? "إعلان" : "Sponsored"}</span>
-                        </div>
-
                         {/* Title */}
-                        <h3 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight max-w-2xl">
+                        <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight max-w-2xl [text-shadow:0_4px_28px_rgba(0,0,0,0.85)]">
                           {title}
                         </h3>
 
                         {/* Description */}
                         {content && (
-                          <p className="text-sm sm:text-base md:text-lg text-white/90 mb-6 max-w-xl leading-relaxed line-clamp-3">
+                          <p className="text-xs sm:text-sm md:text-base text-white mb-4 max-w-xl leading-relaxed line-clamp-2 font-medium [text-shadow:0_2px_14px_rgba(0,0,0,0.75)]">
                             {content}
                           </p>
                         )}
@@ -129,7 +142,7 @@ export default function AdVBanner() {
                         {/* CTA Button */}
                         {ad.linkUrl && (
                           <button
-                            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-semibold transition-all duration-300 group-hover:translate-x-1"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm rounded-full border border-white/40 bg-white/25 backdrop-blur-md hover:bg-white/40 text-white font-semibold shadow-md transition-all duration-300 group-hover:translate-x-1"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleAdClick(ad);
@@ -139,7 +152,7 @@ export default function AdVBanner() {
                               {locale === "ar" ? "اعرف المزيد" : "Learn More"}
                             </span>
                             <svg
-                              className={`w-5 h-5 transition-transform ${
+                              className={`w-4 h-4 transition-transform ${
                                 rtl
                                   ? "group-hover:-translate-x-1"
                                   : "group-hover:translate-x-1"

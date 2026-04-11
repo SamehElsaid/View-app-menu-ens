@@ -105,8 +105,11 @@ const PromoBanner = ({ menuId, ownerPlanType }: PromoBannerProps) => {
   }
 
   return (
-    <div className="py-8">
-      <div className="grid gap-6 md:grid-cols-2">
+    <div
+      className="py-5"
+      aria-label={locale === "ar" ? "إعلانات" : "Advertisements"}
+    >
+      <div className="grid gap-4 md:grid-cols-2 md:gap-5">
         {ads.map((ad, index) => {
           const title =
             locale === "ar" ? ad.titleAr || ad.title : ad.title || ad.titleAr;
@@ -118,9 +121,9 @@ const PromoBanner = ({ menuId, ownerPlanType }: PromoBannerProps) => {
           return (
             <div
               key={ad.id}
-              className={`group relative overflow-hidden cursor-pointer shadow-2xl
-                min-h-[320px] md:min-h-[420px] 
-                rounded-[2.5rem] 
+              className={`group relative overflow-hidden cursor-pointer shadow-xl ring-1 ring-black/10 ring-offset-1 ring-offset-stone-100
+                min-h-[240px] md:min-h-[300px] 
+                rounded-3xl 
                 transition-all duration-500
                 ${ads.length === 1 ? "col-span-full max-w-full" : "w-full"} 
               `}
@@ -129,11 +132,12 @@ const PromoBanner = ({ menuId, ownerPlanType }: PromoBannerProps) => {
             >
               {/* Background Image */}
               <div className="absolute inset-0 h-full w-full">
-    {ad.imageUrl ? (
-      <img
-        src={ad.imageUrl}
-        alt={title}
-        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" onError={(e) => {
+                {ad.imageUrl ? (
+                  <img
+                    src={ad.imageUrl}
+                    alt={title}
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                    onError={(e) => {
                       (e.target as HTMLImageElement).style.display = "none";
                     }}
                   />
@@ -141,14 +145,14 @@ const PromoBanner = ({ menuId, ownerPlanType }: PromoBannerProps) => {
                   <div className="w-full h-full bg-gradient-to-br from-[#4c1121] to-[#9b2545]" />
                 )}
                 {/* Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#4c1121] via-[#4c1121]/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-[#4c1121]/55 to-black/20" />
                 {/* Content */}
-                <div className="absolute inset-0 flex flex-col justify-center p-6 md:p-8">
-                  <h3 className="font-heading text-2xl md:text-3xl font-bold text-[#F4EEE7] mb-2">
+                <div className="absolute inset-0 flex flex-col justify-center p-5 md:p-6">
+                  <h3 className="font-heading text-xl md:text-2xl font-bold text-[#F4EEE7] mb-1.5 [text-shadow:0_4px_24px_rgba(0,0,0,0.75)]">
                     {title}
                   </h3>
                   {content && (
-                    <p className="text-lg md:text-xl font-semibold text-[#F2B705]">
+                    <p className="text-sm md:text-base font-semibold text-[#F2B705] [text-shadow:0_2px_14px_rgba(0,0,0,0.6)] line-clamp-2">
                       {content}
                     </p>
                   )}

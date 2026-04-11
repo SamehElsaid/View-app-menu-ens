@@ -2,6 +2,8 @@
 
 import { useLocale } from "next-intl";
 import { Category } from "@/types/menu";
+import { useEmeraldTheme } from "./EmeraldThemeContext";
+import { hexToRgba } from "./emeraldThemeUtils";
 
 interface Props {
   categories: Category[];
@@ -11,10 +13,16 @@ interface Props {
 
 export default function BottomNav({ categories, active, onChange }: Props) {
   const locale = useLocale() as "ar" | "en";
+  const { primary, secondary } = useEmeraldTheme();
+
+  const navShadow = `0 -4px 24px ${hexToRgba(primary, 0.1)}`;
+  const activeShadow = `0 4px 20px ${hexToRgba(primary, 0.4)}`;
+  const hoverBg = hexToRgba(primary, 0.06);
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/94 backdrop-blur-[20px] shadow-[0_-4px_24px_rgba(76,17,33,0.1)] px-2 pb-safe"
+      className="fixed bottom-0 inset-x-0 z-40 md:hidden bg-white/94 backdrop-blur-[20px] px-2 pb-safe"
+      style={{ boxShadow: navShadow }}
       aria-label="Categories"
     >
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2.5 px-1">
@@ -29,10 +37,30 @@ export default function BottomNav({ categories, active, onChange }: Props) {
                 text-xs font-semibold font-sans transition-all duration-200
                 ${
                   isActive
-                    ? "bg-linear-to-br from-[#4c1121] to-[#9b2545] text-white shadow-[0_4px_20px_rgba(155,37,69,0.4)]"
-                    : "text-stone-500 hover:bg-[#fef1f5] hover:text-[#62162a]"
+                    ? "text-white"
+                    : "text-stone-500"
                 }
               `}
+              style={
+                isActive
+                  ? {
+                      background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
+                      boxShadow: activeShadow,
+                    }
+                  : undefined
+              }
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.backgroundColor = hoverBg;
+                  e.currentTarget.style.color = primary;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                  e.currentTarget.style.color = "";
+                }
+              }}
             >
               <span className="text-sm leading-none">{cat.name}</span>
               <span>

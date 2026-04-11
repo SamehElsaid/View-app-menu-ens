@@ -3,6 +3,8 @@
 import { useLocale } from "next-intl";
 import { motion } from "framer-motion";
 import { Category } from "@/types/menu";
+import { useEmeraldTheme } from "./EmeraldThemeContext";
+import { hexToRgba } from "./emeraldThemeUtils";
 
 interface Props {
   categories: Category[];
@@ -12,6 +14,11 @@ interface Props {
 
 export default function CategoryTabs({ categories, active, onChange }: Props) {
   const locale = useLocale() as "ar" | "en";
+  const { primary, secondary } = useEmeraldTheme();
+
+  const hoverBg = hexToRgba(primary, 0.06);
+  const inactiveShadow = `0 2px 20px ${hexToRgba(primary, 0.06)}, 0 1px 4px rgba(0,0,0,0.04)`;
+  const activeShadow = `0 4px 20px ${hexToRgba(primary, 0.4)}`;
 
   return (
     <div
@@ -30,19 +37,40 @@ export default function CategoryTabs({ categories, active, onChange }: Props) {
             className={`
             relative shrink-0 flex items-center gap-2 px-5 py-2.5
             rounded-full text-sm font-semibold font-sans tracking-wide
-            transition-all duration-300 focus-visible:outline-none
-            focus-visible:ring-2 focus-visible:ring-[#9b2545]
+            transition-[background-color,color,box-shadow] duration-300
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400/50 focus-visible:ring-offset-2
             ${
               isActive
-                ? "text-white shadow-[0_4px_20px_rgba(155,37,69,0.4)]"
-                : "text-stone-500 bg-white hover:bg-[#fef1f5] hover:text-[#62162a] shadow-[0_2px_20px_rgba(76,17,33,0.06),0_1px_4px_rgba(0,0,0,0.04)]"
+                ? "text-white"
+                : "text-stone-500 bg-white"
             }
           `}
+            style={
+              isActive
+                ? undefined
+                : { boxShadow: inactiveShadow }
+            }
+            onMouseEnter={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.backgroundColor = hoverBg;
+                e.currentTarget.style.color = primary;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive) {
+                e.currentTarget.style.backgroundColor = "white";
+                e.currentTarget.style.color = "";
+              }
+            }}
           >
             {isActive && (
               <motion.span
                 layoutId="tab-pill"
-                className="absolute inset-0 rounded-full bg-linear-to-br from-[#4c1121] to-[#9b2545] shadow-[0_4px_20px_rgba(155,37,69,0.4)]"
+                className="absolute inset-0 rounded-full"
+                style={{
+                  background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
+                  boxShadow: activeShadow,
+                }}
                 transition={{ type: "spring", stiffness: 380, damping: 32 }}
               />
             )}

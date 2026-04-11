@@ -3,14 +3,21 @@
 import Image from "next/image";
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
+import { useEmeraldTheme } from "./EmeraldThemeContext";
+import { hexToRgba } from "./emeraldThemeUtils";
 
 export default function Footer() {
   const locale = useLocale() as "ar" | "en";
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const { primary, secondary } = useEmeraldTheme();
 
   const siteName = menuInfo?.name?.trim();
   const displayName = siteName || (locale === "ar" ? "زُمُرُّد" : "Emerald");
   const year = new Date().getFullYear();
+
+  const logoShadow = hexToRgba(primary, 0.3);
+  const ringSoft = hexToRgba(primary, 0.1);
+  const placeholderShadow = hexToRgba(primary, 0.4);
 
   return (
     <footer
@@ -20,7 +27,13 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           {menuInfo?.logo ? (
-            <div className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full shadow-[0_4px_14px_rgba(155,37,69,0.3)] ring-1 ring-[#4c1121]/10">
+            <div
+              className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full ring-1"
+              style={{
+                boxShadow: `0 4px 14px ${logoShadow}`,
+                borderColor: ringSoft,
+              }}
+            >
               <Image
                 src={menuInfo.logo}
                 alt=""
@@ -30,7 +43,13 @@ export default function Footer() {
               />
             </div>
           ) : (
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#4c1121] to-[#9b2545] shadow-[0_4px_20px_rgba(155,37,69,0.4)]">
+            <div
+              className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
+              style={{
+                background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
+                boxShadow: `0 4px 20px ${placeholderShadow}`,
+              }}
+            >
               <svg
                 width="11"
                 height="11"
@@ -52,7 +71,10 @@ export default function Footer() {
               </svg>
             </div>
           )}
-          <span className="font-serif italic text-[#4c1121] text-sm font-700">
+          <span
+            className="font-serif italic text-sm font-700"
+            style={{ color: primary }}
+          >
             {displayName}
           </span>
         </div>
@@ -72,7 +94,8 @@ export default function Footer() {
             href="https://www.facebook.com/ENSEGYPTEG"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-[#4c1121] hover:underline transition-colors"
+            className="font-medium hover:underline transition-colors"
+            style={{ color: primary }}
           >
             ENS
           </a>

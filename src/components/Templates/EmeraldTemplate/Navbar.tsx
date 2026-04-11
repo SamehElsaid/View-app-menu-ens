@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
+import { useEmeraldTheme } from "./EmeraldThemeContext";
+import { hexToRgba } from "./emeraldThemeUtils";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -13,6 +15,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const locale = useLocale();
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const { primary, secondary } = useEmeraldTheme();
 
   const siteName = menuInfo?.name?.trim();
   const displayName =
@@ -29,11 +32,20 @@ export default function Navbar() {
     router.push(pathname, { locale: newLocale });
   };
 
+  const borderSubtle = hexToRgba(primary, 0.08);
+  const ringSoft = hexToRgba(primary, 0.1);
+  const logoShadow = hexToRgba(primary, 0.35);
+  const placeholderShadow = hexToRgba(primary, 0.4);
+  const accentLight = hexToRgba(secondary, 0.45);
+  const hoverBg = hexToRgba(primary, 0.06);
+  const textMuted = hexToRgba(primary, 0.85);
+
   return (
     <header
-      className={`fixed top-0 inset-x-0 z-40 bg-white/82 backdrop-blur-xl border-b border-[#4c1121]/8 transition-all duration-300 ${
+      className={`fixed top-0 inset-x-0 z-40 bg-white/82 backdrop-blur-xl border-b transition-all duration-300 ${
         scrolled ? "py-3" : "py-5"
       }`}
+      style={{ borderBottomColor: borderSubtle }}
     >
       <div className="max-w-6xl mx-auto px-6 flex items-center justify-between">
         <Link
@@ -42,7 +54,13 @@ export default function Navbar() {
           aria-label={displayName}
         >
           {menuInfo?.logo ? (
-            <div className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full shadow-[0_4px_20px_rgba(155,37,69,0.35)] ring-1 ring-[#4c1121]/10">
+            <div
+              className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full ring-1"
+              style={{
+                boxShadow: `0 4px 20px ${logoShadow}`,
+                borderColor: ringSoft,
+              }}
+            >
               <Image
                 src={menuInfo.logo}
                 alt=""
@@ -52,7 +70,13 @@ export default function Navbar() {
               />
             </div>
           ) : (
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-[#4c1121] to-[#9b2545] shadow-[0_4px_20px_rgba(155,37,69,0.4)]">
+            <div
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+              style={{
+                background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
+                boxShadow: `0 4px 20px ${placeholderShadow}`,
+              }}
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
                 <path
                   d="M12 3C12 3 7 8 7 13a5 5 0 0010 0c0-5-5-10-5-10z"
@@ -68,16 +92,29 @@ export default function Navbar() {
               </svg>
             </div>
           )}
-          <span className="font-serif italic text-[#4c1121] text-xl font-700 tracking-tight">
+          <span
+            className="font-serif italic text-xl font-700 tracking-tight"
+            style={{ color: primary }}
+          >
             {displayName}
           </span>
         </Link>
 
         <button
           onClick={toggleLanguage}
-          className="flex items-center gap-2 px-4 py-2 rounded-full border border-[#f5b0c4]
-                   text-[#62162a] font-sans text-sm font-600 hover:bg-[#fef1f5]
-                   transition-colors duration-200"
+          className="flex items-center gap-2 px-4 py-2 rounded-full font-sans text-sm font-600 transition-colors duration-200"
+          style={{
+            borderWidth: 1,
+            borderStyle: "solid",
+            borderColor: accentLight,
+            color: textMuted,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = hoverBg;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
           aria-label="Switch language"
         >
           <svg

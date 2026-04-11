@@ -4,6 +4,9 @@ import { useEffect } from "react";
 import Image from "next/image";
 import { useLocale } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEmeraldTheme } from "./EmeraldThemeContext";
+import { hexToRgba } from "./emeraldThemeUtils";
+
 interface MenuItem {
   id: number;
   name: string;
@@ -36,6 +39,7 @@ export default function DishModal({
   currency: string;
 }) {
   const locale = useLocale() as "ar" | "en";
+  const { primary, secondary } = useEmeraldTheme();
 
   useEffect(() => {
     if (dish) {
@@ -56,6 +60,11 @@ export default function DishModal({
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  const backdrop = hexToRgba(primary, 0.45);
+  const modalShadow = `0 24px 80px ${hexToRgba(primary, 0.2)}, 0 8px 24px rgba(0,0,0,0.12)`;
+  const imageBg = hexToRgba(primary, 0.06);
+  const divider = hexToRgba(secondary, 0.55);
+
   return (
     <AnimatePresence>
       {dish && (
@@ -66,7 +75,8 @@ export default function DishModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 z-50 bg-[rgba(45,10,18,0.6)] backdrop-blur-sm"
+            className="fixed inset-0 z-50 backdrop-blur-sm"
+            style={{ backgroundColor: backdrop }}
             onClick={onClose}
             aria-hidden="true"
           />
@@ -81,9 +91,13 @@ export default function DishModal({
             exit={{ opacity: 0, scale: 0.92, y: 16 }}
             transition={{ type: "spring", stiffness: 340, damping: 28 }}
             className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                     w-[calc(100%-1.5rem)] max-w-[480px] max-h-[90vh] bg-white rounded-3xl overflow-hidden shadow-[0_24px_80px_rgba(76,17,33,0.2),0_8px_24px_rgba(0,0,0,0.12)] flex flex-col"
+                     w-[calc(100%-1.5rem)] max-w-[480px] max-h-[90vh] bg-white rounded-3xl overflow-hidden flex flex-col"
+            style={{ boxShadow: modalShadow }}
           >
-            <div className="relative h-52 md:h-56 shrink-0 bg-[#fef1f5]">
+            <div
+              className="relative h-52 md:h-56 shrink-0"
+              style={{ backgroundColor: imageBg }}
+            >
               <Image
                 src={dish.image}
                 alt={locale === "ar" ? dish.nameAr : dish.nameEn}
@@ -113,14 +127,18 @@ export default function DishModal({
               {dish.discountPercent && (
                 <span
                   className="absolute top-4 start-4 text-[11px] font-sans font-700 px-3 py-1 rounded-full
-                           bg-[#4c1121] text-white tracking-wider uppercase shadow-sm"
+                           text-white tracking-wider uppercase shadow-sm"
+                  style={{ backgroundColor: primary }}
                 >
                   {dish.discountPercent}% off
                 </span>
               )}
 
               <div className="absolute bottom-4 end-4 bg-white/95 backdrop-blur rounded-full px-4 py-1.5 shadow">
-                <span className="font-serif font-700 text-[#4c1121] text-xl">
+                <span
+                  className="font-serif font-700 text-xl"
+                  style={{ color: primary }}
+                >
                   {currency} {dish.price}
                 </span>
               </div>
@@ -145,7 +163,10 @@ export default function DishModal({
                 {locale === "ar" ? dish.descriptionAr : dish.descriptionEn}
               </motion.p>
 
-              <div className="w-10 h-0.5 bg-[#f5b0c4] rounded-full mb-4" />
+              <div
+                className="w-10 h-0.5 rounded-full mb-4"
+                style={{ backgroundColor: divider }}
+              />
 
               {dish.allergens && dish.allergens?.length > 0 && (
                 <motion.div
