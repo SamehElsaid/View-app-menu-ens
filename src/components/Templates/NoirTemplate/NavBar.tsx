@@ -3,16 +3,14 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useLocale } from "next-intl";
-import { useRouter, usePathname } from "@/i18n/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { useNoirTheme } from "./NoirThemeContext";
 import { shadowGlow } from "./noirColorUtils";
+import { LanguageToggle } from "../Default/LanguageToggle";
 
 export default function NavBar() {
   const [scrolled, setScrolled] = useState(false);
   const locale = useLocale();
-  const router = useRouter();
-  const pathname = usePathname();
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
   const { primary } = useNoirTheme();
 
@@ -24,11 +22,6 @@ export default function NavBar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  const toggleLanguage = () => {
-    const newLocale = locale === "ar" ? "en" : "ar";
-    router.push(pathname, { locale: newLocale });
-  };
 
   return (
     <header
@@ -84,20 +77,7 @@ export default function NavBar() {
       </ul>
 
       <div className="flex shrink-0 items-center">
-        <button
-          type="button"
-          className="font-body cursor-pointer rounded-xs border border-violet/30 bg-transparent px-3 py-1.5 text-xs tracking-widest text-lavender transition-all duration-300 sm:px-4 sm:text-sm"
-          style={{ boxShadow: "none" }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.boxShadow = shadowGlow(primary, 20, 0.3);
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.boxShadow = "none";
-          }}
-          onClick={toggleLanguage}
-        >
-          {locale === "ar" ? "EN" : "AR"}
-        </button>
+        <LanguageToggle />
       </div>
     </header>
   );
