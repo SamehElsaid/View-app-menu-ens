@@ -120,6 +120,27 @@
   --color-info-800: #0088a2;
   --color-info-900: #006574;
   --shadow-3xl: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+
+  /* Noir Template Colors */
+  --color-charcoal: #111118;
+  --color-violet: #7c3aed;
+  --color-indigo: #312e81;
+  --color-cyan: #06b6d4;
+  --color-lavender: #c4b5fd;
+  --color-lavender-dim: #a78bfa;
+  --color-text-primary: #f0eeff;
+  --color-text-secondary: #9ca3af;
+  --color-text-muted: #6b7280;
+  --color-glass: rgba(17, 17, 24, 0.7);
+  --color-glass-border: rgba(124, 58, 237, 0.12);
+
+  /* Noir Template Fonts */
+  --font-display: "Cormorant Garamond", serif;
+  --font-logo: "Cinzel", serif;
+
+  /* Noir Template Animations */
+  --animate-fade-up: fade-up 1s ease-out forwards;
+  --animate-float-blob: float-blob 20s ease-in-out infinite;
 }
 
 :root {
@@ -2892,4 +2913,15 @@ html {
   100% {
     transform: translateX(-100%);
   }
+}
+/* Noir Template Keyframes */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float-blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -30px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
 }
