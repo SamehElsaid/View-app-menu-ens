@@ -3,23 +3,21 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, usePathname } from "@/i18n/navigation";
+
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import { useEmeraldTheme } from "./EmeraldThemeContext";
 import { hexToRgba } from "./emeraldThemeUtils";
+import { LanguageToggle } from "../Default/LanguageToggle";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const router = useRouter();
-  const pathname = usePathname();
   const locale = useLocale();
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
   const { primary, secondary } = useEmeraldTheme();
 
   const siteName = menuInfo?.name?.trim();
-  const displayName =
-    siteName || (locale === "ar" ? "زُمُرُّد" : "Emerald");
+  const displayName = siteName || (locale === "ar" ? "زُمُرُّد" : "Emerald");
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -27,18 +25,10 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  const toggleLanguage = () => {
-    const newLocale = locale === "ar" ? "en" : "ar";
-    router.push(pathname, { locale: newLocale });
-  };
-
   const borderSubtle = hexToRgba(primary, 0.08);
   const ringSoft = hexToRgba(primary, 0.1);
   const logoShadow = hexToRgba(primary, 0.35);
   const placeholderShadow = hexToRgba(primary, 0.4);
-  const accentLight = hexToRgba(secondary, 0.45);
-  const hoverBg = hexToRgba(primary, 0.06);
-  const textMuted = hexToRgba(primary, 0.85);
 
   return (
     <header
@@ -77,7 +67,13 @@ export default function Navbar() {
                 boxShadow: `0 4px 20px ${placeholderShadow}`,
               }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden
+              >
                 <path
                   d="M12 3C12 3 7 8 7 13a5 5 0 0010 0c0-5-5-10-5-10z"
                   fill="white"
@@ -100,39 +96,7 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <button
-          onClick={toggleLanguage}
-          className="flex items-center gap-2 px-4 py-2 rounded-full font-sans text-sm font-600 transition-colors duration-200"
-          style={{
-            borderWidth: 1,
-            borderStyle: "solid",
-            borderColor: accentLight,
-            color: textMuted,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = hoverBg;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-          aria-label="Switch language"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M2 12h20" />
-            <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-          </svg>
-          {locale === "ar" ? "EN" : "AR"}
-        </button>
+        <LanguageToggle />
       </div>
     </header>
   );
