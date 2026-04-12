@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, type ReactNode } from "react";
 
 /** Noir template palette (violet / cyan) */
 export const NOIR_DEFAULT_PRIMARY = "#7c3aed";
