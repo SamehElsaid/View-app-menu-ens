@@ -5,6 +5,7 @@ import { useLocale } from "next-intl";
 import { motion } from "framer-motion";
 import { useEmeraldTheme } from "./EmeraldThemeContext";
 import { hexToRgba } from "./emeraldThemeUtils";
+import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 
 interface MenuItem {
   id: number;
@@ -50,6 +51,7 @@ export default function MenuCard({
   const cardHoverShadow = `0 16px 48px ${hexToRgba(primary, 0.14)}, 0 4px 12px rgba(0,0,0,0.06)`;
   const iconShadow = `0 4px 20px ${hexToRgba(primary, 0.4)}`;
   const imageBg = hexToRgba(primary, 0.06);
+  const imageSrc = resolveMenuItemImageSrc(dish.image);
 
   return (
     <motion.article
@@ -84,7 +86,7 @@ export default function MenuCard({
         style={{ backgroundColor: imageBg }}
       >
         <Image
-          src={dish.image}
+          src={imageSrc}
           alt={locale === "ar" ? dish.nameAr : dish.nameEn}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

@@ -1,27 +1,8 @@
 import { LazyLoadImage } from "react-lazy-load-image-component";
-import placeholder from "@/components/img/30690.png";
-
-const resolveImageUrl = (src: string): string => {
-  if (!src) return placeholder.src;
-
-  // Keep absolute and data URLs as-is
-  if (
-    src.startsWith("http://") ||
-    src.startsWith("https://") ||
-    src.startsWith("data:")
-  ) {
-    return src;
-  }
-
-  const baseApi = process.env.NEXT_PUBLIC_BASE_URL;
-  if (!baseApi) return src;
-
-  // Remove trailing `/api` to get the backend host
-  const baseHost = baseApi.replace(/\/api\/?$/, "");
-
-  const normalizedPath = src.startsWith("/") ? src : `/${src}`;
-  return `${baseHost}${normalizedPath}`;
-};
+import {
+  DEFAULT_MENU_ITEM_IMAGE_SRC,
+  resolveMenuItemImageSrc,
+} from "@/lib/menuItemImage";
 
 function LoadImage({
   src,
@@ -43,7 +24,7 @@ function LoadImage({
   [key: string]: unknown;
 }): React.ReactNode {
   // function to resize image using canvas and return Blob URL
-  const normalizedSrc = resolveImageUrl(src);
+  const normalizedSrc = resolveMenuItemImageSrc(src);
   const resizeUrl =
     height && width
       ? `/api/resize?url=${encodeURIComponent(
@@ -57,7 +38,7 @@ function LoadImage({
         src={resizeUrl}
         alt={alt}
         className={`${fill ? "absolute inset-0 w-full h-full" : ""} ${className}`.trim()}
-        placeholderSrc={placeholder.src}
+        placeholderSrc={DEFAULT_MENU_ITEM_IMAGE_SRC}
         effect="blur"
         visibleByDefault={disableLazy}
         width={fill ? "100%" : width}

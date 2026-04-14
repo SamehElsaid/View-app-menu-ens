@@ -8,6 +8,7 @@ import { MenuItem } from "@/types/menu";
 import { useNoirTheme } from "./NoirThemeContext";
 import { hexToRgba, shadowGlow } from "./noirColorUtils";
 import { NOIR_EASE } from "./noirConstants";
+import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 
 interface DetailModalProps {
   item: MenuItem;
@@ -65,7 +66,7 @@ export default function DetailModal({
       >
         <div className="relative h-[280px] overflow-hidden">
           <Image
-            src={item.image}
+            src={resolveMenuItemImageSrc(item.image)}
             alt={name}
             fill
             className="object-cover saturate-[0.72]"

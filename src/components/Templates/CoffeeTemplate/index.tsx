@@ -6,6 +6,7 @@ import PromoBanner from "./PromoBanner";
 import MenuCategory from "./MenuCategory";
 import { Category, MenuItem } from "@/types/menu";
 import Footer from "./Footer";
+import { ENSFixedBanner } from "../components/ENSFixedBanner";
 
 function CoffeeTemplate() {
   const menu = useAppSelector((state) => state.menu);
@@ -89,6 +90,7 @@ function CoffeeTemplate() {
         socialWhatsapp={menu?.menuInfo?.socialWhatsapp || undefined}
         workingHours={menu?.menuInfo?.workingHours || undefined}
       />
+      {menu?.menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
     </main>
   );
 }

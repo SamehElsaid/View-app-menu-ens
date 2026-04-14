@@ -3,6 +3,7 @@ import React from "react";
 import { Navbar } from "./NavBar";
 import { HeroSection } from "./HeroSection";
 import { Footer } from "./Footer";
+import { ENSFixedBanner } from "../components/ENSFixedBanner";
 
 function NeonTemplate() {
   const menu = useAppSelector((state) => state.menu);
@@ -43,6 +44,7 @@ function NeonTemplate() {
         phone={menu?.menuInfo?.phone || ""}
         workingHours={menu?.menuInfo?.workingHours || undefined}
       />
+      {menu?.menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
     </main>
   );
 }

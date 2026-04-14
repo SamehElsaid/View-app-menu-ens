@@ -7,6 +7,7 @@ import { MenuItem } from "@/types/menu";
 import { useNoirTheme } from "./NoirThemeContext";
 import { hexToRgba } from "./noirColorUtils";
 import { NOIR_EASE, NOIR_EASE_TW_CLASS } from "./noirConstants";
+import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 
 interface MenuCardProps {
   item: MenuItem;
@@ -50,7 +51,7 @@ export default function MenuCard({
           className={`absolute inset-0 origin-bottom transition-transform duration-450 will-change-transform group-hover:scale-[1.05] ${NOIR_EASE_TW_CLASS}`}
         >
           <Image
-            src={item.image}
+            src={resolveMenuItemImageSrc(item.image)}
             alt={name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"

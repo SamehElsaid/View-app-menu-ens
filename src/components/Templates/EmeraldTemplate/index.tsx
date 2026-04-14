@@ -8,6 +8,7 @@ import {
   EMERALD_DEFAULT_PRIMARY,
   EMERALD_DEFAULT_SECONDARY,
 } from "./EmeraldThemeContext";
+import { ENSFixedBanner } from "../components/ENSFixedBanner";
 
 function EmeraldTemplate() {
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
@@ -40,6 +41,7 @@ function EmeraldTemplate() {
         </section>
 
         <Footer />
+        {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
       </main>
     </EmeraldThemeProvider>
   );

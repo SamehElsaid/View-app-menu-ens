@@ -6,6 +6,7 @@ import { useLocale } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEmeraldTheme } from "./EmeraldThemeContext";
 import { hexToRgba } from "./emeraldThemeUtils";
+import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 
 interface MenuItem {
   id: number;
@@ -99,7 +100,7 @@ export default function DishModal({
               style={{ backgroundColor: imageBg }}
             >
               <Image
-                src={dish.image}
+                src={resolveMenuItemImageSrc(dish.image)}
                 alt={locale === "ar" ? dish.nameAr : dish.nameEn}
                 fill
                 className="object-cover"

@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-
-import { Icon } from "./Icon";
+import { FaTimes, FaWhatsapp } from "react-icons/fa";
 import { useLocale } from "next-intl";
+
+/** ENS sales / support WhatsApp (same as main product links). */
+const ENS_WHATSAPP_URL = "https://wa.me/971586551491";
 
 // ============================
 // Fixed Bottom Banner Component
@@ -28,43 +30,46 @@ export const ENSFixedBanner: React.FC = () => {
       <div className="container mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-            <Icon name="code-s-slash-line" className="text-sm" />
+            <FaWhatsapp className="text-sm" aria-hidden />
             <span className="text-xs font-bold">ENS</span>
           </div>
           <p className="text-xs sm:text-sm font-medium">
             {locale === "ar"
-              ? "🚀 هل تريد منيو إلكتروني مثل هذا؟ تواصل مع ENS الآن!"
-              : "🚀 Want a digital menu like this? Contact ENS now!"}
+              ? "🚀 هل تريد منيو إلكتروني مثل هذا؟ تواصل مع ENS عبر واتساب!"
+              : "🚀 Want a digital menu like this? Contact ENS on WhatsApp!"}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <a
-            href="https://www.facebook.com/ENSEGYPTEG"
+            href={ENS_WHATSAPP_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="
-              bg-white text-purple-600 
+              inline-flex items-center gap-1.5
+              bg-[#25D366] text-white
               text-xs sm:text-sm font-bold
               px-3 sm:px-4 py-1.5 rounded-full
               transition-all duration-300
-              hover:bg-purple-100
+              hover:bg-[#20bd5a]
               hover:scale-105
               whitespace-nowrap
             "
           >
-            {locale === "ar" ? "تواصل معنا" : "Contact Us"}
+            <FaWhatsapp className="size-4 shrink-0" aria-hidden />
+            {locale === "ar" ? "واتساب" : "WhatsApp"}
           </a>
           <button
+            type="button"
             onClick={() => setIsVisible(false)}
             className="
-              p-1 rounded-full
-              hover:bg-white/20
+              shrink-0 p-1.5 rounded-full
+              hover:bg-white/20 active:bg-white/30
               transition-colors
             "
-            aria-label="Close"
+            aria-label={locale === "ar" ? "إغلاق الشريط" : "Dismiss banner"}
           >
-            <Icon name="close-line" className="text-lg" />
+            <FaTimes className="size-4 sm:size-5" aria-hidden />
           </button>
         </div>
       </div>

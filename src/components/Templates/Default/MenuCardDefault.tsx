@@ -8,6 +8,7 @@ import { MenuItem } from "@/types/menu";
 import { arabCurrencies, Currency } from "@/constants/currencies";
 import { useLocale } from "next-intl";
 import { Icon } from "../components/Icon";
+import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 
 interface MenuCardProps {
   item: MenuItem;
@@ -95,7 +96,7 @@ export const MenuCardDefault = ({
           {/* Circular image */}
           <div className="w-full h-full overflow-hidden  relative z-20 bg-white">
             <img
-              src={item.image}
+              src={resolveMenuItemImageSrc(item.image)}
               alt={item.name}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
@@ -177,7 +178,7 @@ export const MenuCardDefault = ({
             {/* Image Section */}
             <div className="relative h-80 sm:h-96 overflow-hidden">
               <img
-                src={item.image}
+                src={resolveMenuItemImageSrc(item.image)}
                 alt={itemName}
                 className="w-full h-full object-cover"
               />

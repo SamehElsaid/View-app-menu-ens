@@ -1,4 +1,5 @@
 import LoadImage from "@/components/ImageLoad";
+import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { useLocale } from "next-intl";
 
 interface MenuItemProps {
@@ -49,17 +50,15 @@ const MenuItem = ({
         animationDelay: `${delay}ms`,
       }}
     >
-      {/* Image */}
-      {image && (
-        <div className="shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden">
-          <LoadImage
-            src={image}
-            alt={locale === "ar" ? displayNameAr : name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            disableLazy={false}
-          />
-        </div>
-      )}
+      {/* Image — default placeholder when missing */}
+      <div className="shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden">
+        <LoadImage
+          src={resolveMenuItemImageSrc(image)}
+          alt={locale === "ar" ? displayNameAr : name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          disableLazy={false}
+        />
+      </div>
 
       {/* Content */}
       <div className="flex-1 flex justify-between items-start gap-4">
