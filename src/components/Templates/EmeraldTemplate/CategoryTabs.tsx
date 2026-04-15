@@ -74,7 +74,11 @@ export default function CategoryTabs({ categories, active, onChange }: Props) {
                 transition={{ type: "spring", stiffness: 380, damping: 32 }}
               />
             )}
-            <span className="relative z-10 text-base leading-none">
+            <span
+              className={`relative z-10 text-base leading-none ${
+                isActive ? "text-white" : "text-stone-900"
+              }`}
+            >
               {locale === "ar" ? cat.nameAr : cat.nameEn}
             </span>
           </button>

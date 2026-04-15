@@ -77,7 +77,7 @@ export default function MenuSection({items, categories, currency }: {items: Menu
           {activeCategory !== 0 && (
           <>
             {" "}
-            in{" "}
+            {locale === "ar" ? "في" : "in"} {" "}
             <span style={{ color: primary }}>
             {locale === "ar" 
                   ? categories.find((c) => c.id === activeCategory)?.nameAr 

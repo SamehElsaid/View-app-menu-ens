@@ -91,12 +91,11 @@ export default function DishModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 16 }}
             transition={{ type: "spring", stiffness: 340, damping: 28 }}
-            className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                     w-[calc(100%-1.5rem)] max-w-[480px] max-h-[90vh] bg-white rounded-3xl overflow-hidden flex flex-col"
+            className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-1rem)] max-w-[600px] max-h-[90vh] md:max-h-none bg-white rounded-3xl overflow-hidden flex flex-col"
             style={{ boxShadow: modalShadow }}
           >
             <div
-              className="relative h-52 md:h-56 shrink-0"
+              className="relative aspect-[4/3] shrink-0"
               style={{ backgroundColor: imageBg }}
             >
               <Image
@@ -111,8 +110,7 @@ export default function DishModal({
 
               <button
                 onClick={onClose}
-                className="absolute top-4 end-4 w-9 h-9 bg-white/90 backdrop-blur rounded-full flex items-center justify-center
-                         text-stone-700 hover:bg-white transition-colors shadow-sm"
+                className="absolute top-3 end-3 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center text-stone-700 hover:bg-white hover:scale-105 transition-all shadow-md"
                 aria-label="Close"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -127,30 +125,40 @@ export default function DishModal({
 
               {dish.discountPercent && (
                 <span
-                  className="absolute top-4 start-4 text-[11px] font-sans font-700 px-3 py-1 rounded-full
-                           text-white tracking-wider uppercase shadow-sm"
+                  className="absolute top-3 start-3 text-[11px] font-sans font-700 px-3.5 py-1.5 rounded-full text-white tracking-wider uppercase shadow-md"
                   style={{ backgroundColor: primary }}
                 >
                   {dish.discountPercent}% off
                 </span>
               )}
 
-              <div className="absolute bottom-4 end-4 bg-white/95 backdrop-blur rounded-full px-4 py-1.5 shadow">
+              <div className="absolute bottom-4 end-4 bg-white/95 backdrop-blur-md rounded-2xl px-5 py-3 shadow-lg flex items-center gap-3">
+                {dish.originalPrice && (
+                  <span className="font-sans font-600 text-lg text-stone-400 line-through tabular-nums">
+                    {dish.originalPrice} {currency}
+                  </span>
+                )}
                 <span
-                  className="font-serif font-700 text-xl"
+                  className="font-sans font-800 text-3xl tracking-tight tabular-nums"
                   style={{ color: primary }}
                 >
-                  {currency} {dish.price}
+                  {dish.price}
+                </span>
+                <span
+                  className="font-sans font-600 text-sm opacity-70"
+                  style={{ color: primary }}
+                >
+                  {currency}
                 </span>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 py-4 md:p-6">
+            <div className="flex-1 overflow-y-auto md:overflow-y-visible px-6 py-5 md:px-7 md:py-6">
               <motion.h2
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.4 }}
-                className="font-serif italic text-stone-900 text-lg md:text-2xl font-700 leading-tight mb-2 text-balance"
+                className="font-serif italic text-stone-900 text-xl md:text-2xl font-700 leading-tight mb-3 text-balance"
               >
                 {locale === "ar" ? dish.nameAr : dish.nameEn}
               </motion.h2>
@@ -159,7 +167,7 @@ export default function DishModal({
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15, duration: 0.4 }}
-                className="font-sans text-stone-500 text-sm leading-[1.6] mb-4"
+                className="font-sans text-stone-500 text-sm leading-[1.7] mb-5"
               >
                 {locale === "ar" ? dish.descriptionAr : dish.descriptionEn}
               </motion.p>
@@ -190,11 +198,10 @@ export default function DishModal({
               )}
             </div>
 
-            <div className="px-5 py-3 md:p-5 border-t border-stone-50">
+            <div className="px-6 py-4 md:px-7 md:py-5 border-t border-stone-100">
               <button
                 onClick={onClose}
-                className="w-full py-3 rounded-xl border border-stone-200 font-sans font-600 text-stone-600
-                         hover:bg-stone-50 transition-colors text-sm"
+                className="w-full py-3.5 rounded-2xl border border-stone-200 font-sans font-600 text-stone-600 hover:bg-stone-50 hover:border-stone-300 transition-all text-sm"
               >
                 {locale === "ar" ? "العودة إلى القائمة" : "Back to Menu"}
               </button>

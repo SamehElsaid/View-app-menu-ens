@@ -111,14 +111,26 @@ export default function PromoBannerE() {
                     )}
 
                     {ad.linkUrl && (
-                      <div className="flex items-center gap-4 group/btn mt-auto">
-                        <div
-                          className="h-9 min-h-9 px-5 rounded-full flex items-center justify-center text-xs font-bold shadow-md ring-1 ring-white/30 transition-all group-hover/btn:ring-white/60 group-hover/btn:brightness-110 cursor-pointer sm:h-10 sm:px-6 sm:text-sm"
-                          style={{ backgroundColor: btnBg, color: btnText }}
-                        >
-                          {locale === "ar" ? "اكتشف الآن" : "Explore Now"}
-                        </div>
-                      </div>
+                     <div className="flex items-center gap-4 group/btn mt-auto">
+                     <button
+                       className="relative overflow-hidden h-10 px-6 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ease-out shadow-[0_4px_20px_rgba(0,0,0,0.25)] ring-1 ring-white/20 backdrop-blur-md group-hover/btn:ring-white/50 group-hover/btn:shadow-[0_6px_30px_rgba(0,0,0,0.35)] group-hover/btn:-translate-y-[2px] active:scale-95"
+                       style={{ backgroundColor: btnBg, color: btnText }}
+                     >
+                       {/* Glow effect */}
+                       <span className=" absolute inset-0 opacity-0 group-hover/btn:opacity-100 transition duration-500 bg-gradient-to-r from-white/20 via-white/10 to-transparent" />
+                   
+                       {/* Text */}
+                       <span className="relative z-10 flex items-center gap-2 text-white">
+                         {locale === "ar" ? "اكتشف الآن" : "Explore Now"}
+                   
+                         {/* Arrow */}
+                         <span className="
+                           transition-transform duration-300 group-hover/btn:translate-x-1">
+                           →
+                         </span>
+                       </span>
+                     </button>
+                   </div>
                     )}
                   </motion.div>
                 </div>
