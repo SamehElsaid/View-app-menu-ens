@@ -22,6 +22,7 @@ interface MenuCategoryProps {
   description: string;
   descriptionAr: string;
   items?: MenuItemType[];
+  currency?: string;
 }
 
 const MenuCategory = ({
@@ -30,6 +31,7 @@ const MenuCategory = ({
   description,
   descriptionAr,
   items = [],
+  currency = "AED",
 }: MenuCategoryProps) => {
   const locale = useLocale();
 
@@ -50,6 +52,7 @@ const MenuCategory = ({
           <MenuItem
             key={item.id || item.name || index}
             {...item}
+            currency={currency}
             delay={index * 100}
           />
         ))}

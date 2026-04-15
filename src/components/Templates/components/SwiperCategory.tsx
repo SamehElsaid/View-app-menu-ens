@@ -18,12 +18,15 @@ function SwiperCategory({
   setActiveCategory,
   children,
   isGray = false,
+  sticky = true,
 }: {
   categories: Category[];
   activeCategory: number;
   setActiveCategory: (id: number) => void;
   children: React.ReactNode;
   isGray?: boolean;
+  /** When false, the bar scrolls with the page (no position: sticky). */
+  sticky?: boolean;
 }) {
   const locale = useLocale();
   const direction = locale === "ar" ? "rtl" : "ltr";
@@ -138,10 +141,12 @@ function SwiperCategory({
     };
   }, [categories, activeCategory, setActiveCategory]);
 
+  const stickyClasses = sticky
+    ? `sticky z-50 ${isGray ? "bg-white/20 backdrop-blur-sm lg:top-[100px] top-[60px]" : "bg-white lg:top-20 top-[60px]"}`
+    : `relative z-10 rounded-2xl ${isGray ? "bg-white/20 backdrop-blur-sm" : "bg-white"}`;
+
   return (
-    <div
-      className={`mb-20 sticky  z-50 text-black ${isGray ? "bg-white/20 backdrop-blur-sm lg:top-[100px] top-[60px] " : "bg-white lg:top-20 top-[60px] "} `}
-    >
+    <div className={`mb-20 text-black ${stickyClasses}`}>
       <div className="overflow-hidden py-5 px-5  " ref={emblaRef}>
         <div className="flex gap-4" style={{ direction: direction }}>
           {children}

@@ -8,20 +8,19 @@ import MenuSection from "./MenuSection";
 import Footer from "../components/Footer";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
 import { useAppSelector } from "@/store/hooks";
+import { CategoryNavProvider } from "./CategoryNavContext";
 
 function Default() {
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
 
   return (
-    <>
+    <CategoryNavProvider>
       <style jsx global>
         {globalStyles}
       </style>
       <NavBar
         logo={menuInfo?.logo || null}
         menuName={menuInfo?.name || null}
-        whatsappUrl={menuInfo?.socialWhatsapp || null}
-        whatsapp={menuInfo?.socialWhatsapp || null}
       />
       <HeroSection />
       <AdVBanner />
@@ -31,7 +30,7 @@ function Default() {
         menuInfo={menuInfo || null}
       />
       {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
-    </>
+    </CategoryNavProvider>
   );
 }
 

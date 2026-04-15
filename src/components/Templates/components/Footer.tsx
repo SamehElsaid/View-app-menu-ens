@@ -68,7 +68,10 @@ export default function Footer({
   }, [menuInfo]);
 
   return (
-    <footer className="py-16 bg-white border-t border-purple-50 text-center mt-20">
+    <footer
+      id="footer"
+      className="scroll-mt-28 py-16 bg-white border-t border-purple-50 text-center mt-20"
+    >
       <div className="flex items-center justify-center gap-2 text-purple-600 mb-8">
         <div className="text-2xl font-black tracking-tighter flex items-center gap-2 justify-center">
           {menuInfo?.footerLogo ? (

@@ -1,7 +1,10 @@
 {
   "nav": {
     "home": "الرئيسية",
-    "contact": "تواصل"
+    "menu": "القائمة",
+    "contact": "تواصل",
+    "categories": "التصنيفات",
+    "closeCategories": "إغلاق"
   },
   "menu": {
     "title": "قائمة الطعام",

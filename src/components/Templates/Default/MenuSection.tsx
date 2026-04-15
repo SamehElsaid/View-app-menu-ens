@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MenuItem } from "@/types/menu";
 import { useLocale, useTranslations } from "next-intl";
 
@@ -8,39 +8,18 @@ import { MenuCardDefault } from "./MenuCardDefault";
 import SwiperCategory from "../components/SwiperCategory";
 import { useAppSelector } from "@/store/hooks";
 import { Icon } from "../components/Icon";
+import { useCategoryNav } from "./CategoryNavContext";
+import { getCategoryIconName, type MenuCategoryLike } from "./categoryIconMap";
 
-interface Category {
-  id: number;
-  name: string;
-  nameAr?: string;
-  icon?: string;
-  image?: string | null;
-}
-
-const categoryIcons: Record<string, string> = {
-  all: "grid-line",
-  appetizers: "bowl-line",
-  مقبلات: "bowl-line",
-  mains: "restaurant-line",
-  "أطباق رئيسية": "restaurant-line",
-  drinks: "cup-line",
-  مشروبات: "cup-line",
-  desserts: "cake-3-line",
-  حلويات: "cake-3-line",
-};
-
-const GetCategoryIcon = (category: Category) => {
-  if (category?.icon === "grid-line") {
-    return categoryIcons.all;
-  }
-  return categoryIcons[category.name.toLowerCase()] || "restaurant-line";
-};
+const NAV_OFFSET_PX = 80;
 
 export default function MenuSection({ currency }: { currency: string }) {
   const locale = useLocale();
   const t = useTranslations("menu");
-  const [activeCategory, setActiveCategory] = useState<number>(0);
   const [isModalOpen, setIsModalOpen] = useState(0);
+  const menuTitleRef = useRef<HTMLDivElement>(null);
+  const { activeCategory, setActiveCategory, setShowCategoryBurger } =
+    useCategoryNav();
 
   const storeMenuItems = useAppSelector((state) => state.menu.menu);
   const storeCategories = useAppSelector((state) => state.menu.categories);
@@ -51,6 +30,25 @@ export default function MenuSection({ currency }: { currency: string }) {
     () => [...(storeCategories ?? [])],
     [storeCategories],
   );
+
+  useEffect(() => {
+    const el = menuTitleRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const rect = el.getBoundingClientRect();
+      const passed = rect.bottom < NAV_OFFSET_PX;
+      setShowCategoryBurger(passed);
+    };
+
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [setShowCategoryBurger]);
 
   // Group items by category
   const allCategoriesArray = useMemo(() => {
@@ -66,9 +64,10 @@ export default function MenuSection({ currency }: { currency: string }) {
 
   return (
     <div
-      className={`max-w-7xl mx-auto relative ${isModalOpen ? "z-11111111111" : "z-10"} mt-36`}
+      id="menu"
+      className={`max-w-7xl mx-auto scroll-mt-32 relative ${isModalOpen ? "z-11111111111" : "z-10"} mt-36`}
     >
-      <div className="text-center mb-20">
+      <div ref={menuTitleRef} className="text-center mb-20">
         <h2 className="text-4xl md:text-6xl font-black mb-6">
           <span className="text-(--bg-main) bg-(--bg-main)/10 px-4 py-1 rounded-2xl">
             {t("title")}
@@ -80,33 +79,34 @@ export default function MenuSection({ currency }: { currency: string }) {
       {/* Categories Navigation */}
       <SwiperCategory
         isGray={true}
-        categories={categories as Category[]}
+        sticky={false}
+        categories={categories as MenuCategoryLike[]}
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}
       >
-        <div className="flex flex-wrap justify-center gap-4 py-2">
-          {categories.map((category) => (
+        {categories.map((category) => (
+          <div key={category.id.toString()} className="flex-none shrink-0">
             <button
-              key={category.id.toString()}
+              type="button"
               onClick={() => setActiveCategory(category.id as number)}
-              className={`px-10 py-4 rounded-2xl text-sm font-black transition-all duration-300 shadow-sm ${
+              className={`inline-flex min-w-0 max-w-[min(90vw,18rem)] items-center justify-center gap-1.5 rounded-2xl px-4 py-2.5 text-xs font-black shadow-sm transition-all duration-300 sm:max-w-none sm:px-10 sm:py-4 sm:text-sm ${
                 category.id === activeCategory
                   ? "bg-(--bg-main) text-white shadow-(--bg-main)"
-                  : "bg-white text-zinc-500 border border-zinc-100 hover:border-(--bg-main) hover:text-(--bg-main)"
+                  : "border border-zinc-100 bg-white text-zinc-500 hover:border-(--bg-main) hover:text-(--bg-main)"
               } `}
             >
               <Icon
-                name={GetCategoryIcon(category as Category)}
-                className="text-sm sm:text-base"
+                name={getCategoryIconName(category as MenuCategoryLike)}
+                className="shrink-0 text-sm sm:text-base"
               />
-              <span className="ms-1">
+              <span className="min-w-0 truncate text-start">
                 {locale === "ar"
                   ? category.nameAr || category.name
                   : category.name}
               </span>
             </button>
-          ))}
-        </div>
+          </div>
+        ))}
       </SwiperCategory>
 
       {/* Menu Grid */}

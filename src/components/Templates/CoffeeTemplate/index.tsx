@@ -36,6 +36,11 @@ function CoffeeTemplate() {
       <Navbar
         menuName={menu?.menuInfo?.name || undefined}
         menuLogo={menu?.menuInfo?.logo || undefined}
+        categories={categoriesWithItems.map((c) => ({
+          id: c.id,
+          title: c.name,
+          titleAr: c.nameAr || c.name,
+        }))}
       />
 
       <HeroSection
@@ -62,6 +67,7 @@ function CoffeeTemplate() {
                   description={category.description || ""}
                   descriptionAr={category.descriptionAr || ""}
                   items={category.menuItems || []}
+                  currency={menu?.menuInfo?.currency || "AED"}
                 />
               </div>
             );

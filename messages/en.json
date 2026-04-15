@@ -1,7 +1,10 @@
 {
   "nav": {
     "home": "Home",
-    "contact": "Contact"
+    "menu": "Menu",
+    "contact": "Contact",
+    "categories": "Categories",
+    "closeCategories": "Close"
   },
   "menu": {
     "title": "Our Menu",
