@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { FaTimes, FaWhatsapp } from "react-icons/fa";
+import { FaGlobe, FaTimes } from "react-icons/fa";
 import { useLocale } from "next-intl";
 
-/** ENS sales / support WhatsApp (same as main product links). */
-const ENS_WHATSAPP_URL = "https://wa.me/971586551491";
+const ENS_WEBSITE_URL = "https://ensmenu.com";
 
 // ============================
 // Fixed Bottom Banner Component
@@ -30,34 +29,34 @@ export const ENSFixedBanner: React.FC = () => {
       <div className="container mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-            <FaWhatsapp className="text-sm" aria-hidden />
+            <FaGlobe className="text-sm" aria-hidden />
             <span className="text-xs font-bold">ENS</span>
           </div>
           <p className="text-xs sm:text-sm font-medium">
             {locale === "ar"
-              ? "🚀 هل تريد منيو إلكتروني مثل هذا؟ تواصل مع ENS عبر واتساب!"
-              : "🚀 Want a digital menu like this? Contact ENS on WhatsApp!"}
+              ? "🚀 هل تريد منيو إلكتروني مثل هذا مجانا ؟ اضغط هنا !"
+              : "🚀 Want a free digital menu like this? Click here!"}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <a
-            href={ENS_WHATSAPP_URL}
+            href={ENS_WEBSITE_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="
               inline-flex items-center gap-1.5
-              bg-[#25D366] text-white
+              bg-white text-purple-700
               text-xs sm:text-sm font-bold
               px-3 sm:px-4 py-1.5 rounded-full
               transition-all duration-300
-              hover:bg-[#20bd5a]
+              hover:bg-white/90
               hover:scale-105
               whitespace-nowrap
             "
           >
-            <FaWhatsapp className="size-4 shrink-0" aria-hidden />
-            {locale === "ar" ? "واتساب" : "WhatsApp"}
+            <FaGlobe className="size-4 shrink-0" aria-hidden />
+            ensmenu.com
           </a>
           <button
             type="button"

@@ -11,6 +11,7 @@ import {
   NOIR_DEFAULT_PRIMARY,
   NOIR_DEFAULT_SECONDARY,
 } from "./NoirThemeContext";
+import { ENSFixedBanner } from "../components/ENSFixedBanner";
 
 function NoirTemplate() {
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
@@ -56,6 +57,9 @@ function NoirTemplate() {
           />
         </section>
         <Footer />
+        {menuInfo &&
+          (!menuInfo.ownerPlanType ||
+            menuInfo.ownerPlanType === "free") && <ENSFixedBanner />}
       </main>
     </NoirThemeProvider>
   );
