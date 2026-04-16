@@ -20,7 +20,6 @@ interface NavbarProps {
 }
 
 const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
-  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false);
   const [fabCategoriesOpen, setFabCategoriesOpen] = useState(false);
   const locale = useLocale();
   const router = useRouter();
@@ -67,7 +66,6 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
     const categoryElement = document.getElementById(elementId);
     if (categoryElement) {
       categoryElement.scrollIntoView({ behavior: "smooth", block: "start" });
-      setIsCategoriesOpen(false);
       setFabCategoriesOpen(false);
     }
   };
@@ -79,10 +77,7 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
 
   const categoriesLabel = locale === "ar" ? "التصنيفات" : "Categories";
   const isAr = locale === "ar";
-  /** Arabic: FAB + panel on the right. English: on the left. */
-  const fabSideClass = isAr
-    ? "right-6 md:right-8"
-    : "left-6 md:left-8";
+  const fabSideClass = isAr ? "right-6 md:right-8" : "left-6 md:left-8";
   const panelSideClass = isAr
     ? "right-0 border-l border-[#3B332E]"
     : "left-0 border-r border-[#3B332E]";
@@ -92,7 +87,6 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-[#17120F]/95 backdrop-blur-md border-b border-[#3B332E]">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group">
               {menuLogo && (
                 <div className="relative w-10 h-10 rounded-lg overflow-hidden">
@@ -110,7 +104,6 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
               </span>
             </Link>
 
-            {/* Navigation */}
             <div className="flex flex-wrap items-center justify-end gap-4 md:gap-8 max-w-[min(100%,calc(100vw-12rem))]">
               {navLinks.map((link) => {
                 if (link.en === "Menu") {
@@ -136,57 +129,6 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
                 );
               })}
 
-              {/* Categories Dropdown */}
-              {categories.length > 0 && (
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                    onBlur={() =>
-                      setTimeout(() => setIsCategoriesOpen(false), 200)
-                    }
-                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#3B332E] hover:bg-[#F2B705]/20 text-[#B6AA99] hover:text-[#F2B705] transition-all duration-300 text-sm font-medium tracking-wide uppercase"
-                  >
-                    <span>{categoriesLabel}</span>
-                    <svg
-                      className={`w-4 h-4 transition-transform duration-300 ${
-                        isCategoriesOpen ? "rotate-180" : ""
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </button>
-
-                  {isCategoriesOpen && (
-                    <div className="absolute top-full right-0 mt-2 w-48 bg-[#3B332E] rounded-lg shadow-xl border border-[#17120F] overflow-hidden z-50">
-                      <div className="py-2">
-                        {categories.map((category) => (
-                          <button
-                            key={category.id || category.title}
-                            type="button"
-                            onClick={() =>
-                              scrollToCategory(category.id, category.title)
-                            }
-                            className="w-full px-4 py-2  text-[#B6AA99] hover:bg-[#F2B705]/20 hover:text-[#F2B705] transition-colors duration-200 text-sm"
-                          >
-                            {locale === "ar" ? category.titleAr : category.title}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Language Toggle Button */}
               <button
                 type="button"
                 onClick={toggleLanguage}
@@ -215,7 +157,6 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
         </div>
       </nav>
 
-      {/* Fixed FAB: open categories */}
       {categories.length > 0 && !fabCategoriesOpen && (
         <button
           type="button"
@@ -228,10 +169,9 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
         </button>
       )}
 
-      {/* Categories slide-over */}
       {fabCategoriesOpen && categories.length > 0 && (
         <div
-          className="fixed inset-0 z-[100]"
+          className="fixed inset-0 z-100"
           role="dialog"
           aria-modal="true"
           aria-labelledby="coffee-categories-panel-title"
