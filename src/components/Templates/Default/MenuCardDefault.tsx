@@ -17,6 +17,10 @@ interface MenuCardProps {
   onClick: () => void;
   isModalOpen: number;
   setIsModalOpen: (isModalOpen: number) => void;
+  /** Table URL (`?table=`) — show add-to-cart in modal (shared cookie with RequestStaffButton). */
+  isTableOrder?: boolean;
+  cartQuantity?: number;
+  onAddToCart?: (quantityToAdd: number) => void;
 }
 
 export const MenuCardDefault = ({
@@ -25,10 +29,16 @@ export const MenuCardDefault = ({
   setIsModalOpen,
   currency = "AED",
   onClick,
+  isTableOrder = false,
+  cartQuantity = 0,
+  onAddToCart,
 }: MenuCardProps) => {
   const locale = useLocale();
   const direction = locale === "ar" ? "rtl" : "ltr";
   const [isClosing, setIsClosing] = useState(false);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  /** Quantity picker on the grid card (table orders). */
+  const [cardPickQty, setCardPickQty] = useState(1);
 
   // Get translated name and description based on locale
   const itemName =
@@ -134,11 +144,68 @@ export const MenuCardDefault = ({
               </span>
             </span>
 
-            {/* Moving/Animated Action Button */}
-            <button className="bg-(--bg-main) hover:bg-(--bg-main)/80 transition-all duration-300 text-white w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shadow-lg">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCardClick();
+              }}
+              className="bg-(--bg-main) hover:bg-(--bg-main)/80 transition-all duration-300 text-white w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shadow-lg shrink-0"
+              aria-label={locale === "ar" ? "التفاصيل" : "Details"}
+            >
               <ArrowIcon className="text-lg sm:text-xl" />
             </button>
           </div>
+
+          {isTableOrder && onAddToCart ? (
+            <div
+              className="mt-4 w-full space-y-2 border-t border-(--bg-main)/10 pt-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-between">
+                <div className="flex items-center gap-1.5 rounded-2xl border border-(--bg-main)/25 bg-white/80 px-1 py-1">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCardPickQty((q) => Math.max(1, q - 1))
+                    }
+                    className="flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold text-(--bg-main) transition hover:bg-(--bg-main)/10"
+                    aria-label={locale === "ar" ? "تقليل" : "Decrease"}
+                  >
+                    −
+                  </button>
+                  <span className="min-w-7 text-center text-sm font-black text-(--bg-main)">
+                    {cardPickQty}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setCardPickQty((q) => q + 1)}
+                    className="flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold text-(--bg-main) transition hover:bg-(--bg-main)/10"
+                    aria-label={locale === "ar" ? "زيادة" : "Increase"}
+                  >
+                    +
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onAddToCart(cardPickQty);
+                    setCardPickQty(1);
+                  }}
+                  className="rounded-2xl bg-(--bg-main) px-4 py-2 text-xs font-black text-white shadow-md transition hover:opacity-90"
+                >
+                  {locale === "ar" ? "أضف للسلة" : "Add to cart"}
+                </button>
+              </div>
+              {cartQuantity > 0 ? (
+                <p className="text-center text-xs font-medium text-(--bg-main)/80">
+                  {locale === "ar"
+                    ? `في السلة: ${cartQuantity}`
+                    : `In cart: ${cartQuantity}`}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </div>
 
@@ -221,6 +288,57 @@ export const MenuCardDefault = ({
               <p className="text-(--bg-main)/70 text-base leading-relaxed font-medium">
                 {itemDescription}
               </p>
+
+              {isTableOrder && onAddToCart && (
+                <div className="flex items-center justify-between gap-4 rounded-2xl border border-(--bg-main)/20 p-4">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddToCart(selectedQuantity);
+                      setSelectedQuantity(1);
+                    }}
+                    className="rounded-xl bg-(--bg-main) px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                  >
+                    {locale === "ar" ? "أضف إلى السلة" : "Add to cart"}
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedQuantity((prev) => Math.max(1, prev - 1));
+                      }}
+                      aria-label={locale === "ar" ? "تقليل" : "Decrease"}
+                      className="h-8 w-8 rounded-lg border border-(--bg-main)/40 text-(--bg-main)"
+                    >
+                      -
+                    </button>
+                    <span className="min-w-6 text-center text-sm font-semibold text-(--bg-main)">
+                      {selectedQuantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedQuantity((prev) => prev + 1);
+                      }}
+                      aria-label={locale === "ar" ? "زيادة" : "Increase"}
+                      className="h-8 w-8 rounded-lg border border-(--bg-main)/40 text-(--bg-main)"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              )}
+              {isTableOrder && cartQuantity > 0 && (
+                <p className="text-sm text-(--bg-main)/70">
+                  {locale === "ar"
+                    ? `في السلة: ${cartQuantity}`
+                    : `In cart: ${cartQuantity}`}
+                </p>
+              )}
 
               {/* Divider */}
               <div className="h-px bg-(--bg-main)/10" />

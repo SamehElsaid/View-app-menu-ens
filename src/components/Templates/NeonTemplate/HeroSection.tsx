@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import type {
   Category,
@@ -12,6 +13,173 @@ import type {
 import { FaStar } from "react-icons/fa";
 import LoadImage from "@/components/ImageLoad";
 import PromoBanner from "../CoffeeTemplate/PromoBanner";
+import {
+  SKY_CART_UPDATED_EVENT,
+  readSkyCartFromCookie,
+  upsertSkyCartQuantityFromMenuItem,
+} from "@/lib/skyTemplateCart";
+
+function NeonMenuItemCard({
+  item,
+  currency,
+  primaryColor,
+  locale,
+  isTableOrder,
+  isProPlan,
+  itemName,
+  itemDescription,
+  categoryName,
+  onOpen,
+}: {
+  item: MenuItem;
+  currency: string;
+  primaryColor: string;
+  locale: string;
+  isTableOrder: boolean;
+  isProPlan: boolean;
+  itemName: string;
+  itemDescription: string;
+  categoryName: string;
+  onOpen: (item: MenuItem) => void;
+}) {
+  const [pickQty, setPickQty] = useState(1);
+  const [inCart, setInCart] = useState(0);
+
+  useEffect(() => {
+    const sync = () => {
+      const c = readSkyCartFromCookie();
+      setInCart(c[item.id]?.quantity ?? 0);
+    };
+    sync();
+    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+  }, [item.id]);
+
+  return (
+    <div
+      onClick={() => onOpen(item)}
+      className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 transition-all cursor-pointer group hover:shadow-xl hover:-translate-y-2"
+      style={{
+        borderColor: undefined,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = `${primaryColor}60`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "";
+      }}
+    >
+      <div className="relative h-48 overflow-hidden">
+        <LoadImage
+          src={item.image}
+          alt={itemName}
+          disableLazy={true}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+        />
+        <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
+        {item.discountPercent && item.discountPercent > 0 && (
+          <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+            -{item.discountPercent}%
+          </div>
+        )}
+      </div>
+      <div className="p-5">
+        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 line-clamp-1">
+          {itemName}
+        </h3>
+        {isProPlan && (
+          <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed mb-2">
+            {itemDescription}
+          </p>
+        )}
+        <div
+          className={`${
+            isProPlan ? "mt-4" : "mt-2"
+          } flex flex-col gap-3`}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span
+              className="text-xs px-3 py-1 rounded-full font-semibold w-fit"
+              style={{
+                backgroundColor: `${primaryColor}15`,
+                color: primaryColor,
+              }}
+            >
+              {categoryName}
+            </span>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              {item.originalPrice && item.originalPrice > item.price && (
+                <span className="text-slate-400 line-through text-sm">
+                  {item.originalPrice} {currency}
+                </span>
+              )}
+              <span
+                className="font-bold text-lg"
+                style={{ color: primaryColor }}
+              >
+                {item.price} {currency}
+              </span>
+            </div>
+          </div>
+          {isTableOrder ? (
+            <div
+              className="flex flex-col gap-2 border-t border-slate-200 pt-3 dark:border-slate-600"
+              onClick={(e) => e.stopPropagation()}
+              role="presentation"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-1 py-0.5 dark:border-slate-600 dark:bg-slate-900/80">
+                  <button
+                    type="button"
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold"
+                    style={{ color: primaryColor }}
+                    onClick={() => setPickQty((q) => Math.max(1, q - 1))}
+                    aria-label={locale === "ar" ? "تقليل" : "Decrease"}
+                  >
+                    −
+                  </button>
+                  <span
+                    className="min-w-7 text-center text-sm font-bold tabular-nums"
+                    style={{ color: primaryColor }}
+                  >
+                    {pickQty}
+                  </span>
+                  <button
+                    type="button"
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold"
+                    style={{ color: primaryColor }}
+                    onClick={() => setPickQty((q) => q + 1)}
+                    aria-label={locale === "ar" ? "زيادة" : "Increase"}
+                  >
+                    +
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    upsertSkyCartQuantityFromMenuItem(item, pickQty);
+                    setPickQty(1);
+                  }}
+                  className="shrink-0 rounded-full px-4 py-2 text-xs font-bold text-white shadow-md transition hover:opacity-90"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  {locale === "ar" ? "أضف للسلة" : "Add to cart"}
+                </button>
+              </div>
+              {inCart > 0 ? (
+                <p className="text-center text-xs text-slate-500 dark:text-slate-400">
+                  {locale === "ar"
+                    ? `في السلة: ${inCart}`
+                    : `In cart: ${inCart}`}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 type HeroSectionMenuData = {
   menuInfo?: MenuInfo | null;
@@ -34,6 +202,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   customizations = {},
 }) => {
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const isTableOrder = Boolean(searchParams.get("table")?.trim());
   const [, setSelectedFoodItem] = useState<MenuItem | null>(null);
 
   const menuInfo =
@@ -199,7 +369,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             </div>
           ) : (
             filteredItems.map((item) => {
-              // Get translated values based on locale
               const itemName =
                 locale === "ar"
                   ? item.nameAr || item.name
@@ -220,75 +389,19 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 "";
 
               return (
-                <div
+                <NeonMenuItemCard
                   key={item.id}
-                  onClick={() => setSelectedFoodItem(item)}
-                  className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 transition-all cursor-pointer group hover:shadow-xl hover:-translate-y-2"
-                  style={{
-                    borderColor: undefined,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = `${primaryColor}60`;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = "";
-                  }}
-                >
-                  <div className="relative h-48 overflow-hidden">
-                    <LoadImage
-                      src={item.image}
-                      alt={itemName}
-                      disableLazy={true}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
-                    {item.discountPercent && item.discountPercent > 0 && (
-                      <div className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                        -{item.discountPercent}%
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-5">
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2 line-clamp-1">
-                      {itemName}
-                    </h3>
-                    {/* Show description only for Pro plan users */}
-                    {isProPlan && (
-                      <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed mb-2">
-                        {itemDescription}
-                      </p>
-                    )}
-                    <div
-                      className={`${
-                        isProPlan ? "mt-4" : "mt-2"
-                      } flex items-center justify-between`}
-                    >
-                      <span
-                        className="text-xs px-3 py-1 rounded-full font-semibold"
-                        style={{
-                          backgroundColor: `${primaryColor}15`,
-                          color: primaryColor,
-                        }}
-                      >
-                        {categoryName}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        {item.originalPrice &&
-                          item.originalPrice > item.price && (
-                            <span className="text-slate-400 line-through text-sm">
-                              {item.originalPrice} {currency}
-                            </span>
-                          )}
-                        <span
-                          className="font-bold text-lg"
-                          style={{ color: primaryColor }}
-                        >
-                          {item.price} {currency}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  item={item}
+                  currency={currency}
+                  primaryColor={primaryColor}
+                  locale={locale}
+                  isTableOrder={isTableOrder}
+                  isProPlan={isProPlan}
+                  itemName={itemName}
+                  itemDescription={itemDescription ?? ""}
+                  categoryName={categoryName}
+                  onOpen={setSelectedFoodItem}
+                />
               );
             })
           )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import NavBar from "./NavBar";
 import { globalStyles } from "./style";
 import HeroSection from "../components/HeroSection";
@@ -24,7 +25,9 @@ function Default() {
       />
       <HeroSection />
       <AdVBanner />
-      <MenuSection currency={menuInfo?.currency || "AED"} />
+      <Suspense fallback={null}>
+        <MenuSection currency={menuInfo?.currency || "AED"} />
+      </Suspense>
       <Footer
         workingHours={menuInfo?.workingHours || null}
         menuInfo={menuInfo || null}

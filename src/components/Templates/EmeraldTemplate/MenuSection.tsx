@@ -2,11 +2,18 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
+import {
+  SKY_CART_UPDATED_EVENT,
+  readSkyCartFromCookie,
+  upsertSkyCartQuantityFromMenuItem,
+  type SkyCartItem,
+} from "@/lib/skyTemplateCart";
 
 function CategoryTabs({
   categories,
@@ -91,14 +98,21 @@ function EmeraldMenuCard({
   index,
   onClick,
   currencyLabel,
+  isTableOrder,
+  cartQuantity,
+  onAddToCart,
 }: {
   dish: MenuItem;
   index: number;
   onClick: (dish: MenuItem) => void;
   currencyLabel: string;
+  isTableOrder: boolean;
+  cartQuantity: number;
+  onAddToCart: (dish: MenuItem, quantity: number) => void;
 }) {
   const locale = useLocale();
   const { primary, secondary } = useEmeraldTheme();
+  const [cardPickQty, setCardPickQty] = useState(1);
   const badgeText = dish.discountPercent
     ? `${dish.discountPercent}% off`
     : null;
@@ -179,6 +193,59 @@ function EmeraldMenuCard({
           </div>
         )}
 
+        {isTableOrder ? (
+          <div
+            className="mt-4 space-y-2 border-t border-stone-100 pt-4"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="presentation"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-1 rounded-xl border border-stone-200 bg-stone-50/80 px-1 py-0.5">
+                <button
+                  type="button"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-600"
+                  onClick={() => setCardPickQty((q) => Math.max(1, q - 1))}
+                  aria-label={locale === "ar" ? "تقليل" : "Decrease"}
+                >
+                  −
+                </button>
+                <span className="min-w-7 text-center text-sm font-semibold text-stone-800">
+                  {cardPickQty}
+                </span>
+                <button
+                  type="button"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-600"
+                  onClick={() => setCardPickQty((q) => q + 1)}
+                  aria-label={locale === "ar" ? "زيادة" : "Increase"}
+                >
+                  +
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onAddToCart(dish, cardPickQty);
+                  setCardPickQty(1);
+                }}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold text-white"
+                style={{
+                  background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
+                }}
+              >
+                {locale === "ar" ? "أضف للسلة" : "Add to cart"}
+              </button>
+            </div>
+            {cartQuantity > 0 ? (
+              <p className="text-center text-xs text-stone-500">
+                {locale === "ar"
+                  ? `في السلة: ${cartQuantity}`
+                  : `In cart: ${cartQuantity}`}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-stone-50">
           <span
             className="font-sans text-xs font-600 tracking-wide uppercase"
@@ -219,6 +286,10 @@ function EmeraldDishModal({
   currencyLabel: string;
 }) {
   const locale = useLocale() as "ar" | "en";
+  const searchParams = useSearchParams();
+  const isTableOrder = Boolean(searchParams.get("table")?.trim());
+  const [selectedQty, setSelectedQty] = useState(1);
+  const [inCartQty, setInCartQty] = useState(0);
   const { primary, secondary } = useEmeraldTheme();
 
   useEffect(() => {
@@ -239,6 +310,18 @@ function EmeraldDishModal({
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
+
+  useEffect(() => {
+    if (!dish) return;
+    setSelectedQty(1);
+    const sync = () => {
+      const c = readSkyCartFromCookie();
+      setInCartQty(c[dish.id]?.quantity ?? 0);
+    };
+    sync();
+    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+  }, [dish]);
 
   const backdrop = hexToRgba(primary, 0.45);
   const modalShadow = `0 24px 80px ${hexToRgba(primary, 0.2)}, 0 8px 24px rgba(0,0,0,0.12)`;
@@ -350,6 +433,56 @@ function EmeraldDishModal({
                   </div>
                 </div>
               ) : null}
+
+              {isTableOrder && dish ? (
+                <div className="mb-6 space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-stone-50/80 p-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        upsertSkyCartQuantityFromMenuItem(dish, selectedQty);
+                        setSelectedQty(1);
+                      }}
+                      className="rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                      style={{
+                        background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
+                      }}
+                    >
+                      {locale === "ar" ? "أضف إلى السلة" : "Add to cart"}
+                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 text-stone-700"
+                        onClick={() =>
+                          setSelectedQty((q) => Math.max(1, q - 1))
+                        }
+                        aria-label={locale === "ar" ? "تقليل" : "Decrease"}
+                      >
+                        −
+                      </button>
+                      <span className="min-w-8 text-center text-sm font-semibold text-stone-800">
+                        {selectedQty}
+                      </span>
+                      <button
+                        type="button"
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 text-stone-700"
+                        onClick={() => setSelectedQty((q) => q + 1)}
+                        aria-label={locale === "ar" ? "زيادة" : "Increase"}
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  {inCartQty > 0 ? (
+                    <p className="text-center text-sm text-stone-500">
+                      {locale === "ar"
+                        ? `في السلة: ${inCartQty}`
+                        : `In cart: ${inCartQty}`}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
 
             <div className="px-6 py-4 md:px-7 md:py-5 border-t border-stone-100">
@@ -376,9 +509,24 @@ export default function MenuSection({
 }) {
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
   const [activeCategory, setActiveCategory] = useState(0);
+  const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const isTableOrder = Boolean(searchParams.get("table")?.trim());
   const { primary, secondary } = useEmeraldTheme();
   const currencyLabel = useCurrencyLabel()(currency);
+
+  useEffect(() => {
+    const sync = () => setCartById(readSkyCartFromCookie());
+    sync();
+    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+  }, []);
+
+  const handleAddToCartCard = (dish: MenuItem, quantity: number) => {
+    upsertSkyCartQuantityFromMenuItem(dish, quantity);
+    setCartById(readSkyCartFromCookie());
+  };
 
   const filteredItems =
     activeCategory === 0
@@ -446,6 +594,9 @@ export default function MenuSection({
               index={i}
               onClick={setSelectedDish}
               currencyLabel={currencyLabel}
+              isTableOrder={isTableOrder}
+              cartQuantity={cartById[dish.id]?.quantity ?? 0}
+              onAddToCart={handleAddToCartCard}
             />
           ))}
       </div>

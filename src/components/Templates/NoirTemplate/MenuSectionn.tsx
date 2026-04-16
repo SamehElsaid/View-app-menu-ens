@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
@@ -12,6 +13,12 @@ import {
   shadowGlow,
   NOIR_EASE_TW_CLASS,
 } from "./NoirThemeContext";
+import {
+  SKY_CART_UPDATED_EVENT,
+  readSkyCartFromCookie,
+  upsertSkyCartQuantityFromMenuItem,
+  type SkyCartItem,
+} from "@/lib/skyTemplateCart";
 
 function categoryTabLabel(cat: Category, locale: "ar" | "en"): string {
   const ar = cat.nameAr?.trim();
@@ -91,14 +98,21 @@ function NoirMenuCard({
   idx,
   onOpen,
   currencyLabel,
+  isTableOrder,
+  cartQuantity,
+  onAddToCart,
 }: {
   item: MenuItem;
   idx: number;
   onOpen: (item: MenuItem) => void;
   currencyLabel: string;
+  isTableOrder: boolean;
+  cartQuantity: number;
+  onAddToCart: (item: MenuItem, quantity: number) => void;
 }) {
   const locale = useLocale();
   const { primary } = useNoirTheme();
+  const [cardPickQty, setCardPickQty] = useState(1);
   const name = locale === "ar" ? item.nameAr : item.nameEn;
   const desc = locale === "ar" ? item.descriptionAr : item.descriptionEn;
   const catLabel = locale === "ar" ? item.categoryNameAr : item.categoryNameEn;
@@ -166,6 +180,55 @@ function NoirMenuCard({
             {currencyLabel} {item.price}
           </span>
         </div>
+
+        {isTableOrder ? (
+          <div
+            className="mt-3 space-y-2 border-t border-violet/10 pt-3"
+            onClick={(e) => e.stopPropagation()}
+            role="presentation"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-1 rounded-lg border border-violet/20 bg-black/20 px-0.5 py-0.5">
+                <button
+                  type="button"
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-text-secondary text-sm"
+                  onClick={() => setCardPickQty((q) => Math.max(1, q - 1))}
+                  aria-label={locale === "ar" ? "تقليل" : "Decrease"}
+                >
+                  −
+                </button>
+                <span className="min-w-6 text-center text-xs text-text-primary">
+                  {cardPickQty}
+                </span>
+                <button
+                  type="button"
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-text-secondary text-sm"
+                  onClick={() => setCardPickQty((q) => q + 1)}
+                  aria-label={locale === "ar" ? "زيادة" : "Increase"}
+                >
+                  +
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onAddToCart(item, cardPickQty);
+                  setCardPickQty(1);
+                }}
+                className="rounded-full border border-violet/40 bg-violet/30 px-3 py-1 text-[10px] font-medium uppercase tracking-wide text-white hover:bg-violet/45"
+              >
+                {locale === "ar" ? "أضف للسلة" : "Add to cart"}
+              </button>
+            </div>
+            {cartQuantity > 0 ? (
+              <p className="text-[10px] text-text-secondary text-center">
+                {locale === "ar"
+                  ? `في السلة: ${cartQuantity}`
+                  : `In cart: ${cartQuantity}`}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -181,6 +244,10 @@ function NoirDetailModal({
   currencyLabel: string;
 }) {
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const isTableOrder = Boolean(searchParams.get("table")?.trim());
+  const [selectedQty, setSelectedQty] = useState(1);
+  const [inCartQty, setInCartQty] = useState(0);
   const { primary } = useNoirTheme();
   const name = locale === "ar" ? item.nameAr : item.nameEn;
   const desc = locale === "ar" ? item.descriptionAr : item.descriptionEn;
@@ -200,6 +267,17 @@ function NoirDetailModal({
       window.removeEventListener("keydown", handler);
     };
   }, [onClose]);
+
+  useEffect(() => {
+    setSelectedQty(1);
+    const sync = () => {
+      const c = readSkyCartFromCookie();
+      setInCartQty(c[item.id]?.quantity ?? 0);
+    };
+    sync();
+    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+  }, [item.id]);
 
   return (
     <div
@@ -274,6 +352,51 @@ function NoirDetailModal({
               </span>
             )}
           </div>
+
+          {isTableOrder ? (
+            <div className="mt-8 space-y-3 border-t border-violet/15 pt-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    upsertSkyCartQuantityFromMenuItem(item, selectedQty);
+                    setSelectedQty(1);
+                  }}
+                  className="rounded-full border border-violet/40 bg-linear-to-br from-violet to-cyan px-5 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
+                >
+                  {locale === "ar" ? "أضف إلى السلة" : "Add to cart"}
+                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-violet/30 text-text-secondary"
+                    onClick={() => setSelectedQty((q) => Math.max(1, q - 1))}
+                    aria-label={locale === "ar" ? "تقليل" : "Decrease"}
+                  >
+                    −
+                  </button>
+                  <span className="min-w-8 text-center text-sm text-text-primary">
+                    {selectedQty}
+                  </span>
+                  <button
+                    type="button"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-violet/30 text-text-secondary"
+                    onClick={() => setSelectedQty((q) => q + 1)}
+                    aria-label={locale === "ar" ? "زيادة" : "Increase"}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              {inCartQty > 0 ? (
+                <p className="text-sm text-text-secondary">
+                  {locale === "ar"
+                    ? `في السلة: ${inCartQty}`
+                    : `In cart: ${inCartQty}`}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
@@ -291,8 +414,23 @@ export default function MenuSectionn({
 }) {
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
   const [activeCategory, setActiveCategory] = useState(0);
+  const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const isTableOrder = Boolean(searchParams.get("table")?.trim());
   const currencyLabel = useCurrencyLabel()(currency);
+
+  useEffect(() => {
+    const sync = () => setCartById(readSkyCartFromCookie());
+    sync();
+    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+  }, []);
+
+  const handleAddToCartCard = (item: MenuItem, quantity: number) => {
+    upsertSkyCartQuantityFromMenuItem(item, quantity);
+    setCartById(readSkyCartFromCookie());
+  };
 
   const filteredItems =
     activeCategory === 0
@@ -328,6 +466,9 @@ export default function MenuSectionn({
             idx={idx}
             onOpen={setSelectedDish}
             currencyLabel={currencyLabel}
+            isTableOrder={isTableOrder}
+            cartQuantity={cartById[item.id]?.quantity ?? 0}
+            onAddToCart={handleAddToCartCard}
           />
         ))}
       </div>

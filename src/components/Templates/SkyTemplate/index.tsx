@@ -12,39 +12,13 @@ import { MenuItem } from "@/types/menu";
 import Footer from "./Footer";
 import MenuCard from "./MenuCard";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
-
-const CART_COOKIE_KEY = "sky_template_cart";
-const CART_COOKIE_EXPIRES_DAYS = 1;
-const CART_UPDATED_EVENT = "sky-template-cart-updated";
-
-type CartItem = {
-  id: number;
-  quantity: number;
-  name: string;
-  price: number;
-  image: string;
-};
-
-const readCartFromCookie = (): Record<number, CartItem> => {
-  if (typeof document === "undefined") {
-    return {};
-  }
-
-  const cookieEntry = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(`${CART_COOKIE_KEY}=`));
-
-  if (!cookieEntry) {
-    return {};
-  }
-
-  try {
-    const cookieValue = decodeURIComponent(cookieEntry.split("=")[1] || "");
-    return JSON.parse(cookieValue) as Record<number, CartItem>;
-  } catch {
-    return {};
-  }
-};
+import {
+  SKY_CART_UPDATED_EVENT,
+  isValidSkyCartItemId,
+  readSkyCartFromCookie,
+  writeSkyCartToCookie,
+  type SkyCartItem,
+} from "@/lib/skyTemplateCart";
 
 function SkyTemplate() {
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
@@ -56,8 +30,8 @@ function SkyTemplate() {
 
   const locale = useLocale();
   const [activeCategory, setActiveCategory] = useState<number>(0);
-  const [cart, setCart] = useState<Record<number, CartItem>>(() =>
-    readCartFromCookie(),
+  const [cart, setCart] = useState<Record<number, SkyCartItem>>(() =>
+    readSkyCartFromCookie(),
   );
 
   const menuItems = useMemo(() => storeMenuItems ?? [], [storeMenuItems]);
@@ -85,25 +59,21 @@ function SkyTemplate() {
   }, [menuItems]);
 
   useEffect(() => {
-    const expiresDate = new Date(
-      Date.now() + CART_COOKIE_EXPIRES_DAYS * 24 * 60 * 60 * 1000,
-    );
-
-    document.cookie = `${CART_COOKIE_KEY}=${encodeURIComponent(
-      JSON.stringify(cart),
-    )}; expires=${expiresDate.toUTCString()}; path=/; SameSite=Lax`;
+    writeSkyCartToCookie(cart);
   }, [cart]);
 
   useEffect(() => {
     const handleCartUpdated = () => {
-      setCart(readCartFromCookie());
+      setCart(readSkyCartFromCookie());
     };
 
-    window.addEventListener(CART_UPDATED_EVENT, handleCartUpdated);
-    return () => window.removeEventListener(CART_UPDATED_EVENT, handleCartUpdated);
+    window.addEventListener(SKY_CART_UPDATED_EVENT, handleCartUpdated);
+    return () =>
+      window.removeEventListener(SKY_CART_UPDATED_EVENT, handleCartUpdated);
   }, []);
 
   const updateCartQuantity = (item: MenuItem, nextQuantity: number) => {
+    if (!isValidSkyCartItemId(item.id)) return;
     setCart((prevCart) => {
       const nextCart = { ...prevCart };
 
@@ -125,6 +95,7 @@ function SkyTemplate() {
   };
 
   const handleAddToCart = (item: MenuItem, quantityToAdd: number) => {
+    if (!isValidSkyCartItemId(item.id)) return;
     const currentQuantity = cart[item.id]?.quantity ?? 0;
     updateCartQuantity(item, currentQuantity + quantityToAdd);
     toast.success(

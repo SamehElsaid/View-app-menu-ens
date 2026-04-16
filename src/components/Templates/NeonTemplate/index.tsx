@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/store/hooks";
-import React from "react";
+import React, { Suspense } from "react";
 import { Navbar } from "./NavBar";
 import { HeroSection } from "./HeroSection";
 import { Footer } from "./Footer";
@@ -21,12 +21,14 @@ function NeonTemplate() {
         secondaryColor={secondaryColor}
       />
 
-      <HeroSection
-        menuData={menu || null}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        customizations={menu?.menuCustomizations || {}}
-      />
+      <Suspense fallback={null}>
+        <HeroSection
+          menuData={menu || null}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          customizations={menu?.menuCustomizations || {}}
+        />
+      </Suspense>
       <Footer
         menuName={menu?.menuInfo?.name || ""}
         primaryColor={primaryColor}

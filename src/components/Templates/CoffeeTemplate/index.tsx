@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/store/hooks";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import Navbar from "./NavBar";
 import HeroSection from "./HeroSection";
 import PromoBanner from "./PromoBanner";
@@ -55,23 +55,25 @@ function CoffeeTemplate() {
         />
 
         {categoriesWithItems.length > 0 ? (
-          categoriesWithItems.map((category: Category) => {
-            const categoryId = category.id
-              ? `category-${category.id}`
-              : `category-${category.name.replace(/\s+/g, "-").toLowerCase()}`;
-            return (
-              <div key={category.id || category.name} id={categoryId}>
-                <MenuCategory
-                  title={category.name}
-                  titleAr={category.nameAr || ""}
-                  description={category.description || ""}
-                  descriptionAr={category.descriptionAr || ""}
-                  items={category.menuItems || []}
-                  currency={menu?.menuInfo?.currency || "AED"}
-                />
-              </div>
-            );
-          })
+          <Suspense fallback={null}>
+            {categoriesWithItems.map((category: Category) => {
+              const categoryId = category.id
+                ? `category-${category.id}`
+                : `category-${category.name.replace(/\s+/g, "-").toLowerCase()}`;
+              return (
+                <div key={category.id || category.name} id={categoryId}>
+                  <MenuCategory
+                    title={category.name}
+                    titleAr={category.nameAr || ""}
+                    description={category.description || ""}
+                    descriptionAr={category.descriptionAr || ""}
+                    items={category.menuItems || []}
+                    currency={menu?.menuInfo?.currency || "AED"}
+                  />
+                </div>
+              );
+            })}
+          </Suspense>
         ) : (
           <div className="text-center py-20">
             <p className="text-[#B6AA99] text-lg">

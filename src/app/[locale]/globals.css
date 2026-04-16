@@ -267,7 +267,7 @@
 /** Body */
 html,
 body {
-  @apply font-body text-sm md:text-base !p-0 text-gray-500 bg-gray-50 leading-normal dark:bg-[#0a0e19] dark:text-gray-400;
+  @apply font-body text-sm md:text-base !p-0 text-gray-500 bg-gray-50 leading-normal dark:bg-white dark:text-gray-500;
 }
 
 /** Paragraph */
@@ -2916,12 +2916,25 @@ html {
 }
 /* Noir Template Keyframes */
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes float-blob {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(30px, -30px) scale(1.05); }
-  66% { transform: translate(-20px, 20px) scale(0.95); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.05);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
 }

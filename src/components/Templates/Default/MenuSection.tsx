@@ -1,9 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { MenuItem } from "@/types/menu";
 import { useLocale, useTranslations } from "next-intl";
 
+import {
+  SKY_CART_UPDATED_EVENT,
+  readSkyCartFromCookie,
+  upsertSkyCartQuantityFromMenuItem,
+  type SkyCartItem,
+} from "@/lib/skyTemplateCart";
 import { MenuCardDefault } from "./MenuCardDefault";
 import SwiperCategory from "../components/SwiperCategory";
 import { useAppSelector } from "@/store/hooks";
@@ -16,6 +23,9 @@ const NAV_OFFSET_PX = 80;
 export default function MenuSection({ currency }: { currency: string }) {
   const locale = useLocale();
   const t = useTranslations("menu");
+  const searchParams = useSearchParams();
+  const isTableOrder = Boolean(searchParams.get("table")?.trim());
+  const [cart, setCart] = useState<Record<number, SkyCartItem>>({});
   const [isModalOpen, setIsModalOpen] = useState(0);
   const menuTitleRef = useRef<HTMLDivElement>(null);
   const { activeCategory, setActiveCategory, setShowCategoryBurger } =
@@ -49,6 +59,18 @@ export default function MenuSection({ currency }: { currency: string }) {
       window.removeEventListener("resize", update);
     };
   }, [setShowCategoryBurger]);
+
+  useEffect(() => {
+    const sync = () => setCart(readSkyCartFromCookie());
+    sync();
+    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+  }, []);
+
+  const handleAddToCart = (item: MenuItem, quantityToAdd: number) => {
+    upsertSkyCartQuantityFromMenuItem(item, quantityToAdd);
+    setCart(readSkyCartFromCookie());
+  };
 
   // Group items by category
   const allCategoriesArray = useMemo(() => {
@@ -127,6 +149,11 @@ export default function MenuSection({ currency }: { currency: string }) {
                 onClick={() => {}}
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
+                isTableOrder={isTableOrder}
+                cartQuantity={cart[item.id]?.quantity ?? 0}
+                onAddToCart={(quantityToAdd) =>
+                  handleAddToCart(item, quantityToAdd)
+                }
               />
             ))}
           </div>

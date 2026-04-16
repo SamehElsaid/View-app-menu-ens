@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { Suspense } from "react";
 import NavBar from "./NavBar";
 import MenuSectionn from "./MenuSectionn";
 import Footer from "./Footer";
@@ -48,11 +49,13 @@ function NoirTemplate() {
           id="menu"
           className="py-24 px-8 max-w-[1200px] mx-auto relative z-10"
         >
-          <MenuSectionn
-            items={storeMenuItems ?? []}
-            categories={storeCategories ?? []}
-            currency={menuInfo?.currency || "AED"}
-          />
+          <Suspense fallback={null}>
+            <MenuSectionn
+              items={storeMenuItems ?? []}
+              categories={storeCategories ?? []}
+              currency={menuInfo?.currency || "AED"}
+            />
+          </Suspense>
         </section>
         <Footer />
         {menuInfo &&

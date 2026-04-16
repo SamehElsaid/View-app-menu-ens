@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Navbar from "./Navbar";
 import MenuSection from "./MenuSection";
 import Footer from "./Footer";
@@ -33,11 +34,13 @@ function EmeraldTemplate() {
           className="py-8 md:py-16 max-w-6xl mx-auto px-6"
           aria-labelledby="menu-heading"
         >
-          <MenuSection
-            items={storeMenuItems ?? []}
-            categories={storeCategories ?? []}
-            currency={menuInfo?.currency || "AED"}
-          />
+          <Suspense fallback={null}>
+            <MenuSection
+              items={storeMenuItems ?? []}
+              categories={storeCategories ?? []}
+              currency={menuInfo?.currency || "AED"}
+            />
+          </Suspense>
         </section>
 
         <Footer />

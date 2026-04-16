@@ -1,6 +1,8 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
@@ -10,17 +12,22 @@ import { arabCurrencies, Currency } from "@/constants/currencies";
 import { axiosPost } from "@/shared/axiosCall";
 import { FiX } from "react-icons/fi";
 import { IoCartOutline } from "react-icons/io5";
+import {
+  notifySkyCartUpdated,
+  readSkyCartFromCookie,
+  writeSkyCartToCookie,
+  type SkyCartItem,
+} from "@/lib/skyTemplateCart";
 
-const CART_COOKIE_KEY = "sky_template_cart";
-const CART_COOKIE_EXPIRES_DAYS = 1;
-const CART_UPDATED_EVENT = "sky-template-cart-updated";
-
-type CartItem = {
-  id: number;
-  quantity: number;
-  name: string;
-  price: number;
-  image: string;
+/** When `menuCustomizations.primaryColor` is missing, match each template’s default accent. */
+const THEME_BG_MAIN_FALLBACK: Record<string, string> = {
+  default: "hsl(271, 81%, 56%)",
+  sky: "#2196F3",
+  neon: "#14b8a6",
+  coffee: "#F2B705",
+  emerald: "#4c1121",
+  noir: "#7c3aed",
+  oceanic: "#0ea5e9",
 };
 
 type StaffCallPayload = {
@@ -31,27 +38,6 @@ type StaffCallPayload = {
     menuItemId: number;
     quantity: number;
   }>;
-};
-
-const readCartFromCookie = (): Record<number, CartItem> => {
-  if (typeof document === "undefined") return {};
-
-  const cookieEntry = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(`${CART_COOKIE_KEY}=`));
-
-  if (!cookieEntry) return {};
-
-  try {
-    const cookieValue = decodeURIComponent(cookieEntry.split("=")[1] || "");
-    return (JSON.parse(cookieValue) as Record<number, CartItem>) ?? {};
-  } catch {
-    return {};
-  }
-};
-
-const notifyCartUpdated = () => {
-  window.dispatchEvent(new Event(CART_UPDATED_EVENT));
 };
 
 const updateURL = (
@@ -114,6 +100,8 @@ export default function RequestStaffButton() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const menuInfo = useAppSelector((s) => s.menu.menuInfo);
+  const menuCustomizations = useAppSelector((s) => s.menu.menuCustomizations);
+  const storeMenu = useAppSelector((s) => s.menu.menu);
   const isMenuActive = menuInfo?.isActive !== false;
   const isArabic = locale === "ar";
   const tableNumber = searchParams.get("table")?.trim() || "";
@@ -123,10 +111,19 @@ export default function RequestStaffButton() {
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [step, setStep] = useState<1 | 2>(1);
   const [customerName, setCustomerName] = useState("");
-  const [cart, setCart] = useState<Record<number, CartItem>>(() =>
-    readCartFromCookie(),
-  );
+  /** Empty initial state avoids SSR/client mismatch (cookies only exist on client). */
+  const [cart, setCart] = useState<Record<number, SkyCartItem>>({});
   const [isConfirming, setIsConfirming] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  const themeKey = (menuInfo?.theme ?? "default").toLowerCase();
+  const accentMain = useMemo(() => {
+    const custom = menuCustomizations?.primaryColor?.trim();
+    if (custom) return custom;
+    return (
+      THEME_BG_MAIN_FALLBACK[themeKey] ?? THEME_BG_MAIN_FALLBACK.default
+    );
+  }, [menuCustomizations?.primaryColor, themeKey]);
 
   const labels = useMemo(
     () =>
@@ -148,6 +145,8 @@ export default function RequestStaffButton() {
           success: "تم تأكيد الطلب بنجاح",
           enterName: "يرجى إدخال الاسم",
           orderFailed: "تعذر تأكيد الطلب، يرجى المحاولة مرة أخرى",
+          noValidItems:
+            "لا توجد منتجات صالحة في السلة. أضف منتجات من القائمة أو أعد تحميل الصفحة.",
           increase: "زيادة",
           decrease: "تقليل",
         }
@@ -168,6 +167,8 @@ export default function RequestStaffButton() {
           success: "Order confirmed successfully",
           enterName: "Please enter your name",
           orderFailed: "Could not confirm order, please try again",
+          noValidItems:
+            "No valid items in the cart. Add products from the menu or refresh the page.",
           increase: "Increase",
           decrease: "Decrease",
         },
@@ -191,8 +192,9 @@ export default function RequestStaffButton() {
   };
 
   useEffect(() => {
-    setCart(readCartFromCookie());
-    const intervalId = setInterval(() => setCart(readCartFromCookie()), 1500);
+    setHasMounted(true);
+    setCart(readSkyCartFromCookie());
+    const intervalId = setInterval(() => setCart(readSkyCartFromCookie()), 1500);
     return () => clearInterval(intervalId);
   }, []);
 
@@ -200,24 +202,29 @@ export default function RequestStaffButton() {
     () => Object.values(cart).filter((item) => item.quantity > 0),
     [cart],
   );
+
+  /** Lines whose id still exists on the loaded menu (ignore stale / missing ids). */
+  const cartItemsForOrder = useMemo(() => {
+    const ids = new Set((storeMenu ?? []).map((m) => m.id));
+    if (ids.size === 0) return cartItems;
+    return cartItems.filter((item) => ids.has(item.id));
+  }, [cartItems, storeMenu]);
   const totalQuantity = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
-    [cartItems],
+    () => cartItemsForOrder.reduce((sum, item) => sum + item.quantity, 0),
+    [cartItemsForOrder],
   );
 
-  const persistCart = (nextCart: Record<number, CartItem>) => {
-    const expiresDate = new Date(
-      Date.now() + CART_COOKIE_EXPIRES_DAYS * 24 * 60 * 60 * 1000,
-    );
-
-    document.cookie = `${CART_COOKIE_KEY}=${encodeURIComponent(
-      JSON.stringify(nextCart),
-    )}; expires=${expiresDate.toUTCString()}; path=/; SameSite=Lax`;
-    notifyCartUpdated();
+  const persistCart = (nextCart: Record<number, SkyCartItem>) => {
+    writeSkyCartToCookie(nextCart);
+    notifySkyCartUpdated();
   };
   const totalPrice = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [cartItems],
+    () =>
+      cartItemsForOrder.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      ),
+    [cartItemsForOrder],
   );
 
   const syncDrawerWithURL = useCallback((shouldOpen: boolean) => {
@@ -268,7 +275,7 @@ export default function RequestStaffButton() {
   }, [syncDrawerWithURL]);
 
   const goToStep2 = () => {
-    if (!cartItems.length) return;
+    if (!cartItemsForOrder.length) return;
     setStep(2);
   };
 
@@ -304,13 +311,18 @@ export default function RequestStaffButton() {
       return;
     }
 
+    if (!cartItemsForOrder.length) {
+      toast.warning(labels.noValidItems);
+      return;
+    }
+
     setIsConfirming(true);
     try {
       const payload: StaffCallPayload = {
         menuId: menuInfo.id,
         tableNumber,
         customerName: customerName.trim(),
-        items: cartItems.map((item) => ({
+        items: cartItemsForOrder.map((item) => ({
           menuItemId: item.id,
           quantity: item.quantity,
         })),
@@ -328,9 +340,9 @@ export default function RequestStaffButton() {
         throw new Error("Failed to confirm order");
       }
 
-      document.cookie = `${CART_COOKIE_KEY}=; Max-Age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+      writeSkyCartToCookie({});
       setCart({});
-      notifyCartUpdated();
+      notifySkyCartUpdated();
       setCustomerName("");
       closeDrawer();
       toast.success(labels.success);
@@ -341,12 +353,14 @@ export default function RequestStaffButton() {
     }
   };
 
-  if (!isMenuActive || !menuInfo?.id || !isTableOrder) return null;
+  if (!isMenuActive || !menuInfo?.id) return null;
+  /** After mount: searchParams and locale match the browser; avoids hydration mismatch. */
+  if (!hasMounted || !isTableOrder) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed bottom-6 z-99990  flex flex-col items-center gap-1"
-      style={{ [isArabic ? "left" : "right"]: "1.25rem" }}
+      className={`fixed bottom-6 z-99990 flex flex-col items-center gap-1 ${isArabic ? "left-5" : "right-5"}`}
+      style={{ "--bg-main": accentMain } as CSSProperties}
     >
       <button
         type="button"
@@ -410,9 +424,9 @@ export default function RequestStaffButton() {
                     <h3 className="mb-2 text-sm font-semibold text-(--bg-main)">
                       {labels.products}
                     </h3>
-                    {cartItems.length ? (
+                    {cartItemsForOrder.length ? (
                       <ul className="space-y-2">
-                        {cartItems.map((item) => (
+                        {cartItemsForOrder.map((item) => (
                           <li
                             key={item.id}
                             className="rounded-xl border border-(--bg-main)/15 bg-(--bg-main)/2 p-3"
@@ -483,7 +497,7 @@ export default function RequestStaffButton() {
                     <button
                       type="button"
                       onClick={goToStep2}
-                      disabled={!cartItems.length}
+                      disabled={!cartItemsForOrder.length}
                       className="w-full rounded-lg bg-(--bg-main) px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-400"
                     >
                       {labels.next}
@@ -531,6 +545,7 @@ export default function RequestStaffButton() {
           </aside>
         </>
       ) : null}
-    </div>
+    </div>,
+    document.body,
   );
 }
