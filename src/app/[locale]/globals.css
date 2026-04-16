@@ -2434,7 +2434,7 @@ html {
 
 /* Better focus styles for accessibility */
 *:focus-visible {
-  outline: 2px solid hsl(263, 84%, 60%);
+  outline: 2px solid var(--bg-main);
   outline-offset: 2px;
   border-radius: 4px;
 }

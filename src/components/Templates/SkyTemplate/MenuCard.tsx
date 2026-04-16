@@ -3,23 +3,37 @@ import { Icon } from "../components/Icon";
 import { MenuItem } from "@/types/menu";
 import { arabCurrencies, Currency } from "@/constants/currencies";
 import { useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import LoadImage from "@/components/ImageLoad";
 
 interface MenuCardProps {
   item: MenuItem;
   currency?: string;
   onClick: () => void;
+  quantity?: number;
+  addToCartLabel: string;
+  increaseLabel: string;
+  decreaseLabel: string;
+  onAddToCart: (quantity: number) => void;
 }
 
 export default function MenuCard({
   item,
   currency = "AED",
   onClick,
+  quantity = 0,
+  addToCartLabel,
+  increaseLabel,
+  decreaseLabel,
+  onAddToCart,
 }: MenuCardProps) {
   const locale = useLocale();
+  const searchParams = useSearchParams();
+  const isTableOrder = Boolean(searchParams.get("table")?.trim());
   const direction = locale === "ar" ? "rtl" : "ltr";
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
 
   // Get translated name and description based on locale
   const itemName =
@@ -132,19 +146,54 @@ export default function MenuCard({
             {itemDescription}
           </p>
 
-          {/* Animated Bottom Button Section */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex -space-x-2 rtl:space-x-reverse opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          {isTableOrder && (
+            <div className="flex items-center justify-between gap-4">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToCart(selectedQuantity);
+                  setSelectedQuantity(1);
+                }}
+                className="rounded-xl bg-(--bg-main) px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                {addToCartLabel}
+              </button>
 
-            <button className="group/btn relative flex items-center gap-3 flex-center w-10 h-10 text-white bg-(--bg-main) rounded-2xl text-[12px] font-black tracking-widest transition-all shadow-lg hover:shadow-(--bg-main)/20">
-              <div className="w-full h-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-500">
-                <Icon
-                  name="arrow-right-s-line"
-                  className={`text-lg ${locale === "ar" ? "rotate-180" : ""}`}
-                />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedQuantity((prev) => Math.max(1, prev - 1));
+                  }}
+                  aria-label={decreaseLabel}
+                  className="h-8 w-8 rounded-lg border border-(--bg-main)/40 text-(--bg-main)"
+                >
+                  -
+                </button>
+                <span className="min-w-6 text-center text-sm font-semibold text-(--bg-main)">
+                  {selectedQuantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedQuantity((prev) => prev + 1);
+                  }}
+                  aria-label={increaseLabel}
+                  className="h-8 w-8 rounded-lg border border-(--bg-main)/40 text-(--bg-main)"
+                >
+                  +
+                </button>
               </div>
-            </button>
-          </div>
+            </div>
+          )}
+          {isTableOrder && quantity > 0 && (
+            <p className="mt-2 text-xs text-(--bg-main)/70">
+              {locale === "ar" ? `في السلة: ${quantity}` : `In cart: ${quantity}`}
+            </p>
+          )}
         </div>
 
         {/* Side Decorative Line */}
@@ -231,6 +280,55 @@ export default function MenuCard({
               <p className="text-(--bg-main)/70 text-base leading-relaxed font-medium">
                 {itemDescription}
               </p>
+
+              {isTableOrder && (
+                <div className="flex items-center justify-between gap-4 rounded-2xl border border-(--bg-main)/20 p-4">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddToCart(selectedQuantity);
+                      setSelectedQuantity(1);
+                    }}
+                    className="rounded-xl bg-(--bg-main) px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                  >
+                    {addToCartLabel}
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedQuantity((prev) => Math.max(1, prev - 1));
+                      }}
+                      aria-label={decreaseLabel}
+                      className="h-8 w-8 rounded-lg border border-(--bg-main)/40 text-(--bg-main)"
+                    >
+                      -
+                    </button>
+                    <span className="min-w-6 text-center text-sm font-semibold text-(--bg-main)">
+                      {selectedQuantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedQuantity((prev) => prev + 1);
+                      }}
+                      aria-label={increaseLabel}
+                      className="h-8 w-8 rounded-lg border border-(--bg-main)/40 text-(--bg-main)"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              )}
+              {isTableOrder && quantity > 0 && (
+                <p className="text-sm text-(--bg-main)/70">
+                  {locale === "ar" ? `في السلة: ${quantity}` : `In cart: ${quantity}`}
+                </p>
+              )}
 
               {/* Divider */}
               <div className="h-px bg-(--bg-main)/10" />
