@@ -7,9 +7,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { useAppSelector } from "@/store/hooks";
 import type { Ad } from "@/types/Ad";
-import { motion } from "framer-motion";
-import { useEmeraldTheme } from "./EmeraldThemeContext";
-import { hexToRgba } from "./emeraldThemeUtils";
+import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -93,11 +91,7 @@ export default function PromoBannerE() {
 
                 {/* Content */}
                 <div className="relative z-10 h-full flex flex-col justify-center p-5 pt-14 sm:p-8 sm:pt-12 md:p-14 md:pt-10 text-white max-w-3xl">
-                  <motion.div
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6 }}
-                  >
+                  <div className="animate-slide-up motion-reduce:animate-none">
                     <h2
                       className="text-2xl sm:text-3xl md:text-5xl font-serif italic font-bold mb-4 leading-[1.15] [text-shadow:0_4px_32px_rgba(0,0,0,0.85)]"
                     >
@@ -132,7 +126,7 @@ export default function PromoBannerE() {
                      </button>
                    </div>
                     )}
-                  </motion.div>
+                  </div>
                 </div>
               </div>
             </SwiperSlide>

@@ -3,8 +3,7 @@
 import Image from "next/image";
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
-import { useEmeraldTheme } from "./EmeraldThemeContext";
-import { hexToRgba } from "./emeraldThemeUtils";
+import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
 
 export default function Footer() {
   const locale = useLocale() as "ar" | "en";

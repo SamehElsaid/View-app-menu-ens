@@ -4,7 +4,6 @@ import MenuSectionn from "./MenuSectionn";
 import Footer from "./Footer";
 import { useAppSelector } from "@/store/hooks";
 import PromoBannerN from "./PromoBannerN";
-import BackgroundLayers from "./BackgroundLayers";
 import HeroN from "./HeroN";
 import {
   NoirThemeProvider,
@@ -42,7 +41,6 @@ function NoirTemplate() {
         className="bg-[#141422] text-text-primary min-h-screen"
         style={mainStyle}
       >
-        <BackgroundLayers />
         <NavBar />
         <HeroN />
         <PromoBannerN />

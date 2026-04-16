@@ -2,8 +2,36 @@
 
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
-import { useNoirTheme } from "./NoirThemeContext";
-import NoirChevronRight from "./NoirChevronRight";
+import {
+  useNoirTheme,
+  hexToRgba,
+  NoirChevronRight,
+} from "./NoirThemeContext";
+
+function NoirBackgroundLayers() {
+  const { primary, secondary } = useNoirTheme();
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 -z-20"
+        style={{
+          background: `
+            radial-gradient(circle at 20% 30%, ${hexToRgba(primary, 0.45)}, transparent 60%),
+            radial-gradient(circle at 80% 70%, ${hexToRgba(secondary, 0.38)}, transparent 60%),
+            radial-gradient(circle at 50% 50%, ${hexToRgba(primary, 0.12)}, transparent 70%),
+            linear-gradient(160deg, #141422, #1a1a2e)
+          `,
+        }}
+      />
+      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+        <div className="absolute rounded-full blur-[120px] w-[550px] h-[550px] -top-[60px] -left-[60px] bg-violet/30 animate-float-blob" />
+        <div className="absolute rounded-full blur-[120px] w-[500px] h-[500px] bottom-[5%] -right-10 bg-cyan/25 animate-float-blob [animation-delay:-7s]" />
+        <div className="absolute rounded-full blur-[100px] w-[400px] h-[400px] top-[40%] left-[30%] bg-lavender/15 animate-float-blob [animation-delay:-13s]" />
+      </div>
+    </>
+  );
+}
 
 export default function HeroN() {
   const locale = useLocale();
@@ -30,54 +58,57 @@ export default function HeroN() {
   const menuLabel = menuInfo?.name?.trim() || "";
 
   return (
-    <section className="flex flex-col items-center justify-center text-center px-8 pt-50 pb-16 relative">
-      {menuLabel ? (
-        <p className="font-body text-[0.7rem] tracking-[0.5em] uppercase text-cyan mb-6 opacity-0 animate-fade-up [animation-delay:0.2s]">
-          — {menuLabel} —
-        </p>
-      ) : null}
+    <>
+      <NoirBackgroundLayers />
+      <section className="flex flex-col items-center justify-center text-center px-8 pt-50 pb-16 relative">
+        {menuLabel ? (
+          <p className="font-body text-[0.7rem] tracking-[0.5em] uppercase text-cyan mb-6 opacity-0 animate-fade-up [animation-delay:0.2s]">
+            — {menuLabel} —
+          </p>
+        ) : null}
 
-      <h1 className="font-display text-[clamp(2.5rem,7vw,5rem)] font-light leading-none tracking-tight mb-4 opacity-0 animate-fade-up [animation-delay:0.4s]">
-        {line2 ? (
-          <>
+        <h1 className="font-display text-[clamp(2.5rem,7vw,5rem)] font-light leading-none tracking-tight mb-4 opacity-0 animate-fade-up [animation-delay:0.4s]">
+          {line2 ? (
+            <>
+              <span>{line1}</span>
+              <em className="italic block text-lavender">{line2}</em>
+            </>
+          ) : (
             <span>{line1}</span>
-            <em className="italic block text-lavender">{line2}</em>
-          </>
-        ) : (
-          <span>{line1}</span>
-        )}
-      </h1>
+          )}
+        </h1>
 
-      {heroSubtitle ? (
-        <p className="font-display italic text-lg text-text-secondary max-w-[500px] leading-relaxed mb-12 opacity-0 animate-fade-up [animation-delay:0.6s]">
-          {heroSubtitle}
-        </p>
-      ) : null}
+        {heroSubtitle ? (
+          <p className="font-display italic text-lg text-text-secondary max-w-[500px] leading-relaxed mb-12 opacity-0 animate-fade-up [animation-delay:0.6s]">
+            {heroSubtitle}
+          </p>
+        ) : null}
 
-      <div
-        className="w-20 h-px mb-12 opacity-0 animate-fade-up [animation-delay:0.8s]"
-        style={{
-          background: `linear-gradient(to right, transparent, ${primary}, ${secondary}, transparent)`,
-        }}
-      />
+        <div
+          className="w-20 h-px mb-12 opacity-0 animate-fade-up [animation-delay:0.8s]"
+          style={{
+            background: `linear-gradient(to right, transparent, ${primary}, ${secondary}, transparent)`,
+          }}
+        />
 
-      <a
-        href="#menu"
-        className="font-body inline-flex items-center gap-3 text-white text-sm tracking-[0.2em] uppercase no-underline py-4 px-10 rounded-[3px] cursor-pointer transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] opacity-0 animate-fade-up [animation-delay:1s]"
-        style={{
-          background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
-          boxShadow: `0 0 30px ${primary}4d`,
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.boxShadow = `0 0 50px ${primary}80, 0 0 20px ${secondary}4d`;
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.boxShadow = `0 0 30px ${primary}4d`;
-        }}
-      >
-        <span>{locale === "ar" ? "استكشف القائمة" : "Explore Menu"}</span>
-        <NoirChevronRight size={16} />
-      </a>
-    </section>
+        <a
+          href="#menu"
+          className="font-body inline-flex items-center gap-3 text-white text-sm tracking-[0.2em] uppercase no-underline py-4 px-10 rounded-[3px] cursor-pointer transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] opacity-0 animate-fade-up [animation-delay:1s]"
+          style={{
+            background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
+            boxShadow: `0 0 30px ${primary}4d`,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = `0 0 50px ${primary}80, 0 0 20px ${secondary}4d`;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = `0 0 30px ${primary}4d`;
+          }}
+        >
+          <span>{locale === "ar" ? "استكشف القائمة" : "Explore Menu"}</span>
+          <NoirChevronRight size={16} />
+        </a>
+      </section>
+    </>
   );
 }

@@ -1,23 +1,295 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import CategoryTabs from "./CategoryTabs";
-import MenuCard from "./MenuCard";
-import DetailModal from "./DetailModal";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useLocale } from "next-intl";
-import { Category, MenuItem } from "@/types/menu";
-import { NOIR_EASE } from "./noirConstants";
+import type { Category, MenuItem } from "@/types/menu";
+import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
+import {
+  useNoirTheme,
+  hexToRgba,
+  shadowGlow,
+  NOIR_EASE_TW_CLASS,
+} from "./NoirThemeContext";
 
-interface Props {
+function categoryTabLabel(cat: Category, locale: "ar" | "en"): string {
+  const ar = cat.nameAr?.trim();
+  const en = cat.nameEn?.trim();
+  const fallback = cat.name?.trim();
+  if (locale === "ar") {
+    return ar || en || fallback || "";
+  }
+  return en || ar || fallback || "";
+}
+
+function CategoryTabs({
+  categories,
+  active,
+  onChange,
+}: {
+  categories: Category[];
+  active: number;
+  onChange: (id: string) => void;
+}) {
+  const locale = useLocale() as "ar" | "en";
+  const { primary } = useNoirTheme();
+
+  const tabs: Category[] = [
+    { id: 0, name: "All", nameAr: "الكل", nameEn: "All", menuItems: [] },
+    ...categories,
+  ];
+
+  return (
+    <div
+      className="overflow-x-auto mb-12 md:mb-14 -mx-1 px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      dir={locale === "ar" ? "rtl" : "ltr"}
+    >
+      <div
+        className="flex gap-3 md:gap-4 w-max min-w-0 mx-auto px-2 sm:px-4 py-1 snap-x snap-mandatory"
+        role="tablist"
+        aria-label={locale === "ar" ? "تصنيفات القائمة" : "Menu categories"}
+      >
+        {tabs.map((cat, i) => {
+          const isActive = cat.id === Number(active);
+          const label = categoryTabLabel(cat, locale);
+          return (
+            <button
+              key={i === 0 && cat.id === 0 ? "all" : `cat-${cat.id}`}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => onChange(cat.id.toString())}
+              style={
+                isActive
+                  ? {
+                      boxShadow: `0 0 22px ${hexToRgba(primary, 0.5)}, 0 4px 14px rgba(0,0,0,0.35)`,
+                      animationDelay: `${i * 45}ms`,
+                    }
+                  : { animationDelay: `${i * 45}ms` }
+              }
+              className={`font-body flex min-h-[48px] items-center justify-center gap-2 text-base sm:text-[1.05rem] font-medium tracking-wide sm:tracking-[0.14em] uppercase py-3 px-6 sm:px-8 rounded-full cursor-pointer whitespace-nowrap transition-all duration-300 hover:scale-[1.04] hover:-translate-y-0.5 active:scale-[0.98] animate-slide-up motion-reduce:animate-none motion-reduce:hover:scale-100 motion-reduce:hover:translate-y-0 snap-start shrink-0
+                ${
+                  isActive
+                    ? "bg-linear-to-br from-violet to-cyan text-white border border-white/10 ring-1 ring-white/15 shadow-lg"
+                    : "bg-violet/4 text-text-secondary border border-violet/18 hover:border-violet/30 hover:bg-violet/8"
+                }`}
+            >
+              <span className="leading-tight max-w-[14rem] sm:max-w-none truncate">
+                {label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function NoirMenuCard({
+  item,
+  idx,
+  onOpen,
+  currency,
+}: {
+  item: MenuItem;
+  idx: number;
+  onOpen: (item: MenuItem) => void;
+  currency: string;
+}) {
+  const locale = useLocale();
+  const { primary } = useNoirTheme();
+  const name = locale === "ar" ? item.nameAr : item.nameEn;
+  const desc = locale === "ar" ? item.descriptionAr : item.descriptionEn;
+  const catLabel = locale === "ar" ? item.categoryNameAr : item.categoryNameEn;
+
+  const defaultShadow = "0 4px 24px rgba(0,0,0,0.25)";
+  const hoverShadow = `0 16px 48px rgba(0,0,0,0.5), 0 0 24px ${hexToRgba(primary, 0.2)}`;
+
+  return (
+    <div
+      className="group relative cursor-pointer overflow-hidden rounded-sm border border-violet/8 bg-glass backdrop-blur-lg transition-all duration-300 ease-out hover:-translate-y-1 active:scale-[0.995] motion-reduce:hover:translate-y-0 animate-slide-up motion-reduce:animate-none"
+      style={{
+        boxShadow: defaultShadow,
+        animationDelay: `${idx * 45}ms`,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = hoverShadow;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = defaultShadow;
+      }}
+      onClick={() => onOpen(item)}
+    >
+      <div className="relative h-[150px] overflow-hidden">
+        <div
+          className={`absolute inset-0 origin-bottom transition-transform duration-450 will-change-transform group-hover:scale-[1.05] ${NOIR_EASE_TW_CLASS}`}
+        >
+          <Image
+            src={resolveMenuItemImageSrc(item.image)}
+            alt={name}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover saturate-[0.72] brightness-[0.9]"
+          />
+          <div
+            className="pointer-events-none absolute inset-0 z-1"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.06) 38%, rgba(0,0,0,0.45) 78%, rgba(0,0,0,0.72) 100%), radial-gradient(120% 80% at 50% 0%, rgba(0,0,0,0.12), transparent 55%)",
+            }}
+          />
+        </div>
+        {item.discountPercent ? (
+          <div className="absolute top-3 end-3 z-2 text-white text-xs tracking-[0.15em] uppercase py-0.5 px-2 rounded-xs bg-violet/90">
+            {locale === "ar"
+              ? `${item.discountPercent}٪ خصم`
+              : `${item.discountPercent}% off`}
+          </div>
+        ) : null}
+      </div>
+
+      <div className="p-4">
+        <p className="text-xs tracking-[0.3em] uppercase text-cyan mb-1">
+          {catLabel}
+        </p>
+        <h3 className="font-display text-lg font-light leading-tight mb-1">
+          {name}
+        </h3>
+        {desc && (
+          <p className="text-xs text-text-secondary leading-relaxed mb-3 line-clamp-2">
+            {desc}
+          </p>
+        )}
+        <div className="flex items-center justify-between">
+          <span className="font-display text-lg font-light text-lavender">
+            {currency} {item.price}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function NoirDetailModal({
+  item,
+  onClose,
+  currency,
+}: {
+  item: MenuItem;
+  onClose: () => void;
+  currency: string;
+}) {
+  const locale = useLocale();
+  const { primary } = useNoirTheme();
+  const name = locale === "ar" ? item.nameAr : item.nameEn;
+  const desc = locale === "ar" ? item.descriptionAr : item.descriptionEn;
+  const catLabel = locale === "ar" ? item.categoryNameAr : item.categoryNameEn;
+
+  const panelShadow = `0 0 60px ${hexToRgba(primary, 0.2)}, 0 40px 80px rgba(0,0,0,0.6)`;
+  const closeGlow = shadowGlow(primary, 20, 0.25);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handler);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="detail-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-8 backdrop-blur-[12px] animate-fade-in motion-reduce:animate-none"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="max-h-[90vh] w-full max-w-[600px] overflow-y-auto rounded-[4px] border border-violet/20 bg-charcoal/95 animate-scale-in motion-reduce:animate-none"
+        style={{ boxShadow: panelShadow }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="relative h-[280px] overflow-hidden">
+          <Image
+            src={resolveMenuItemImageSrc(item.image)}
+            alt={name}
+            fill
+            className="object-cover saturate-[0.72]"
+            sizes="600px"
+          />
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(17,17,24,0) 0%, rgba(17,17,24,0.12) 35%, rgba(17,17,24,0.55) 72%, rgba(17,17,24,0.94) 100%), radial-gradient(100% 70% at 50% 0%, rgba(0,0,0,0.18), transparent 60%)",
+            }}
+          />
+          <button
+            type="button"
+            className="absolute end-4 top-4 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-violet/30 bg-black/80 text-base text-text-secondary transition-[transform,background-color,box-shadow] duration-300 ease-out hover:bg-black/70 active:scale-95"
+            style={{ boxShadow: "none" }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = closeGlow;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+            }}
+            onClick={onClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        <div className="p-8">
+          <p className="text-sm tracking-[0.3em] uppercase text-cyan mb-3">
+            {catLabel}
+          </p>
+          <h3
+            id="detail-modal-title"
+            className="font-display text-4xl font-light leading-tight mb-4"
+          >
+            {name}
+          </h3>
+          {desc && (
+            <p className="text-sm text-text-secondary leading-relaxed mb-6">
+              {desc}
+            </p>
+          )}
+
+          <div className="flex items-center justify-between gap-4">
+            <span className="font-display text-3xl font-light text-lavender">
+              {currency} {item.price}
+            </span>
+            {item.originalPrice && item.originalPrice > item.price && (
+              <span className="text-sm text-text-secondary line-through">
+                {currency} {item.originalPrice}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function MenuSectionn({
+  items,
+  categories,
+  currency,
+}: {
   items: MenuItem[];
   categories: Category[];
   currency: string;
-}
-
-export default function MenuSectionn({ items, categories, currency }: Props) {
+}) {
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
-  const [activeCategory, setActiveCategory] = useState<number>(0);
+  const [activeCategory, setActiveCategory] = useState(0);
   const locale = useLocale();
 
   const filteredItems =
@@ -43,37 +315,29 @@ export default function MenuSectionn({ items, categories, currency }: Props) {
         onChange={(id) => setActiveCategory(Number(id))}
       />
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeCategory.toString()}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.35, ease: NOIR_EASE }}
-          className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-5"
-        >
-          {filteredItems.map((item: MenuItem, idx: number) => (
-            <MenuCard
-              key={item.id}
-              item={item}
-              idx={idx}
-              onOpen={setSelectedDish}
-              currency={currency}
-            />
-          ))}
-        </motion.div>
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {selectedDish && (
-          <DetailModal
-            key={selectedDish.id}
-            item={selectedDish}
-            onClose={() => setSelectedDish(null)}
+      <div
+        key={activeCategory}
+        className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-5 animate-fade-in motion-reduce:animate-none"
+      >
+        {filteredItems.map((item, idx) => (
+          <NoirMenuCard
+            key={item.id}
+            item={item}
+            idx={idx}
+            onOpen={setSelectedDish}
             currency={currency}
           />
-        )}
-      </AnimatePresence>
+        ))}
+      </div>
+
+      {selectedDish ? (
+        <NoirDetailModal
+          key={selectedDish.id}
+          item={selectedDish}
+          onClose={() => setSelectedDish(null)}
+          currency={currency}
+        />
+      ) : null}
     </>
   );
 }

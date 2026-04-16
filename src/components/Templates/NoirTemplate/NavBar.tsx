@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
-import { useNoirTheme } from "./NoirThemeContext";
-import { shadowGlow } from "./noirColorUtils";
+import { useNoirTheme, shadowGlow } from "./NoirThemeContext";
 import { LanguageToggle } from "../Default/LanguageToggle";
 
 export default function NavBar() {
