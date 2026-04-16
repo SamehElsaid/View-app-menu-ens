@@ -17,6 +17,7 @@ import { useAppSelector } from "@/store/hooks";
 import { Icon } from "../components/Icon";
 import { useCategoryNav } from "./CategoryNavContext";
 import { getCategoryIconName, type MenuCategoryLike } from "./categoryIconMap";
+import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
 const NAV_OFFSET_PX = 80;
 
@@ -24,7 +25,9 @@ export default function MenuSection({ currency }: { currency: string }) {
   const locale = useLocale();
   const t = useTranslations("menu");
   const searchParams = useSearchParams();
-  const isTableOrder = Boolean(searchParams.get("table")?.trim());
+  const tableCartAllowed = useTableCartAllowed();
+  const isTableOrder =
+    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
   const [cart, setCart] = useState<Record<number, SkyCartItem>>({});
   const [isModalOpen, setIsModalOpen] = useState(0);
   const menuTitleRef = useRef<HTMLDivElement>(null);

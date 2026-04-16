@@ -11,10 +11,12 @@ import NoirTemplate from "@/components/Templates/NoirTemplate";
 import OceanicTemplate from "@/components/Templates/OceanicTemplate";
 import { useLocale } from "next-intl";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
+import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
 export default function Page() {
   const menu = useAppSelector((state) => state.menu);
   const locale = useLocale();
+  const tableCartAllowed = useTableCartAllowed();
 
   return (
     <main>
@@ -48,9 +50,11 @@ export default function Page() {
           {menu.theme === "emerald" && <EmeraldTemplate />}
           {menu.theme === "noir" && <NoirTemplate />}
           {menu.theme === "oceanic" && <OceanicTemplate />}
-          <Suspense fallback={null}>
-            <RequestStaffButton />
-          </Suspense>
+          {tableCartAllowed ? (
+            <Suspense fallback={null}>
+              <RequestStaffButton />
+            </Suspense>
+          ) : null}
         </>
       )}
     </main>

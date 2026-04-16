@@ -18,6 +18,7 @@ import {
   readSkyCartFromCookie,
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
+import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
 function NeonMenuItemCard({
   item,
@@ -203,7 +204,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
 }) => {
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const isTableOrder = Boolean(searchParams.get("table")?.trim());
+  const tableCartAllowed = useTableCartAllowed();
+  const isTableOrder =
+    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
   const [, setSelectedFoodItem] = useState<MenuItem | null>(null);
 
   const menuInfo =

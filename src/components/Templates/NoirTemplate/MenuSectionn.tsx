@@ -19,6 +19,7 @@ import {
   upsertSkyCartQuantityFromMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
+import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
 function categoryTabLabel(cat: Category, locale: "ar" | "en"): string {
   const ar = cat.nameAr?.trim();
@@ -245,7 +246,9 @@ function NoirDetailModal({
 }) {
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const isTableOrder = Boolean(searchParams.get("table")?.trim());
+  const tableCartAllowed = useTableCartAllowed();
+  const isTableOrder =
+    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
   const { primary } = useNoirTheme();
@@ -417,7 +420,9 @@ export default function MenuSectionn({
   const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const isTableOrder = Boolean(searchParams.get("table")?.trim());
+  const tableCartAllowed = useTableCartAllowed();
+  const isTableOrder =
+    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
   const currencyLabel = useCurrencyLabel()(currency);
 
   useEffect(() => {

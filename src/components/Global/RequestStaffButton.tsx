@@ -18,6 +18,7 @@ import {
   writeSkyCartToCookie,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
+import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
 /** When `menuCustomizations.primaryColor` is missing, match each template’s default accent. */
 const THEME_BG_MAIN_FALLBACK: Record<string, string> = {
@@ -115,6 +116,7 @@ export default function RequestStaffButton() {
   const [cart, setCart] = useState<Record<number, SkyCartItem>>({});
   const [isConfirming, setIsConfirming] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
+  const tableCartAllowed = useTableCartAllowed();
 
   const themeKey = (menuInfo?.theme ?? "default").toLowerCase();
   const accentMain = useMemo(() => {
@@ -354,6 +356,7 @@ export default function RequestStaffButton() {
   };
 
   if (!isMenuActive || !menuInfo?.id) return null;
+  if (!tableCartAllowed) return null;
   /** After mount: searchParams and locale match the browser; avoids hydration mismatch. */
   if (!hasMounted || !isTableOrder) return null;
 

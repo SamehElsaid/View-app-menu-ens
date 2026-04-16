@@ -14,6 +14,7 @@ import {
   upsertSkyCartQuantityFromMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
+import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
 function CategoryTabs({
   categories,
@@ -287,7 +288,9 @@ function EmeraldDishModal({
 }) {
   const locale = useLocale() as "ar" | "en";
   const searchParams = useSearchParams();
-  const isTableOrder = Boolean(searchParams.get("table")?.trim());
+  const tableCartAllowed = useTableCartAllowed();
+  const isTableOrder =
+    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
   const { primary, secondary } = useEmeraldTheme();
@@ -512,7 +515,9 @@ export default function MenuSection({
   const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const isTableOrder = Boolean(searchParams.get("table")?.trim());
+  const tableCartAllowed = useTableCartAllowed();
+  const isTableOrder =
+    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
   const { primary, secondary } = useEmeraldTheme();
   const currencyLabel = useCurrencyLabel()(currency);
 

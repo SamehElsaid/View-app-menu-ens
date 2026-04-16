@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,6 +25,7 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const navLinks = [
     { en: "Menu", ar: "القائمة" },
@@ -72,7 +74,10 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
 
   const toggleLanguage = () => {
     const newLocale = locale === "ar" ? "en" : "ar";
-    router.push(pathname, { locale: newLocale });
+    const query = searchParams.toString();
+    router.push(`${pathname}${query ? `?${query}` : ""}`, {
+      locale: newLocale,
+    });
   };
 
   const categoriesLabel = locale === "ar" ? "التصنيفات" : "Categories";

@@ -5,6 +5,7 @@ import { arabCurrencies, Currency } from "@/constants/currencies";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import LoadImage from "@/components/ImageLoad";
+import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
 interface MenuCardProps {
   item: MenuItem;
@@ -29,7 +30,9 @@ export default function MenuCard({
 }: MenuCardProps) {
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const isTableOrder = Boolean(searchParams.get("table")?.trim());
+  const tableCartAllowed = useTableCartAllowed();
+  const isTableOrder =
+    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
   const direction = locale === "ar" ? "rtl" : "ltr";
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);

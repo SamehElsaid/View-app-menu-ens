@@ -54,7 +54,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const toggleLanguage = () => {
     const cleanPath = pathname.replace(/^\/(ar|en)/, "") || "/";
-    window.location.href = `/${locale === "ar" ? "en" : "ar"}${cleanPath}`;
+    const search =
+      typeof window !== "undefined" ? window.location.search : "";
+    window.location.href = `/${locale === "ar" ? "en" : "ar"}${cleanPath}${search}`;
   };
 
   const handleNavClick = (

@@ -14,6 +14,7 @@ import {
   readSkyCartFromCookie,
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
+import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
 function currencyLabel(code: string, locale: string): string {
   if (locale === "ar") {
@@ -56,7 +57,9 @@ const MenuItem = ({
 }: MenuItemProps) => {
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const isTableOrder = Boolean(searchParams.get("table")?.trim());
+  const tableCartAllowed = useTableCartAllowed();
+  const isTableOrder =
+    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
   const titleId = useId();
   const [open, setOpen] = useState(false);
   const [selectedQty, setSelectedQty] = useState(1);
