@@ -8,6 +8,7 @@ import NeonTemplate from "@/components/Templates/NeonTemplate";
 import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
 import EmeraldTemplate from "@/components/Templates/EmeraldTemplate";
 import NoirTemplate from "@/components/Templates/NoirTemplate";
+import OceanicTemplate from "@/components/Templates/OceanicTemplate";
 import { useLocale } from "next-intl";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
 
@@ -46,6 +47,7 @@ export default function Page() {
           {menu.theme === "coffee" && <CoffeeTemplate />}
           {menu.theme === "emerald" && <EmeraldTemplate />}
           {menu.theme === "noir" && <NoirTemplate />}
+          {menu.theme === "oceanic" && <OceanicTemplate />}
           {menu.menuInfo?.ownerPlanType !== "free" &&
             menu.menuInfo?.ownerPlanType !== null && (
               <Suspense fallback={null}>
