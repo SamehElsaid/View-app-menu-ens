@@ -7,11 +7,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 import { useAppSelector } from "@/store/hooks";
 import type { Ad } from "@/types/Ad";
-import { motion } from "framer-motion";
-import { useNoirTheme } from "./NoirThemeContext";
-import { shadowGlow } from "./noirColorUtils";
-import { NOIR_EASE } from "./noirConstants";
-import NoirChevronRight from "./NoirChevronRight";
+import { useNoirTheme, shadowGlow, NoirChevronRight } from "./NoirThemeContext";
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -35,8 +31,6 @@ export default function PromoBannerN() {
     } catch {}
     window.open(ad.linkUrl, "_blank", "noopener,noreferrer");
   };
-
-  const isRTL = locale === "ar";
 
   const swiperShadow = shadowGlow(primary, 40, 0.1);
 
@@ -90,12 +84,7 @@ export default function PromoBannerN() {
                 </div>
 
                 <div className="relative z-10 flex min-h-[200px] w-full max-w-3xl flex-col justify-center px-3 py-5 text-white sm:min-h-0 sm:h-full sm:px-6 sm:py-6 md:p-8">
-                  <motion.div
-                    initial={{ opacity: 0, x: isRTL ? 12 : -12 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true, amount: 0.35 }}
-                    transition={{ duration: 0.5, ease: NOIR_EASE }}
-                  >
+                  <div className="animate-slide-up motion-reduce:animate-none">
                     <p className="mb-1.5 text-[0.6rem] tracking-[0.22em] uppercase text-cyan sm:mb-2 sm:text-xs sm:tracking-[0.5em]">
                       {locale === "ar" ? "— اعلان خاص —" : "— Special ADS —"}
                     </p>
@@ -119,7 +108,7 @@ export default function PromoBannerN() {
                         onClickStop={(e) => e.stopPropagation()}
                       />
                     )}
-                  </motion.div>
+                  </div>
                 </div>
               </div>
             </SwiperSlide>

@@ -68,6 +68,8 @@ export interface MenuItem {
   discountPercent: number | null;
   available: boolean;
   sortOrder: number;
+  allergens?: string[] | null;
+  ingredients?: string[];
 }
 
 export interface Category {

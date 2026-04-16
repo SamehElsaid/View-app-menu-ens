@@ -3,8 +3,7 @@
 import Image from "next/image";
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
-import { useEmeraldTheme } from "./EmeraldThemeContext";
-import { hexToRgba } from "./emeraldThemeUtils";
+import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
 
 export default function Footer() {
   const locale = useLocale() as "ar" | "en";
@@ -79,22 +78,25 @@ export default function Footer() {
           </span>
         </div>
 
-        <p className="font-sans text-xs text-stone-400 mb-0!">
+        <p className="font-sans text-xs text-stone-400 !mb-0">
           {locale === "ar"
             ? `© ${year} ${displayName}. جميع الحقوق محفوظة.`
             : `© ${year} ${displayName}. All rights reserved.`}
         </p>
 
         <p
-          dir="ltr"
-          className="font-sans text-xs text-stone-400 flex items-center gap-1"
+          dir={locale === "ar" ? "rtl" : "ltr"}
+          className="font-sans text-xs text-stone-400 inline-flex flex-wrap items-center justify-center gap-1"
         >
-          {locale === "ar" ? "تصميم وتطوير" : "Designed & Developed by"}{" "}
+          <span>
+            {locale === "ar" ? "تصميم وتطوير" : "Designed & Developed by"}
+          </span>
           <a
             href="https://www.facebook.com/ENSEGYPTEG"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium hover:underline transition-colors"
+            dir="ltr"
+            className="font-medium hover:underline transition-colors shrink-0"
             style={{ color: primary }}
           >
             ENS

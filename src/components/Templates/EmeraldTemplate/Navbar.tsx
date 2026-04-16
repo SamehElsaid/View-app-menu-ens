@@ -6,8 +6,7 @@ import Link from "next/link";
 
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
-import { useEmeraldTheme } from "./EmeraldThemeContext";
-import { hexToRgba } from "./emeraldThemeUtils";
+import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
 import { LanguageToggle } from "../Default/LanguageToggle";
 
 export default function Navbar() {
