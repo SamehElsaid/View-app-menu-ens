@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
+import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 import {
   useNoirTheme,
   hexToRgba,
@@ -89,12 +90,12 @@ function NoirMenuCard({
   item,
   idx,
   onOpen,
-  currency,
+  currencyLabel,
 }: {
   item: MenuItem;
   idx: number;
   onOpen: (item: MenuItem) => void;
-  currency: string;
+  currencyLabel: string;
 }) {
   const locale = useLocale();
   const { primary } = useNoirTheme();
@@ -162,7 +163,7 @@ function NoirMenuCard({
         )}
         <div className="flex items-center justify-between">
           <span className="font-display text-lg font-light text-lavender">
-            {currency} {item.price}
+            {currencyLabel} {item.price}
           </span>
         </div>
       </div>
@@ -173,11 +174,11 @@ function NoirMenuCard({
 function NoirDetailModal({
   item,
   onClose,
-  currency,
+  currencyLabel,
 }: {
   item: MenuItem;
   onClose: () => void;
-  currency: string;
+  currencyLabel: string;
 }) {
   const locale = useLocale();
   const { primary } = useNoirTheme();
@@ -265,11 +266,11 @@ function NoirDetailModal({
 
           <div className="flex items-center justify-between gap-4">
             <span className="font-display text-3xl font-light text-lavender">
-              {currency} {item.price}
+              {currencyLabel} {item.price}
             </span>
             {item.originalPrice && item.originalPrice > item.price && (
               <span className="text-sm text-text-secondary line-through">
-                {currency} {item.originalPrice}
+                {currencyLabel} {item.originalPrice}
               </span>
             )}
           </div>
@@ -291,6 +292,7 @@ export default function MenuSectionn({
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
   const [activeCategory, setActiveCategory] = useState(0);
   const locale = useLocale();
+  const currencyLabel = useCurrencyLabel()(currency);
 
   const filteredItems =
     activeCategory === 0
@@ -325,7 +327,7 @@ export default function MenuSectionn({
             item={item}
             idx={idx}
             onOpen={setSelectedDish}
-            currency={currency}
+            currencyLabel={currencyLabel}
           />
         ))}
       </div>
@@ -335,7 +337,7 @@ export default function MenuSectionn({
           key={selectedDish.id}
           item={selectedDish}
           onClose={() => setSelectedDish(null)}
-          currency={currency}
+          currencyLabel={currencyLabel}
         />
       ) : null}
     </>

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
+import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
 
 function CategoryTabs({
@@ -89,12 +90,12 @@ function EmeraldMenuCard({
   dish,
   index,
   onClick,
-  currency,
+  currencyLabel,
 }: {
   dish: MenuItem;
   index: number;
   onClick: (dish: MenuItem) => void;
-  currency: string;
+  currencyLabel: string;
 }) {
   const locale = useLocale();
   const { primary, secondary } = useEmeraldTheme();
@@ -152,7 +153,7 @@ function EmeraldMenuCard({
             className="font-sans font-700 text-sm"
             style={{ color: primary }}
           >
-            {currency} {dish.price}
+            {currencyLabel} {dish.price}
           </span>
         </div>
       </div>
@@ -211,11 +212,11 @@ function EmeraldMenuCard({
 function EmeraldDishModal({
   dish,
   onClose,
-  currency,
+  currencyLabel,
 }: {
   dish: MenuItem | null;
   onClose: () => void;
-  currency: string;
+  currencyLabel: string;
 }) {
   const locale = useLocale() as "ar" | "en";
   const { primary, secondary } = useEmeraldTheme();
@@ -303,7 +304,7 @@ function EmeraldDishModal({
               <div className="absolute bottom-4 end-4 bg-white/95 backdrop-blur-md rounded-2xl px-5 py-3 shadow-lg flex items-center gap-3">
                 {dish.originalPrice ? (
                   <span className="font-sans font-600 text-lg text-stone-400 line-through tabular-nums">
-                    {dish.originalPrice} {currency}
+                    {dish.originalPrice} {currencyLabel}
                   </span>
                 ) : null}
                 <span
@@ -316,7 +317,7 @@ function EmeraldDishModal({
                   className="font-sans font-600 text-sm opacity-70"
                   style={{ color: primary }}
                 >
-                  {currency}
+                  {currencyLabel}
                 </span>
               </div>
             </div>
@@ -377,6 +378,7 @@ export default function MenuSection({
   const [activeCategory, setActiveCategory] = useState(0);
   const locale = useLocale();
   const { primary, secondary } = useEmeraldTheme();
+  const currencyLabel = useCurrencyLabel()(currency);
 
   const filteredItems =
     activeCategory === 0
@@ -443,7 +445,7 @@ export default function MenuSection({
               dish={dish}
               index={i}
               onClick={setSelectedDish}
-              currency={currency}
+              currencyLabel={currencyLabel}
             />
           ))}
       </div>
@@ -451,7 +453,7 @@ export default function MenuSection({
       <EmeraldDishModal
         dish={selectedDish}
         onClose={() => setSelectedDish(null)}
-        currency={currency}
+        currencyLabel={currencyLabel}
       />
     </>
   );

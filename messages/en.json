@@ -26,6 +26,27 @@
     "invalidTable": "This table is not registered for this restaurant",
     "error": "Could not send the request"
   },
+  "currencyISO": {
+    "AED": "AED",
+    "SAR": "SAR",
+    "USD": "USD",
+    "EUR": "EUR",
+    "GBP": "GBP",
+    "EGP": "EGP",
+    "KWD": "KWD",
+    "QAR": "QAR",
+    "BHD": "BHD",
+    "OMR": "OMR",
+    "IQD": "IQD",
+    "JOD": "JOD",
+    "TRY": "TRY",
+    "MAD": "MAD",
+    "YER": "YER",
+    "TND": "TND",
+    "SDG": "SDG",
+    "LBP": "LBP",
+    "DZD": "DZD"
+  },
   "footer": {
     "rights": "All rights reserved.",
     "designedBy": "Designed by",
