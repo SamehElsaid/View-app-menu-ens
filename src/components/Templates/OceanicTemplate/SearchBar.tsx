@@ -2,15 +2,51 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiSearch, FiX } from "react-icons/fi";
 import { useLocale } from 'next-intl';
+import { useEffect, useRef, useState } from 'react';
 
 interface SearchBarProps {
   value: string;
   onChange: (value: string) => void;
 }
 
+const SEARCH_MIN_CHARS = 3;
+
 const SearchBar = ({ value, onChange }: SearchBarProps) => {
   const locale = useLocale();
   const isAr = locale === "ar";
+
+  const [localValue, setLocalValue] = useState(value);
+  const isTypingRef = useRef(false);
+
+  useEffect(() => {
+    if (!isTypingRef.current && localValue !== value) {
+      setLocalValue(value);
+    }
+  }, [value, localValue]);
+
+  useEffect(() => {
+    if (!isTypingRef.current) return;
+    const trimmed = localValue.trim();
+    if (trimmed.length === 0) {
+      onChange('');
+      isTypingRef.current = false;
+      return;
+    }
+    if (trimmed.length < SEARCH_MIN_CHARS) return;
+    onChange(localValue);
+    isTypingRef.current = false;
+  }, [localValue, onChange]);
+
+  const handleChange = (next: string) => {
+    isTypingRef.current = true;
+    setLocalValue(next);
+  };
+
+  const handleClear = () => {
+    isTypingRef.current = false;
+    setLocalValue('');
+    onChange('');
+  };
 
   return (
     <motion.div
@@ -21,14 +57,14 @@ const SearchBar = ({ value, onChange }: SearchBarProps) => {
     >
       <div className="relative group">
         <div className={`absolute ${isAr ? 'right-5' : 'left-5'} top-1/2 -translate-y-1/2 z-10 transition-colors duration-300`}>
-          <FiSearch className={`w-5 h-5 ${value ? 'text-cyan-600' : 'text-slate-400'} group-focus-within:text-cyan-500`} />
+          <FiSearch className={`w-5 h-5 ${localValue ? 'text-cyan-600' : 'text-slate-400'} group-focus-within:text-cyan-500`} />
         </div>
 
         <input
           type="text"
           placeholder={isAr ? "ابحث عن طبقك المفضل..." : "Search for your favorite dish..."}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          value={localValue}
+          onChange={(e) => handleChange(e.target.value)}
           className={`
             w-full h-14 rounded-full
             bg-white/40 backdrop-blur-xl
@@ -44,12 +80,12 @@ const SearchBar = ({ value, onChange }: SearchBarProps) => {
         />
 
         <AnimatePresence>
-          {value && (
+          {localValue && (
             <motion.button
               initial={{ opacity: 0, scale: 0.5, x: isAr ? 10 : -10 }}
               animate={{ opacity: 1, scale: 1, x: 0 }}
               exit={{ opacity: 0, scale: 0.5 }}
-              onClick={() => onChange('')}
+              onClick={handleClear}
               className={`
                 absolute ${isAr ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2
                 w-8 h-8 rounded-full bg-slate-200/50 backdrop-blur-sm

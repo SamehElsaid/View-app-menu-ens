@@ -52,18 +52,18 @@ const MenuItemO = ({ item, index, currency, onClick }: MenuItemProps) => {
       onClick={() => onClick(item)}
     >
       {/* Image Container */}
-      <div className="relative h-60 w-full overflow-hidden">
+      <div className="relative w-full aspect-[4/3] overflow-hidden bg-gradient-to-br from-[#002433] via-[#002b3a] to-[#003544]">
         <Image
           src={item.image}
           alt={displayName || "Menu Item"}
           fill
           priority={index < 4}
           sizes="(max-w-7xl) 25vw, (max-w-sm) 100vw, 50vw"
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-110 opacity-90 group-hover:opacity-100"
+          className="object-contain p-3 transition-transform duration-700 ease-out group-hover:scale-105 "
         />
 
-        {/* Shadow Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#001a23] via-[#001a23]/40 to-transparent opacity-90 z-10" />
+        {/* Shadow Overlay (bottom only, lighter to keep image visible) */}
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#001a23] to-transparent z-10 pointer-events-none" />
 
         {/* Discount Badge */}
         {hasDiscount && (
@@ -77,17 +77,14 @@ const MenuItemO = ({ item, index, currency, onClick }: MenuItemProps) => {
           </motion.span>
         )}
 
- 
-
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 z-30">
+        {/* Always-visible expand button */}
+        <div className="absolute top-3 end-3 z-20">
           <motion.div
-            className="bg-cyan-500 text-white p-4 rounded-full shadow-[0_0_20px_rgba(6,182,212,0.5)]"
-            initial={{ scale: 0.5 }}
+            className="bg-cyan-500/90 text-white p-2.5 rounded-full shadow-[0_4px_14px_rgba(6,182,212,0.45)] ring-1 ring-white/30 backdrop-blur-sm"
             whileHover={{ scale: 1.1 }}
-            animate={{ scale: [0.9, 1, 0.9] }}
-            transition={{ scale: { repeat: Infinity, duration: 2 }, default: { duration: 0.3 } }}
+            whileTap={{ scale: 0.95 }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]">
               <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
             </svg>
           </motion.div>
@@ -100,7 +97,7 @@ const MenuItemO = ({ item, index, currency, onClick }: MenuItemProps) => {
             {displayName}
           </h3>
 
-          <p className="text-cyan-100/60 text-sm line-clamp-2 leading-relaxed font-arabic group-hover:text-cyan-100/90 transition-colors min-h-[2.5rem]">
+          <p className="text-cyan-100/60 text-sm line-clamp-1 leading-relaxed font-arabic group-hover:text-cyan-100/90 transition-colors min-h-[1.25rem]">
             {displayDesc}
           </p>
         </div>
@@ -120,11 +117,7 @@ const MenuItemO = ({ item, index, currency, onClick }: MenuItemProps) => {
             </span>
           </div>
 
-          {hasDiscount && (
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-2.5 py-1">
-              {isAr ? `وفّر ${savedAmount}` : `Save ${savedAmount}`}
-            </span>
-          )}
+          
         </div>
 
         <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between opacity-50 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">

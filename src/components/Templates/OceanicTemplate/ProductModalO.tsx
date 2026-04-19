@@ -81,23 +81,23 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.92, y: 30 }}
             transition={{ type: "spring", stiffness: 260, damping: 26 }}
-            className="fixed z-[70] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+            className="oceanic-modal-scroll fixed z-[70] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
                        w-[95%] max-w-[520px] max-h-[92vh] overflow-y-auto rounded-[2.5rem]
                        bg-gradient-to-b from-[#002b36] via-[#00222d] to-[#001a23]
-                       border border-white/10 shadow-[0_30px_100px_rgba(0,0,0,0.6)]
-                       scrollbar-hide"
+                       border border-white/10 shadow-[0_30px_100px_rgba(0,0,0,0.6)]"
           >
             {/* Header Image Section */}
-            <div className="relative h-64 md:h-80 w-full overflow-hidden">
+            <div className=" relative w-full aspect-[4/3] md:aspect-[16/10] overflow-hidden bg-gradient-to-br from-[#002433] via-[#002b3a] to-[#003544]">
               <Image
                 src={item.image}
                 alt={displayName}
                 fill
-                className="object-cover"
+                sizes="(max-width: 520px) 95vw, 520px"
+                className="object-contain p-4"
                 priority
               />
-              {/* Gradient Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#001a23] via-[#001a23]/30 to-black/20" />
+              {/* Gradient Overlay (bottom only, lighter to keep image visible) */}
+              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#001a23] to-transparent pointer-events-none" />
 
               {/* Close Button */}
               <motion.button

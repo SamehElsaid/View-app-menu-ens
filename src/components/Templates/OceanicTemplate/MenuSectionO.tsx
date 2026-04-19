@@ -110,12 +110,10 @@ const MenuSectionO = () => {
 
         <div ref={topSentinelRef} aria-hidden="true" className="h-px w-full" />
 
-        {/* Category Tabs */}
+        {/* Category Tabs — in-flow version (hidden while sticky floating is active) */}
         <div
-          className={`transition-shadow duration-300 ease-out ${
-            isSticky
-              ? 'fixed top-[72px] sm:top-[80px] left-0 right-0 z-30 bg-white/95 backdrop-blur-xl py-3 px-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] border-b border-cyan-100'
-              : 'relative z-10 py-2'
+          className={`relative z-10 py-3 sm:py-4 transition-opacity duration-300 ${
+            isSticky ? 'opacity-0 pointer-events-none' : 'opacity-100'
           }`}
         >
           <div className="max-w-7xl mx-auto">
@@ -123,11 +121,33 @@ const MenuSectionO = () => {
               categories={categories}
               activeCategory={activeCategory}
               onCategoryChange={setActiveCategory}
+              layoutIdPrefix="oceanic-inflow"
             />
           </div>
         </div>
 
-        {isSticky && <div aria-hidden="true" className="h-[72px]" />}
+        {/* Category Tabs — sticky floating version with smooth slide-in */}
+        <AnimatePresence initial={false}>
+          {isSticky && (
+            <motion.div
+              key="sticky-category-tabs"
+              initial={{ y: -24, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -24, opacity: 0 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="fixed top-[72px] sm:top-[80px] left-0 right-0 z-40 bg-white/95 backdrop-blur-xl py-4 sm:py-5 px-2 sm:px-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] border-b border-cyan-100"
+            >
+              <div className="max-w-7xl mx-auto">
+                <CategoryTabs
+                  categories={categories}
+                  activeCategory={activeCategory}
+                  onCategoryChange={setActiveCategory}
+                  layoutIdPrefix="oceanic-sticky"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Menu Items Grid */}
         <motion.div 
