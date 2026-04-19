@@ -1,4 +1,10 @@
+
+@import url("https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+
 @import "tailwindcss";
+
+/* Oceanic template scoped tokens & animations */
+@import "../../components/Templates/OceanicTemplate/oceanic.css";
 
 /* Material Symbols font removed - replaced with @iconify/react SVG icons */
 /* This eliminates the 3.4MB font file from the critical path */
