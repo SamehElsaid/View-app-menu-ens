@@ -19,10 +19,11 @@ const SearchBar = ({ value, onChange }: SearchBarProps) => {
   const isTypingRef = useRef(false);
 
   useEffect(() => {
-    if (!isTypingRef.current && localValue !== value) {
-      setLocalValue(value);
-    }
-  }, [value, localValue]);
+    if (isTypingRef.current) return;
+    queueMicrotask(() => {
+      setLocalValue((prev) => (prev === value ? prev : value));
+    });
+  }, [value]);
 
   useEffect(() => {
     if (!isTypingRef.current) return;
