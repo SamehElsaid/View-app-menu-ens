@@ -282,7 +282,7 @@ function EmeraldDishModal({
   onClose,
   currencyLabel,
 }: {
-  dish: MenuItem | null;
+  dish: MenuItem;
   onClose: () => void;
   currencyLabel: string;
 }) {
@@ -316,7 +316,6 @@ function EmeraldDishModal({
 
   useEffect(() => {
     if (!dish) return;
-    setSelectedQty(1);
     const sync = () => {
       const c = readSkyCartFromCookie();
       setInCartQty(c[dish.id]?.quantity ?? 0);
@@ -330,8 +329,6 @@ function EmeraldDishModal({
   const modalShadow = `0 24px 80px ${hexToRgba(primary, 0.2)}, 0 8px 24px rgba(0,0,0,0.12)`;
   const imageBg = hexToRgba(primary, 0.06);
   const divider = hexToRgba(secondary, 0.55);
-
-  if (!dish) return null;
 
   return (
     <>
@@ -606,11 +603,14 @@ export default function MenuSection({
           ))}
       </div>
 
-      <EmeraldDishModal
-        dish={selectedDish}
-        onClose={() => setSelectedDish(null)}
-        currencyLabel={currencyLabel}
-      />
+      {selectedDish ? (
+        <EmeraldDishModal
+          key={selectedDish.id}
+          dish={selectedDish}
+          onClose={() => setSelectedDish(null)}
+          currencyLabel={currencyLabel}
+        />
+      ) : null}
     </>
   );
 }

@@ -272,7 +272,6 @@ function NoirDetailModal({
   }, [onClose]);
 
   useEffect(() => {
-    setSelectedQty(1);
     const sync = () => {
       const c = readSkyCartFromCookie();
       setInCartQty(c[item.id]?.quantity ?? 0);

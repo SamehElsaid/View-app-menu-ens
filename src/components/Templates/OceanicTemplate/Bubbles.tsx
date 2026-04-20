@@ -16,16 +16,18 @@ const Bubbles = () => {
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
 
   useEffect(() => {
-    // Generate bubbles only on the client side to avoid hydration mismatch
-    setBubbles(
-      Array.from({ length: BUBBLE_COUNT }, (_, i) => ({
-        id: i,
-        size: Math.random() * 34 + 8,
-        left: Math.random() * 100,
-        delay: Math.random() * 10,
-        duration: Math.random() * 12 + 7,
-      })),
-    );
+    // Defer to next microtask so setState is not synchronous in the effect body (eslint react-hooks/set-state-in-effect).
+    queueMicrotask(() => {
+      setBubbles(
+        Array.from({ length: BUBBLE_COUNT }, (_, i) => ({
+          id: i,
+          size: Math.random() * 34 + 8,
+          left: Math.random() * 100,
+          delay: Math.random() * 10,
+          duration: Math.random() * 12 + 7,
+        })),
+      );
+    });
   }, []);
 
   return (

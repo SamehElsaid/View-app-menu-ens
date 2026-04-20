@@ -13,16 +13,17 @@ import "swiper/css";
 import "swiper/css/effect-fade";
 
 export default function PromoBannerOceanic() {
-  const ads = useAppSelector((state) => state.menu.ads) ?? [];
+  const adsFromStore = useAppSelector((state) => state.menu.ads);
   const locale = useLocale();
   const swiperRef = useRef<SwiperType | null>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const sortedAds = useMemo(() => {
+    const ads = adsFromStore ?? [];
     return [...ads]
       .filter((ad) => ad.position === "banner" && ad.imageUrl)
       .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
-  }, [ads]);
+  }, [adsFromStore]);
 
   if (sortedAds.length === 0) return null;
 
