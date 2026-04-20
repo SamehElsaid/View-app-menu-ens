@@ -36,15 +36,16 @@ export default function PromoBannerOceanic() {
   };
 
   return (
-    <section className="py-16 px-4 max-w-[1300px] mx-auto overflow-hidden">
+    <section className="py-8 px-4 max-w-5xl mx-auto overflow-hidden">
       <Swiper
         modules={[Autoplay, EffectFade]}
         effect="fade"
+        speed={750}
         loop={sortedAds.length > 1}
         autoplay={{ delay: 7000, disableOnInteraction: false }}
         onSlideChange={(swiper) => setSelectedIndex(swiper.realIndex)}
         onSwiper={(swiper) => (swiperRef.current = swiper)}
-        className="rounded-[2rem] md:rounded-[3rem]  overflow-hidden bg-slate-900"
+        className="rounded-2xl md:rounded-3xl overflow-hidden bg-slate-900"
       >
         {sortedAds.map((ad, i) => {
           const title = locale === "ar" ? ad.titleAr || ad.title : ad.title || ad.titleAr;
@@ -53,49 +54,58 @@ export default function PromoBannerOceanic() {
           return (
             <SwiperSlide key={ad.id}>
               <div
-                className="relative w-full h-[350px] md:h-[400px] cursor-pointer group"
+                className="relative w-full h-[200px] sm:h-[220px] md:h-[260px] cursor-pointer group"
                 onClick={() => handleAdClick(ad)}
               >
                 <Image
                   src={ad.imageUrl}
                   alt={title || "Ad"}
                   fill
-                  className="object-cover transition-transform duration-[3s] group-hover:scale-110"
+                  className="object-cover transition-transform duration-[1.4s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
                   priority={i === 0}
                 />
 
                 <div className="absolute inset-0 bg-gradient-to-r from-[#001a23]/95 via-[#001a23]/60 to-transparent rtl:bg-gradient-to-l" />
 
-                <div className="relative h-full flex flex-col justify-center p-8 md:p-24 text-white max-w-4xl">
+                <div className="relative h-full flex flex-col justify-center p-5 sm:p-6 md:p-10 text-white max-w-2xl">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={selectedIndex}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 14 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 0.2 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{
+                        duration: 0.52,
+                        delay: 0.08,
+                        ease: [0.16, 1, 0.3, 1],
+                      }}
                     >
-                      <span className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-cyan-500/20 backdrop-blur-md text-cyan-300 text-xs font-bold mb-6 tracking-[0.2em] uppercase border border-cyan-500/30">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-cyan-500/20 backdrop-blur-md text-cyan-300 text-[10px] sm:text-xs font-bold mb-3 tracking-[0.15em] uppercase border border-cyan-500/30">
                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
                         {locale === "ar" ? "اعلان خاص" : "Special ADS"}
                       </span>
 
-                      <h2 className="text-4xl md:text-7xl font-bold mb-6 leading-tight font-display tracking-tight">
+                      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 leading-tight font-display tracking-tight line-clamp-2">
                         {title}
                       </h2>
 
                       {content && (
-                        <p className="text-lg md:text-xl text-white/70 mb-10 line-clamp-2 font-light max-w-xl leading-relaxed">
+                        <p className="text-sm md:text-base text-white/70 mb-4 line-clamp-2 font-light max-w-lg leading-relaxed">
                           {content}
                         </p>
                       )}
 
                       {ad.linkUrl && (
-                        <div className="inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-cyan-600 text-white font-bold transition-all hover:bg-cyan-500 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] group/btn">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm bg-cyan-600 text-white font-bold transition-all hover:bg-cyan-500 hover:shadow-[0_0_16px_rgba(6,182,212,0.35)] group/btn">
                           {locale === "ar" ? "اكتشف الآن" : "Explore Now"}
                           <motion.span 
                             className="inline-block"
-                            animate={{ x: [0, 5, 0] }}
-                            transition={{ repeat: Infinity, duration: 1.5 }}
+                            animate={{ x: [0, 4, 0] }}
+                            transition={{
+                              repeat: Infinity,
+                              duration: 2,
+                              ease: [0.45, 0, 0.55, 1],
+                            }}
                           >
                             →
                           </motion.span>
@@ -111,12 +121,12 @@ export default function PromoBannerOceanic() {
       </Swiper>
 
       {sortedAds.length > 1 && (
-        <div className="flex justify-center gap-4 mt-8">
+        <div className="flex justify-center gap-3 mt-4">
           {sortedAds.map((_, i) => (
             <button
               key={i}
               onClick={() => swiperRef.current?.slideToLoop(i)}
-              className={`h-2 transition-all duration-500 rounded-full ${
+              className={`h-2 transition-[width,background-color,box-shadow] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] rounded-full ${
                 selectedIndex === i 
                   ? "w-12 bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" 
                   : "w-2 bg-slate-300 hover:bg-slate-400"

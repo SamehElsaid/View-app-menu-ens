@@ -1,26 +1,41 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import CategoryTabs from './CategoryTabs';
-import MenuItemO from './MenuItemO';
-import ProductModalO from './ProductModalO';
-import SearchBar from './SearchBar';
-import { useLocale } from 'next-intl';
-import { useAppSelector } from '@/store/hooks';
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import CategoryTabs from "./CategoryTabs";
+import MenuItemO from "./MenuItemO";
+import ProductModalO from "./ProductModalO";
+import SearchBar from "./SearchBar";
+import { useLocale } from "next-intl";
+import { useAppSelector } from "@/store/hooks";
+import type { MenuItem } from "@/types/menu";
+import {
+  SKY_CART_UPDATED_EVENT,
+  readSkyCartFromCookie,
+  upsertSkyCartQuantityFromMenuItem,
+  type SkyCartItem,
+} from "@/lib/skyTemplateCart";
+import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
+const EMPTY_MENU: MenuItem[] = [];
 
 const MenuSectionO = () => {
   const locale = useLocale();
-  const isAr = locale === 'ar';
-  const [activeCategory, setActiveCategory] = useState('0');
-  const [searchQuery, setSearchQuery] = useState('');
+  const isAr = locale === "ar";
+  const searchParams = useSearchParams();
+  const tableCartAllowed = useTableCartAllowed();
+  const isTableOrder =
+    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const [activeCategory, setActiveCategory] = useState("0");
+  const [searchQuery, setSearchQuery] = useState("");
   const [isSticky, setIsSticky] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<any | null>(null);
+  const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const topSentinelRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
 
-  const menuItems = useAppSelector((state) => state.menu.menu) ?? [];
+  const menuFromStore = useAppSelector((state) => state.menu.menu);
   const categories = useAppSelector((state) => state.menu.categories) ?? [];
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
   const currency = menuInfo?.currency || "AED";
@@ -43,7 +58,7 @@ const MenuSectionO = () => {
         topPassed = entry.boundingClientRect.top < HEADER_OFFSET;
         update();
       },
-      { rootMargin: `-${HEADER_OFFSET}px 0px 0px 0px`, threshold: [0, 1] }
+      { rootMargin: `-${HEADER_OFFSET}px 0px 0px 0px`, threshold: [0, 1] },
     );
 
     const bottomObserver = new IntersectionObserver(
@@ -51,7 +66,7 @@ const MenuSectionO = () => {
         bottomPassed = entry.boundingClientRect.top < HEADER_OFFSET;
         update();
       },
-      { rootMargin: `-${HEADER_OFFSET}px 0px 0px 0px`, threshold: [0, 1] }
+      { rootMargin: `-${HEADER_OFFSET}px 0px 0px 0px`, threshold: [0, 1] },
     );
 
     topObserver.observe(topEl);
@@ -63,35 +78,50 @@ const MenuSectionO = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const sync = () => setCartById(readSkyCartFromCookie());
+    sync();
+    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+  }, []);
+
+  const handleAddToCart = (item: MenuItem, quantity: number) => {
+    upsertSkyCartQuantityFromMenuItem(item, quantity);
+    setCartById(readSkyCartFromCookie());
+  };
+
   const filteredItems = useMemo(() => {
-    let items = menuItems;
-    if (activeCategory !== '0') {
-      items = items.filter((item) => item.categoryId === Number(activeCategory));
+    let items = menuFromStore ?? EMPTY_MENU;
+    if (activeCategory !== "0") {
+      items = items.filter(
+        (item) => item.categoryId === Number(activeCategory),
+      );
     }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      items = items.filter((item) =>
-        item.nameAr?.toLowerCase().includes(q) ||
-        item.nameEn?.toLowerCase().includes(q) ||
-        item.name?.toLowerCase().includes(q)
+      items = items.filter(
+        (item) =>
+          item.nameAr?.toLowerCase().includes(q) ||
+          item.nameEn?.toLowerCase().includes(q) ||
+          item.name?.toLowerCase().includes(q),
       );
     }
     return items;
-  }, [activeCategory, searchQuery, menuItems]);
+  }, [activeCategory, searchQuery, menuFromStore]);
 
   return (
     <section id="menu" className="py-24 px-4 relative bg-[#fdfdfd]">
-      <div className="max-w-7xl mx-auto">
-        
+      <div className="max-w-screen-2xl mx-auto">
         <motion.div
           className="text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-48px" }}
+          transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
         >
           <h2 className="text-4xl md:text-6xl font-light text-[#001a23] mb-4 font-display tracking-tight">
             <span className="block font-bold opacity-20 text-sm md:text-base uppercase tracking-[0.3em] mb-2">
-               {menuInfo?.name}
+              {menuInfo?.name}
             </span>
             {isAr ? "المنيو" : "The Menu"}
           </h2>
@@ -101,9 +131,10 @@ const MenuSectionO = () => {
         {/* Search Bar */}
         <motion.div
           className="mb-10 max-w-2xl mx-auto"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.75, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
         >
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
         </motion.div>
@@ -112,8 +143,8 @@ const MenuSectionO = () => {
 
         {/* Category Tabs — in-flow version (hidden while sticky floating is active) */}
         <div
-          className={`relative z-10 py-3 sm:py-4 transition-opacity duration-300 ${
-            isSticky ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          className={`relative z-10 py-3 sm:py-4 transition-opacity duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isSticky ? "opacity-0 pointer-events-none" : "opacity-100"
           }`}
         >
           <div className="max-w-7xl mx-auto">
@@ -131,11 +162,11 @@ const MenuSectionO = () => {
           {isSticky && (
             <motion.div
               key="sticky-category-tabs"
-              initial={{ y: -24, opacity: 0 }}
+              initial={{ y: -16, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              exit={{ y: -24, opacity: 0 }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed top-[72px] sm:top-[80px] left-0 right-0 z-40 bg-white/95 backdrop-blur-xl py-4 sm:py-5 px-2 sm:px-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] border-b border-cyan-100"
+              exit={{ y: -12, opacity: 0 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="fixed top-[72px] sm:top-20 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl py-4 sm:py-5 px-2 sm:px-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] border-b border-cyan-100"
             >
               <div className="max-w-7xl mx-auto">
                 <CategoryTabs
@@ -150,9 +181,10 @@ const MenuSectionO = () => {
         </AnimatePresence>
 
         {/* Menu Items Grid */}
-        <motion.div 
+        <motion.div
           layout
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10 mt-12"
+          transition={{ layout: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-7 gap-y-12 mt-12"
         >
           <AnimatePresence mode="popLayout">
             {filteredItems.length > 0 ? (
@@ -160,34 +192,49 @@ const MenuSectionO = () => {
                 <motion.div
                   key={item.id}
                   layout
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                  initial={{ opacity: 0, y: 22 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 12 }}
+                  transition={{
+                    duration: 0.58,
+                    delay: Math.min(index * 0.045, 0.32),
+                    ease: [0.16, 1, 0.3, 1],
+                    layout: { duration: 0.48, ease: [0.16, 1, 0.3, 1] },
+                  }}
                 >
                   <MenuItemO
                     item={item}
                     index={index}
                     currency={currency}
                     onClick={setSelectedItem}
+                    isTableOrder={isTableOrder}
+                    cartQuantity={cartById[item.id]?.quantity ?? 0}
+                    onAddToCart={handleAddToCart}
                   />
                 </motion.div>
               ))
             ) : (
               <motion.div
                 className="col-span-full text-center py-24 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               >
                 <p className="text-slate-400 text-xl font-arabic">
-                  {isAr ? "عذراً، لم نجد ما تبحث عنه" : "Sorry, no treasures found here"}
+                  {isAr
+                    ? "عذراً، لم نجد ما تبحث عنه"
+                    : "Sorry, no treasures found here"}
                 </p>
               </motion.div>
             )}
           </AnimatePresence>
         </motion.div>
 
-        <div ref={bottomSentinelRef} aria-hidden="true" className="h-px w-full" />
+        <div
+          ref={bottomSentinelRef}
+          aria-hidden="true"
+          className="h-px w-full"
+        />
       </div>
 
       <ProductModalO

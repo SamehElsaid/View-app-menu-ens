@@ -1,8 +1,8 @@
 @theme {
   --font-arabic: "Noto Kufi Arabic", system-ui, sans-serif;
 
-  --animate-wave: wave 8s ease-in-out infinite;
-  --animate-bubble-rise: bubble-rise linear infinite;
+  --animate-wave: wave 14s ease-in-out infinite;
+  --animate-bubble-rise: bubble-rise ease-in-out infinite;
 
   @keyframes wave {
     0%,
@@ -10,13 +10,13 @@
       transform: translateX(0) translateY(0);
     }
     25% {
-      transform: translateX(-5px) translateY(-10px);
+      transform: translateX(-3px) translateY(-5px);
     }
     50% {
-      transform: translateX(5px) translateY(0);
+      transform: translateX(3px) translateY(0);
     }
     75% {
-      transform: translateX(-3px) translateY(-5px);
+      transform: translateX(-2px) translateY(-3px);
     }
   }
 

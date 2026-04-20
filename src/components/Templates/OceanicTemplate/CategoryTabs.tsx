@@ -66,17 +66,24 @@ const CategoryTabs = ({ categories, activeCategory, onCategoryChange, layoutIdPr
                   min-h-[44px] md:min-h-[48px]
                   px-6 md:px-7 py-3 md:py-3.5 rounded-full
                   text-[15px] md:text-[16px] font-semibold leading-tight
-                  transition-all duration-300 ease-out
+                  transition-[transform,box-shadow,background-color,border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
                   ${isActive
                     ? 'bg-gradient-to-br from-cyan-700 via-cyan-600 to-sky-700 text-white shadow-[0_8px_22px_-6px_rgba(6,95,120,0.55)] ring-1 ring-white/30'
                     : 'bg-cyan-50 text-cyan-900 border border-cyan-200 hover:border-cyan-400 hover:bg-cyan-100 shadow-sm hover:shadow-md'
                   }
                 `}
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35, delay: index * 0.04, ease: 'easeOut' }}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.96 }}
+                transition={{
+                  duration: 0.52,
+                  delay: Math.min(index * 0.035, 0.28),
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                whileHover={{
+                  y: -1,
+                  transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
+                }}
+                whileTap={{ scale: 0.98, transition: { duration: 0.15 } }}
               >
                 <span className="relative z-10">{label}</span>
 
