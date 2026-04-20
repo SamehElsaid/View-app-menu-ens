@@ -20,7 +20,15 @@ interface ProductModalProps {
   currency: string;
 }
 
-const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
+function ProductModalContent({
+  item,
+  onClose,
+  currency,
+}: {
+  item: MenuItem;
+  onClose: () => void;
+  currency: string;
+}) {
   const locale = useLocale();
   const isAr = locale === 'ar';
   const searchParams = useSearchParams();
@@ -31,13 +39,11 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
   const [inCartQty, setInCartQty] = useState(0);
 
   useEffect(() => {
-    if (item) {
-      document.body.style.overflow = "hidden";
-    } else {
+    document.body.style.overflow = "hidden";
+    return () => {
       document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [item]);
+    };
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -48,8 +54,6 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
   }, [onClose]);
 
   useEffect(() => {
-    if (!item) return;
-    setSelectedQty(1);
     const sync = () => {
       const c = readSkyCartFromCookie();
       setInCartQty(c[item.id]?.quantity ?? 0);
@@ -57,19 +61,25 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
     sync();
     window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
     return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
-  }, [item]);
+  }, [item.id]);
 
-  const displayName = item ? (isAr ? item.nameAr : item.nameEn) : "";
-  const displayDesc = item ? (isAr ? (item.descriptionAr ?? item.description) : (item.descriptionEn ?? item.description)) : "";
-  const hasDiscount = !!item?.originalPrice && (item.originalPrice as number) > item.price;
-  const savedAmount = hasDiscount && item ? (item.originalPrice as number) - item.price : 0;
-  const discountPct = item?.discountPercent
-    ?? (hasDiscount && item ? Math.round((savedAmount / (item.originalPrice as number)) * 100) : 0);
+  const displayName = isAr ? item.nameAr : item.nameEn;
+  const displayDesc = isAr
+    ? (item.descriptionAr ?? item.description)
+    : (item.descriptionEn ?? item.description);
+  const hasDiscount =
+    !!item.originalPrice && (item.originalPrice as number) > item.price;
+  const savedAmount = hasDiscount
+    ? (item.originalPrice as number) - item.price
+    : 0;
+  const discountPct =
+    item.discountPercent ??
+    (hasDiscount
+      ? Math.round((savedAmount / (item.originalPrice as number)) * 100)
+      : 0);
 
   return (
-    <AnimatePresence>
-      {item && (
-        <>
+    <>
           {/* Backdrop */}
           <motion.div
             key="backdrop"
@@ -207,7 +217,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                 </motion.div>
               </motion.div>
 
-              {isTableOrder && item ? (
+              {isTableOrder ? (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -281,10 +291,21 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
               </motion.button>
             </div>
           </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+    </>
   );
-};
+}
+
+const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => (
+  <AnimatePresence>
+    {item ? (
+      <ProductModalContent
+        key={item.id}
+        item={item}
+        onClose={onClose}
+        currency={currency}
+      />
+    ) : null}
+  </AnimatePresence>
+);
 
 export default ProductModalO;
