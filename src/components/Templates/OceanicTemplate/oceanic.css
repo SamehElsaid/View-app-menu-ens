@@ -1,0 +1,104 @@
+@theme {
+  --font-arabic: "Noto Kufi Arabic", system-ui, sans-serif;
+
+  --animate-wave: wave 14s ease-in-out infinite;
+  --animate-bubble-rise: bubble-rise ease-in-out infinite;
+
+  @keyframes wave {
+    0%,
+    100% {
+      transform: translateX(0) translateY(0);
+    }
+    25% {
+      transform: translateX(-3px) translateY(-5px);
+    }
+    50% {
+      transform: translateX(3px) translateY(0);
+    }
+    75% {
+      transform: translateX(-2px) translateY(-3px);
+    }
+  }
+
+  @keyframes bubble-rise {
+    0% {
+      transform: translateY(100vh) scale(0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.6;
+    }
+    90% {
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateY(-100px) scale(1);
+      opacity: 0;
+    }
+  }
+}
+
+.oceanic-root {
+  --font-display: "Noto Kufi Arabic", system-ui, sans-serif;
+}
+
+[dir="rtl"] .oceanic-root,
+[dir="rtl"] .oceanic-root * {
+  font-family: "Noto Kufi Arabic", system-ui, sans-serif;
+}
+
+[dir="ltr"] .oceanic-root,
+[dir="ltr"] .oceanic-root * {
+  font-family: "Playfair Display", serif;
+}
+
+/* Custom blue scrollbar for the category tabs strip */
+.oceanic-tabs-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #06b6d4 transparent;
+}
+
+.oceanic-tabs-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.oceanic-tabs-scroll::-webkit-scrollbar-track {
+  background: rgba(8, 145, 178, 0.08);
+  border-radius: 9999px;
+}
+
+.oceanic-tabs-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #0891b2, #0ea5e9);
+  border-radius: 9999px;
+  box-shadow: 0 0 6px rgba(14, 165, 233, 0.45);
+}
+
+.oceanic-tabs-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #0e7490, #0284c7);
+}
+
+/* Custom blue scrollbar for the Quick View / Product modal */
+.oceanic-modal-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #0ea5e9 transparent;
+}
+
+.oceanic-modal-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.oceanic-modal-scroll::-webkit-scrollbar-track {
+  background: rgba(8, 145, 178, 0.08);
+  border-radius: 9999px;
+  margin: 8px 0;
+}
+
+.oceanic-modal-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #0891b2, #0ea5e9);
+  border-radius: 9999px;
+  box-shadow: 0 0 8px rgba(14, 165, 233, 0.5);
+}
+
+.oceanic-modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #0e7490, #0284c7);
+}
