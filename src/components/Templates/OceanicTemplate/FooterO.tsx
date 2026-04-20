@@ -35,9 +35,7 @@ const Footer = () => {
       : menuInfo?.footerDescriptionEn?.trim();
 
   const address =
-    locale === "ar"
-      ? menuInfo?.addressAr?.trim()
-      : menuInfo?.addressEn?.trim();
+    locale === "ar" ? menuInfo?.addressAr?.trim() : menuInfo?.addressEn?.trim();
 
   const phone = menuInfo?.phone?.trim();
   const workingHours = menuInfo?.workingHours ?? null;
@@ -96,7 +94,7 @@ const Footer = () => {
   );
 
   return (
-    <footer className="relative pt-24 pb-8 px-4 overflow-hidden bg-gradient-to-b from-[#001a23] via-[#000d14] to-[#00060a]">
+    <footer className="relative pt-24 pb-8 px-4 overflow-hidden bg-linear-to-b from-[#001a23] via-[#000d14] to-[#00060a]">
       <div className="absolute top-0 left-0 right-0 h-24 pointer-events-none overflow-hidden">
         <svg
           className="absolute top-0 w-full h-full opacity-60 animate-wave"
@@ -145,7 +143,7 @@ const Footer = () => {
           <div className="flex items-center gap-3">
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-cyan-400/40 blur-xl" />
-              <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.3)] overflow-hidden border border-white/20">
+              <div className="relative w-12 h-12 rounded-full bg-linear-to-br from-cyan-100 to-blue-100 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.3)] overflow-hidden border border-white/20">
                 {logoSrc ? (
                   <Image
                     src={logoSrc}
@@ -181,7 +179,11 @@ const Footer = () => {
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.65, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
+            transition={{
+              duration: 0.65,
+              delay: 0.06,
+              ease: [0.16, 1, 0.3, 1],
+            }}
             className="mt-14 space-y-10 border-t border-white/10 pt-10"
           >
             {(footerLogoSrc || footerDescription) && (
@@ -302,7 +304,7 @@ const Footer = () => {
         ) : null}
 
         <div className="mt-12 pt-6 relative">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/25 to-transparent" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-cyan-400/25 to-transparent" />
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p

@@ -1,5 +1,12 @@
 import type { IconType } from "react-icons";
-import type { MenuItem } from "./menu";
+import type { Category, MenuItem } from "./menu";
+
+export interface CategoryTabsProps {
+  categories: Category[];
+  activeCategory: string;
+  onCategoryChange: (id: string) => void;
+  layoutIdPrefix?: string;
+}
 
 export interface MenuItemOProps {
   item: MenuItem;

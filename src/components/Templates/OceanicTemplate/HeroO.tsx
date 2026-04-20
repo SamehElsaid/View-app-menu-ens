@@ -1,11 +1,60 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { FaChevronDown } from "react-icons/fa";
 import { useLocale } from "next-intl";
 
 import { useAppSelector } from "@/store/hooks";
+
+interface OceanicBubble {
+  id: number;
+  size: number;
+  left: number;
+  delay: number;
+  duration: number;
+}
+
+const OCEANIC_BUBBLE_COUNT = 100;
+
+export function OceanicBubbles() {
+  const [bubbles, setBubbles] = useState<OceanicBubble[]>([]);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      setBubbles(
+        Array.from({ length: OCEANIC_BUBBLE_COUNT }, (_, i) => ({
+          id: i,
+          size: Math.random() * 34 + 8,
+          left: Math.random() * 100,
+          delay: Math.random() * 10,
+          duration: Math.random() * 12 + 7,
+        })),
+      );
+    });
+  }, []);
+
+  return (
+    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      {bubbles.map((bubble) => (
+        <div
+          key={bubble.id}
+          className="absolute rounded-full opacity-50 animate-bubble-rise"
+          style={{
+            width: bubble.size,
+            height: bubble.size,
+            left: `${bubble.left}%`,
+            animationDelay: `${bubble.delay}s`,
+            animationDuration: `${bubble.duration}s`,
+            background:
+              "radial-gradient(circle at 30% 30%, hsl(185 100% 90%), hsl(190 80% 70%))",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 const HeroO = () => {
   const locale = useLocale();
