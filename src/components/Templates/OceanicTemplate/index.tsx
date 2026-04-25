@@ -7,7 +7,7 @@ import Bubbles from "./Bubbles";
 
 export default function OceanicTemplate() {
   return (
-    <main className="oceanic-root min-h-screen bg-background relative overflow-hidden font-arabic">
+    <main className="oceanic-root min-h-screen bg-background relative overflow-x-hidden font-arabic">
       <Bubbles />
       <HeaderO />
       <HeroO />

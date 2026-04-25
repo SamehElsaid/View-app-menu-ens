@@ -45,7 +45,6 @@ export default function PromoBannerN() {
         speed={750}
         slidesPerView={1}
         spaceBetween={0}
-        autoHeight
         autoplay={{ delay: 6000, disableOnInteraction: false }}
         onSlideChange={(swiper) => setSelectedIndex(swiper.realIndex)}
         className="w-full rounded-[4px] overflow-hidden border border-violet/[0.12]"
@@ -76,8 +75,7 @@ export default function PromoBannerN() {
                     src={ad.imageUrl}
                     alt={title}
                     fill
-                    sizes="(max-width: 640px) 100vw, 960px"
-                    className="object-cover saturate-[0.72] brightness-[0.88]"
+                    className="object-cover sm:saturate-[0.72] sm:brightness-[0.88]"
                     priority={i === 0}
                   />
                   <div className="pointer-events-none absolute inset-0 z-1 rtl:scale-x-[-1]" />

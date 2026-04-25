@@ -42,6 +42,8 @@ export default function PromoBannerOceanic() {
         effect="fade"
         speed={750}
         loop={sortedAds.length > 1}
+        roundLengths
+        watchSlidesProgress
         autoplay={{ delay: 7000, disableOnInteraction: false }}
         onSlideChange={(swiper) => setSelectedIndex(swiper.realIndex)}
         onSwiper={(swiper) => (swiperRef.current = swiper)}
@@ -61,6 +63,7 @@ export default function PromoBannerOceanic() {
                   src={ad.imageUrl}
                   alt={title || "Ad"}
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1280px"
                   className="object-cover transition-transform duration-[1.4s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
                   priority={i === 0}
                 />

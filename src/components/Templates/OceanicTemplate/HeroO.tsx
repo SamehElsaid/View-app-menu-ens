@@ -25,7 +25,7 @@ const HeroO = () => {
           fill
           priority
           sizes="100vw"
-          className="object-cover object-center scale-105"
+          className="object-cover object-center max-sm:transform-none sm:scale-105"
         />
         <div className="absolute inset-0 bg-linear-to-b from-black/70 via-transparent to-[#001a23]" />
       </div>

@@ -144,8 +144,7 @@ function NoirMenuCard({
             src={resolveMenuItemImageSrc(item.image)}
             alt={name}
             fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover saturate-[0.72] brightness-[0.9]"
+            className="object-cover sm:saturate-[0.72] sm:brightness-[0.9]"
           />
           <div
             className="pointer-events-none absolute inset-0 z-1"
@@ -302,7 +301,7 @@ function NoirDetailModal({
             src={resolveMenuItemImageSrc(item.image)}
             alt={name}
             fill
-            className="object-cover saturate-[0.72]"
+            className="object-cover sm:saturate-[0.72]"
             sizes="600px"
           />
           <div

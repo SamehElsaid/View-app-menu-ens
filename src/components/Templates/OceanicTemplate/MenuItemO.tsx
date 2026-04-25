@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useLocale } from "next-intl";
+import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import type { MenuItemOProps } from "@/types/types";
 
 /** First letter uppercase, rest lowercase (Latin scripts; Arabic unchanged visually). */
@@ -43,10 +44,10 @@ const MenuItemO = ({
       onClick={() => onClick(item)}
     >
       <div className="bg-linear-to-br from-[#001a23] via-[#00222d] to-[#002b36] rounded-4xl overflow-hidden border border-white/5 shadow-[0_10px_40px_rgba(0,0,0,0.3)] transition-[transform,box-shadow,border-color,filter] duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:-translate-y-1.5 group-hover:shadow-[0_22px_50px_-10px_rgba(8,145,178,0.34),0_10px_36px_rgba(0,0,0,0.24)] group-hover:border-cyan-400/32 active:brightness-[0.98] active:translate-y-0">
-        <div className="relative w-full aspect-4/3 overflow-hidden bg-linear-to-br from-[#002433] via-[#002b3a] to-[#003544]">
-          <div className="absolute inset-0 origin-center backface-hidden transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.035] motion-reduce:transition-none motion-reduce:group-hover:scale-100">
+        <div className="relative w-full min-h-40 aspect-4/3 overflow-hidden bg-linear-to-br from-[#002433] via-[#002b3a] to-[#003544]">
+          <div className="absolute inset-0 z-0 origin-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.035] motion-reduce:transition-none motion-reduce:group-hover:scale-100">
             <Image
-              src={item.image}
+              src={resolveMenuItemImageSrc(item.image)}
               alt={nameLabel || displayName || "Menu Item"}
               fill
               priority={index < 4}

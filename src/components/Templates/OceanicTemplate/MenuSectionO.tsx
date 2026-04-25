@@ -181,17 +181,12 @@ const MenuSectionO = () => {
         </AnimatePresence>
 
         {/* Menu Items Grid */}
-        <motion.div
-          layout
-          transition={{ layout: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-7 gap-y-12 mt-12"
-        >
+        <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-7 gap-y-12 mt-12">
           <AnimatePresence mode="popLayout">
             {filteredItems.length > 0 ? (
               filteredItems.map((item, index) => (
                 <motion.div
                   key={item.id}
-                  layout
                   initial={{ opacity: 0, y: 22 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 12 }}
@@ -199,7 +194,6 @@ const MenuSectionO = () => {
                     duration: 0.58,
                     delay: Math.min(index * 0.045, 0.32),
                     ease: [0.16, 1, 0.3, 1],
-                    layout: { duration: 0.48, ease: [0.16, 1, 0.3, 1] },
                   }}
                 >
                   <MenuItemO

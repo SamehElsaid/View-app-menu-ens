@@ -64,6 +64,7 @@ export default function PromoBannerE() {
                   src={ad.imageUrl}
                   alt={title}
                   fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1200px) 90vw, 1200px"
                   className="object-cover transition-transform duration-1000 group-hover:scale-110"
                   priority={i === 0}
                 />
