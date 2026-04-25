@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+
 import Link from "next/link";
 
 import { useLocale } from "next-intl";
@@ -50,12 +50,10 @@ export default function Navbar() {
                 borderColor: ringSoft,
               }}
             >
-              <Image
+              <img
                 src={menuInfo.logo}
                 alt=""
-                fill
-                className="object-cover"
-                sizes="32px"
+                className="object-cover w-full h-full"
               />
             </div>
           ) : (

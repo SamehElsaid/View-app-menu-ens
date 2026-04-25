@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import Image from "next/image";
+
 import { useLocale, useTranslations } from "next-intl";
 import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -35,9 +35,7 @@ const Footer = () => {
       : menuInfo?.footerDescriptionEn?.trim();
 
   const address =
-    locale === "ar"
-      ? menuInfo?.addressAr?.trim()
-      : menuInfo?.addressEn?.trim();
+    locale === "ar" ? menuInfo?.addressAr?.trim() : menuInfo?.addressEn?.trim();
 
   const phone = menuInfo?.phone?.trim();
   const workingHours = menuInfo?.workingHours ?? null;
@@ -147,12 +145,10 @@ const Footer = () => {
               <div className="absolute inset-0 rounded-full bg-cyan-400/40 blur-xl" />
               <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.3)] overflow-hidden border border-white/20">
                 {logoSrc ? (
-                  <Image
+                  <img
                     src={logoSrc}
                     alt={displayName}
-                    fill
-                    sizes="48px"
-                    className="object-cover"
+                    className="object-cover w-full h-full"
                   />
                 ) : (
                   <span className="text-cyan-700 font-bold text-xl tracking-tighter">
@@ -181,7 +177,11 @@ const Footer = () => {
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.65, delay: 0.06, ease: [0.16, 1, 0.3, 1] }}
+            transition={{
+              duration: 0.65,
+              delay: 0.06,
+              ease: [0.16, 1, 0.3, 1],
+            }}
             className="mt-14 space-y-10 border-t border-white/10 pt-10"
           >
             {(footerLogoSrc || footerDescription) && (
@@ -191,12 +191,10 @@ const Footer = () => {
               >
                 {footerLogoSrc ? (
                   <div className="relative mb-4 h-16 w-16 mx-auto md:mx-0 overflow-hidden rounded-2xl border border-white/15 bg-white/5">
-                    <Image
+                    <img
                       src={footerLogoSrc}
                       alt={displayName}
-                      fill
-                      sizes="64px"
-                      className="object-contain p-2"
+                      className="object-contain w-full h-full p-2"
                     />
                   </div>
                 ) : null}

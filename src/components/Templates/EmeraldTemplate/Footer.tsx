@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
@@ -33,12 +32,10 @@ export default function Footer() {
                 borderColor: ringSoft,
               }}
             >
-              <Image
+              <img
                 src={menuInfo.logo}
                 alt=""
-                fill
-                className="object-cover"
-                sizes="24px"
+                className="object-cover w-full h-full"
               />
             </div>
           ) : (

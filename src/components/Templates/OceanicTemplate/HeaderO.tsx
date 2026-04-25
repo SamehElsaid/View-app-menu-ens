@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { useLocale } from 'next-intl';
-import { useAppSelector } from '@/store/hooks';
-import { usePathname, useRouter } from '@/i18n/navigation';
-import { FaGlobe } from 'react-icons/fa';
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { useLocale } from "next-intl";
+import { useAppSelector } from "@/store/hooks";
+import { usePathname, useRouter } from "@/i18n/navigation";
+import { FaGlobe } from "react-icons/fa";
 
 export default function HeaderO() {
   const locale = useLocale();
@@ -17,8 +16,8 @@ export default function HeaderO() {
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const siteName = menuInfo?.name?.trim() || "Oceanic";
@@ -47,16 +46,14 @@ export default function HeaderO() {
             scale: 1.02,
             transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
           }}
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         >
           <div className="relative w-11 h-11 rounded-full bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.3)] overflow-hidden border border-white/20">
             {menuInfo?.logo ? (
-              <Image
+              <img
                 src={menuInfo.logo}
                 alt={siteName}
-                fill
-                sizes="44px"
-                className="object-cover"
+                className="object-cover w-full h-full"
               />
             ) : (
               <span className="text-white font-bold text-xl tracking-tighter">
@@ -80,8 +77,12 @@ export default function HeaderO() {
                        drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]"
             aria-label="Switch language"
           >
-            <FaGlobe className={`w-4 h-4 transition-transform ${locale === 'ar' ? 'rotate-180' : ''}`} />
-            <span className="tracking-widest">{locale === "ar" ? "EN" : "AR"}</span>
+            <FaGlobe
+              className={`w-4 h-4 transition-transform ${locale === "ar" ? "rotate-180" : ""}`}
+            />
+            <span className="tracking-widest">
+              {locale === "ar" ? "EN" : "AR"}
+            </span>
           </button>
         </div>
       </div>

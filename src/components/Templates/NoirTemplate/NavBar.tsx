@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
+
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import { useNoirTheme, shadowGlow } from "./NoirThemeContext";
@@ -37,12 +37,10 @@ export default function NavBar() {
             className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full ring-1 ring-violet/20"
             style={{ boxShadow: shadowGlow(primary, 20, 0.25) }}
           >
-            <Image
+            <img
               src={menuInfo.logo}
               alt=""
-              fill
-              className="object-cover"
-              sizes="32px"
+              className="object-cover w-full h-full"
             />
           </div>
         ) : (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import Image from "next/image";
+
 import { useLocale, useTranslations } from "next-intl";
 import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -98,12 +98,10 @@ export default function Footer() {
               <div>
                 {menuInfo?.footerLogo ? (
                   <div className="relative mb-4 h-14 w-14 overflow-hidden rounded-lg border border-violet/20">
-                    <Image
+                    <img
                       src={menuInfo.footerLogo}
                       alt={displayName}
-                      fill
-                      className="object-contain p-1"
-                      sizes="56px"
+                      className="object-contain w-full h-full p-1"
                     />
                   </div>
                 ) : null}

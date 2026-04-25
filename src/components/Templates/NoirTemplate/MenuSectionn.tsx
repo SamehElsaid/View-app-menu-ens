@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
