@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { FaChevronDown } from "react-icons/fa";
 import { useLocale } from "next-intl";
 
@@ -19,13 +18,10 @@ const HeroO = () => {
   return (
     <section className="relative min-h-[85svh] md:min-h-[80vh] lg:min-h-[78vh] flex items-center justify-center overflow-hidden bg-[#001a23] py-20 md:py-24">
       <div className="absolute inset-0 z-0">
-        <Image
+        <img
           src="/images/hero-bg.jpg"
           alt="Hero Background"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-center max-sm:transform-none sm:scale-105"
+          className="object-cover w-full h-full object-center max-sm:transform-none sm:scale-105"
         />
         <div className="absolute inset-0 bg-linear-to-b from-black/70 via-transparent to-[#001a23]" />
       </div>
@@ -82,7 +78,11 @@ const HeroO = () => {
             className="mx-auto mb-10 max-w-2xl text-base md:text-lg lg:text-xl text-white/85 leading-relaxed italic drop-shadow-md"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.95, delay: 0.42, ease: [0.16, 1, 0.3, 1] }}
+            transition={{
+              duration: 0.95,
+              delay: 0.42,
+              ease: [0.16, 1, 0.3, 1],
+            }}
           >
             {menuInfo.description}
           </motion.p>
@@ -95,7 +95,10 @@ const HeroO = () => {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.95, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
-          whileHover={{ scale: 1.03, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } }}
+          whileHover={{
+            scale: 1.03,
+            transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+          }}
           whileTap={{ scale: 0.98, transition: { duration: 0.2 } }}
         >
           <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] transition-none" />

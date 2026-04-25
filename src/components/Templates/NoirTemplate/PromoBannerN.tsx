@@ -71,12 +71,10 @@ export default function PromoBannerN() {
                       "cubic-bezier(0.25, 0.1, 0.25, 1)",
                   }}
                 >
-                  <Image
+                  <img
                     src={ad.imageUrl}
                     alt={title}
-                    fill
-                    className="object-cover sm:saturate-[0.72] sm:brightness-[0.88]"
-                    priority={i === 0}
+                    className="object-cover w-full h-full sm:saturate-[0.72] sm:brightness-[0.9]"
                   />
                   <div className="pointer-events-none absolute inset-0 z-1 rtl:scale-x-[-1]" />
                 </div>

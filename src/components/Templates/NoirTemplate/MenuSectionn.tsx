@@ -140,11 +140,10 @@ function NoirMenuCard({
         <div
           className={`absolute inset-0 origin-bottom transition-transform duration-450 will-change-transform group-hover:scale-[1.05] ${NOIR_EASE_TW_CLASS}`}
         >
-          <Image
+          <img
             src={resolveMenuItemImageSrc(item.image)}
             alt={name}
-            fill
-            className="object-cover sm:saturate-[0.72] sm:brightness-[0.9]"
+            className="object-cover w-full h-full sm:saturate-[0.72] sm:brightness-[0.9]"
           />
           <div
             className="pointer-events-none absolute inset-0 z-1"
@@ -297,12 +296,10 @@ function NoirDetailModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative h-[280px] overflow-hidden">
-          <Image
+          <img
             src={resolveMenuItemImageSrc(item.image)}
             alt={name}
-            fill
-            className="object-cover sm:saturate-[0.72]"
-            sizes="600px"
+            className="object-cover w-full h-full sm:saturate-[0.72] sm:brightness-[0.9]"
           />
           <div
             className="pointer-events-none absolute inset-0"

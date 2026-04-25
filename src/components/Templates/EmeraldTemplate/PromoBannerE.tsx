@@ -28,7 +28,7 @@ export default function PromoBannerE() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       fetch(`${apiUrl}/admin/ads/${ad.id}/click`, { method: "POST" });
-    } catch { }
+    } catch {}
     window.open(ad.linkUrl, "_blank", "noopener,noreferrer");
   };
 
@@ -51,8 +51,12 @@ export default function PromoBannerE() {
         className="rounded-3xl shadow-xl overflow-hidden ring-1 ring-black/10 ring-offset-1 ring-offset-stone-100"
       >
         {sortedAds.map((ad, i) => {
-          const title = locale === "ar" ? ad.titleAr || ad.title : ad.title || ad.titleAr;
-          const content = locale === "ar" ? ad.contentAr || ad.content : ad.content || ad.contentAr;
+          const title =
+            locale === "ar" ? ad.titleAr || ad.title : ad.title || ad.titleAr;
+          const content =
+            locale === "ar"
+              ? ad.contentAr || ad.content
+              : ad.content || ad.contentAr;
 
           return (
             <SwiperSlide key={ad.id}>
@@ -60,13 +64,10 @@ export default function PromoBannerE() {
                 className="relative w-full h-[220px] sm:h-[300px] md:h-[380px] cursor-pointer group"
                 onClick={() => handleAdClick(ad)}
               >
-                <Image
+                <img
                   src={ad.imageUrl}
                   alt={title}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1200px) 90vw, 1200px"
-                  className="object-cover transition-transform duration-1000 group-hover:scale-110"
-                  priority={i === 0}
+                  className="object-cover w-full h-full transition-transform duration-1000 group-hover:scale-110"
                 />
 
                 <div
@@ -93,9 +94,7 @@ export default function PromoBannerE() {
                 {/* Content */}
                 <div className="relative z-10 h-full flex flex-col justify-center p-5 pt-14 sm:p-8 sm:pt-12 md:p-14 md:pt-10 text-white max-w-3xl">
                   <div className="animate-slide-up motion-reduce:animate-none">
-                    <h2
-                      className="text-2xl sm:text-3xl md:text-5xl font-serif italic font-bold mb-4 leading-[1.15] [text-shadow:0_4px_32px_rgba(0,0,0,0.85)]"
-                    >
+                    <h2 className="text-2xl sm:text-3xl md:text-5xl font-serif italic font-bold mb-4 leading-[1.15] [text-shadow:0_4px_32px_rgba(0,0,0,0.85)]">
                       {title}
                     </h2>
 
@@ -106,26 +105,28 @@ export default function PromoBannerE() {
                     )}
 
                     {ad.linkUrl && (
-                     <div className="flex items-center gap-4 group/btn mt-auto">
-                     <button
-                       className="relative overflow-hidden h-10 px-6 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ease-out shadow-[0_4px_20px_rgba(0,0,0,0.25)] ring-1 ring-white/20 backdrop-blur-md group-hover/btn:ring-white/50 group-hover/btn:shadow-[0_6px_30px_rgba(0,0,0,0.35)] group-hover/btn:-translate-y-[2px] active:scale-95"
-                       style={{ backgroundColor: btnBg, color: btnText }}
-                     >
-                       {/* Glow effect */}
-                       <span className=" absolute inset-0 opacity-0 group-hover/btn:opacity-100 transition duration-500 bg-gradient-to-r from-white/20 via-white/10 to-transparent" />
-                   
-                       {/* Text */}
-                       <span className="relative z-10 flex items-center gap-2 text-white">
-                         {locale === "ar" ? "اكتشف الآن" : "Explore Now"}
-                   
-                         {/* Arrow */}
-                         <span className="
-                           transition-transform duration-300 group-hover/btn:translate-x-1">
-                           →
-                         </span>
-                       </span>
-                     </button>
-                   </div>
+                      <div className="flex items-center gap-4 group/btn mt-auto">
+                        <button
+                          className="relative overflow-hidden h-10 px-6 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ease-out shadow-[0_4px_20px_rgba(0,0,0,0.25)] ring-1 ring-white/20 backdrop-blur-md group-hover/btn:ring-white/50 group-hover/btn:shadow-[0_6px_30px_rgba(0,0,0,0.35)] group-hover/btn:-translate-y-[2px] active:scale-95"
+                          style={{ backgroundColor: btnBg, color: btnText }}
+                        >
+                          {/* Glow effect */}
+                          <span className=" absolute inset-0 opacity-0 group-hover/btn:opacity-100 transition duration-500 bg-gradient-to-r from-white/20 via-white/10 to-transparent" />
+
+                          {/* Text */}
+                          <span className="relative z-10 flex items-center gap-2 text-white">
+                            {locale === "ar" ? "اكتشف الآن" : "Explore Now"}
+
+                            {/* Arrow */}
+                            <span
+                              className="
+                           transition-transform duration-300 group-hover/btn:translate-x-1"
+                            >
+                              →
+                            </span>
+                          </span>
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -140,12 +141,11 @@ export default function PromoBannerE() {
           {sortedAds.map((_, i) => (
             <div
               key={i}
-              className={`h-1 transition-all duration-500 rounded-full ${selectedIndex === i ? "w-8" : "w-1.5 bg-stone-300"
-                }`}
+              className={`h-1 transition-all duration-500 rounded-full ${
+                selectedIndex === i ? "w-8" : "w-1.5 bg-stone-300"
+              }`}
               style={
-                selectedIndex === i
-                  ? { backgroundColor: primary }
-                  : undefined
+                selectedIndex === i ? { backgroundColor: primary } : undefined
               }
             />
           ))}

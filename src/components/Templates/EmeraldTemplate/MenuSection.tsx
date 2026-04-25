@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
+
 import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
@@ -85,7 +85,9 @@ function CategoryTabs({
                 isActive ? "text-white" : "text-stone-900"
               }`}
             >
-              {locale === "ar" ? cat.nameAr ?? cat.name : cat.nameEn ?? cat.name}
+              {locale === "ar"
+                ? (cat.nameAr ?? cat.name)
+                : (cat.nameEn ?? cat.name)}
             </span>
           </button>
         );
@@ -126,11 +128,13 @@ function EmeraldMenuCard({
   return (
     <article
       className="bg-white rounded-2xl overflow-hidden cursor-pointer group transition-all duration-300 ease-out hover:-translate-y-1.5 active:scale-[0.985] animate-slide-up motion-reduce:animate-none"
-      style={{
-        boxShadow: cardShadow,
-        "--em-p": primary,
-        animationDelay: `${index * 45}ms`,
-      } as React.CSSProperties}
+      style={
+        {
+          boxShadow: cardShadow,
+          "--em-p": primary,
+          animationDelay: `${index * 45}ms`,
+        } as React.CSSProperties
+      }
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = cardHoverShadow;
       }}
@@ -147,14 +151,10 @@ function EmeraldMenuCard({
         className="relative h-52 overflow-hidden"
         style={{ backgroundColor: imageBg }}
       >
-        <Image
+        <img
           src={imageSrc}
           alt={locale === "ar" ? dish.nameAr : dish.nameEn}
-          fill
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.06]"
-          placeholder="blur"
-          blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAYAAAC09K7GAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAMklEQVR4nGNgYGD4z8BQ/5+Bof4/A0P9fwaG+v8MDPX/GRjq/zMw1P9nYKj/z8BQ/x8AUEsHCEAAAAAAAAAAAAAAAAA="
+          className="object-cover w-full h-full transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.06]"
         />
         {badgeText && (
           <span
@@ -349,154 +349,149 @@ function EmeraldDishModal({
         className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100%-1rem)] max-w-[600px] max-h-[90vh] md:max-h-none bg-white rounded-3xl overflow-hidden flex flex-col animate-scale-in motion-reduce:animate-none"
         style={{ boxShadow: modalShadow }}
       >
-            <div
-              className="relative aspect-[4/3] shrink-0"
-              style={{ backgroundColor: imageBg }}
-            >
-              <Image
-                src={resolveMenuItemImageSrc(dish.image)}
-                alt={locale === "ar" ? dish.nameAr : dish.nameEn}
-                fill
-                className="object-cover"
-                sizes="560px"
-                priority
+        <div
+          className="relative aspect-[4/3] shrink-0"
+          style={{ backgroundColor: imageBg }}
+        >
+          <img
+            src={resolveMenuItemImageSrc(dish.image)}
+            alt={locale === "ar" ? dish.nameAr : dish.nameEn}
+            className="object-cover w-full h-full"
+          />
+          <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
+
+          <button
+            onClick={onClose}
+            className="absolute top-3 end-3 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center text-stone-700 hover:bg-white hover:scale-105 transition-all shadow-md"
+            aria-label="Close"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M4 4l8 8M12 4l-8 8"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
               />
-              <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
+            </svg>
+          </button>
 
-              <button
-                onClick={onClose}
-                className="absolute top-3 end-3 w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center text-stone-700 hover:bg-white hover:scale-105 transition-all shadow-md"
-                aria-label="Close"
-              >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M4 4l8 8M12 4l-8 8"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
+          {dish.discountPercent ? (
+            <span
+              className="absolute top-3 start-3 text-[11px] font-sans font-700 px-3.5 py-1.5 rounded-full text-white tracking-wider uppercase shadow-md"
+              style={{ backgroundColor: primary }}
+            >
+              {dish.discountPercent}% off
+            </span>
+          ) : null}
 
-              {dish.discountPercent ? (
-                <span
-                  className="absolute top-3 start-3 text-[11px] font-sans font-700 px-3.5 py-1.5 rounded-full text-white tracking-wider uppercase shadow-md"
-                  style={{ backgroundColor: primary }}
-                >
-                  {dish.discountPercent}% off
-                </span>
-              ) : null}
+          <div className="absolute bottom-4 end-4 bg-white/95 backdrop-blur-md rounded-2xl px-5 py-3 shadow-lg flex items-center gap-3">
+            {dish.originalPrice ? (
+              <span className="font-sans font-600 text-lg text-stone-400 line-through tabular-nums">
+                {dish.originalPrice} {currencyLabel}
+              </span>
+            ) : null}
+            <span
+              className="font-sans font-800 text-3xl tracking-tight tabular-nums"
+              style={{ color: primary }}
+            >
+              {dish.price}
+            </span>
+            <span
+              className="font-sans font-600 text-sm opacity-70"
+              style={{ color: primary }}
+            >
+              {currencyLabel}
+            </span>
+          </div>
+        </div>
 
-              <div className="absolute bottom-4 end-4 bg-white/95 backdrop-blur-md rounded-2xl px-5 py-3 shadow-lg flex items-center gap-3">
-                {dish.originalPrice ? (
-                  <span className="font-sans font-600 text-lg text-stone-400 line-through tabular-nums">
-                    {dish.originalPrice} {currencyLabel}
+        <div className="flex-1 overflow-y-auto md:overflow-y-visible px-6 py-5 md:px-7 md:py-6">
+          <h2 className="font-serif italic text-stone-900 text-xl md:text-2xl font-700 leading-tight mb-3 text-balance">
+            {locale === "ar" ? dish.nameAr : dish.nameEn}
+          </h2>
+
+          <p className="font-sans text-stone-500 text-sm leading-[1.7] mb-5">
+            {locale === "ar" ? dish.descriptionAr : dish.descriptionEn}
+          </p>
+
+          <div
+            className="w-10 h-0.5 rounded-full mb-4"
+            style={{ backgroundColor: divider }}
+          />
+
+          {dish.allergens && dish.allergens.length > 0 ? (
+            <div className="mb-6">
+              <div className="flex flex-wrap gap-2">
+                {dish.allergens.map((a: string) => (
+                  <span
+                    key={a}
+                    className="font-sans text-sm font-500 text-amber-700 bg-amber-50 px-3 py-1.5 rounded-full"
+                  >
+                    {a}
                   </span>
-                ) : null}
-                <span
-                  className="font-sans font-800 text-3xl tracking-tight tabular-nums"
-                  style={{ color: primary }}
-                >
-                  {dish.price}
-                </span>
-                <span
-                  className="font-sans font-600 text-sm opacity-70"
-                  style={{ color: primary }}
-                >
-                  {currencyLabel}
-                </span>
+                ))}
               </div>
             </div>
+          ) : null}
 
-            <div className="flex-1 overflow-y-auto md:overflow-y-visible px-6 py-5 md:px-7 md:py-6">
-              <h2 className="font-serif italic text-stone-900 text-xl md:text-2xl font-700 leading-tight mb-3 text-balance">
-                {locale === "ar" ? dish.nameAr : dish.nameEn}
-              </h2>
-
-              <p className="font-sans text-stone-500 text-sm leading-[1.7] mb-5">
-                {locale === "ar" ? dish.descriptionAr : dish.descriptionEn}
-              </p>
-
-              <div
-                className="w-10 h-0.5 rounded-full mb-4"
-                style={{ backgroundColor: divider }}
-              />
-
-              {dish.allergens && dish.allergens.length > 0 ? (
-                <div className="mb-6">
-                  <div className="flex flex-wrap gap-2">
-                    {dish.allergens.map((a: string) => (
-                      <span
-                        key={a}
-                        className="font-sans text-sm font-500 text-amber-700 bg-amber-50 px-3 py-1.5 rounded-full"
-                      >
-                        {a}
-                      </span>
-                    ))}
-                  </div>
+          {isTableOrder && dish ? (
+            <div className="mb-6 space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-stone-50/80 p-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    upsertSkyCartQuantityFromMenuItem(dish, selectedQty);
+                    setSelectedQty(1);
+                  }}
+                  className="rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  style={{
+                    background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
+                  }}
+                >
+                  {locale === "ar" ? "أضف إلى السلة" : "Add to cart"}
+                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 text-stone-700"
+                    onClick={() => setSelectedQty((q) => Math.max(1, q - 1))}
+                    aria-label={locale === "ar" ? "تقليل" : "Decrease"}
+                  >
+                    −
+                  </button>
+                  <span className="min-w-8 text-center text-sm font-semibold text-stone-800">
+                    {selectedQty}
+                  </span>
+                  <button
+                    type="button"
+                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 text-stone-700"
+                    onClick={() => setSelectedQty((q) => q + 1)}
+                    aria-label={locale === "ar" ? "زيادة" : "Increase"}
+                  >
+                    +
+                  </button>
                 </div>
-              ) : null}
-
-              {isTableOrder && dish ? (
-                <div className="mb-6 space-y-2">
-                  <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-stone-50/80 p-4">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        upsertSkyCartQuantityFromMenuItem(dish, selectedQty);
-                        setSelectedQty(1);
-                      }}
-                      className="rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                      style={{
-                        background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
-                      }}
-                    >
-                      {locale === "ar" ? "أضف إلى السلة" : "Add to cart"}
-                    </button>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 text-stone-700"
-                        onClick={() =>
-                          setSelectedQty((q) => Math.max(1, q - 1))
-                        }
-                        aria-label={locale === "ar" ? "تقليل" : "Decrease"}
-                      >
-                        −
-                      </button>
-                      <span className="min-w-8 text-center text-sm font-semibold text-stone-800">
-                        {selectedQty}
-                      </span>
-                      <button
-                        type="button"
-                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-stone-300 text-stone-700"
-                        onClick={() => setSelectedQty((q) => q + 1)}
-                        aria-label={locale === "ar" ? "زيادة" : "Increase"}
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  {inCartQty > 0 ? (
-                    <p className="text-center text-sm text-stone-500">
-                      {locale === "ar"
-                        ? `في السلة: ${inCartQty}`
-                        : `In cart: ${inCartQty}`}
-                    </p>
-                  ) : null}
-                </div>
+              </div>
+              {inCartQty > 0 ? (
+                <p className="text-center text-sm text-stone-500">
+                  {locale === "ar"
+                    ? `في السلة: ${inCartQty}`
+                    : `In cart: ${inCartQty}`}
+                </p>
               ) : null}
             </div>
+          ) : null}
+        </div>
 
-            <div className="px-6 py-4 md:px-7 md:py-5 border-t border-stone-100">
-              <button
-                onClick={onClose}
-                className="w-full py-3.5 rounded-2xl border border-stone-200 font-sans font-600 text-stone-600 hover:bg-stone-50 hover:border-stone-300 transition-all text-sm"
-              >
-                {locale === "ar" ? "العودة إلى القائمة" : "Back to Menu"}
-              </button>
-            </div>
-          </div>
+        <div className="px-6 py-4 md:px-7 md:py-5 border-t border-stone-100">
+          <button
+            onClick={onClose}
+            className="w-full py-3.5 rounded-2xl border border-stone-200 font-sans font-600 text-stone-600 hover:bg-stone-50 hover:border-stone-300 transition-all text-sm"
+          >
+            {locale === "ar" ? "العودة إلى القائمة" : "Back to Menu"}
+          </button>
+        </div>
+      </div>
     </>
   );
 }
@@ -564,46 +559,46 @@ export default function MenuSection({
       </div>
 
       <p
-          key={`${activeCategory}-count`}
-          className="font-sans text-sm text-stone-400 mb-8 font-500 animate-fade-in motion-reduce:animate-none"
-        >
-          {filteredItems.length}{" "}
-          {filteredItems.length === 1
-            ? locale === "ar"
-              ? "طبق"
-              : "dish"
-            : locale === "ar"
-              ? "اطباق"
-              : "dishes"}
-          {activeCategory !== 0 ? (
-            <>
-              {" "}
-              {locale === "ar" ? "في" : "in"}{" "}
-              <span style={{ color: primary }}>
-                {locale === "ar"
-                  ? categories.find((c) => c.id === activeCategory)?.nameAr
-                  : categories.find((c) => c.id === activeCategory)?.nameEn}
-              </span>
-            </>
-          ) : null}
+        key={`${activeCategory}-count`}
+        className="font-sans text-sm text-stone-400 mb-8 font-500 animate-fade-in motion-reduce:animate-none"
+      >
+        {filteredItems.length}{" "}
+        {filteredItems.length === 1
+          ? locale === "ar"
+            ? "طبق"
+            : "dish"
+          : locale === "ar"
+            ? "اطباق"
+            : "dishes"}
+        {activeCategory !== 0 ? (
+          <>
+            {" "}
+            {locale === "ar" ? "في" : "in"}{" "}
+            <span style={{ color: primary }}>
+              {locale === "ar"
+                ? categories.find((c) => c.id === activeCategory)?.nameAr
+                : categories.find((c) => c.id === activeCategory)?.nameEn}
+            </span>
+          </>
+        ) : null}
       </p>
 
       <div
-          key={activeCategory}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8 animate-fade-in motion-reduce:animate-none"
-        >
-          {filteredItems.map((dish, i) => (
-            <EmeraldMenuCard
-              key={dish.id}
-              dish={dish}
-              index={i}
-              onClick={setSelectedDish}
-              currencyLabel={currencyLabel}
-              isTableOrder={isTableOrder}
-              cartQuantity={cartById[dish.id]?.quantity ?? 0}
-              onAddToCart={handleAddToCartCard}
-            />
-          ))}
+        key={activeCategory}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8 animate-fade-in motion-reduce:animate-none"
+      >
+        {filteredItems.map((dish, i) => (
+          <EmeraldMenuCard
+            key={dish.id}
+            dish={dish}
+            index={i}
+            onClick={setSelectedDish}
+            currencyLabel={currencyLabel}
+            isTableOrder={isTableOrder}
+            cartQuantity={cartById[dish.id]?.quantity ?? 0}
+            onAddToCart={handleAddToCartCard}
+          />
+        ))}
       </div>
 
       <EmeraldDishModal

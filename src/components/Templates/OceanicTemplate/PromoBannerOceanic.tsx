@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useMemo } from "react";
-import Image from "next/image";
+
 import { useLocale } from "next-intl";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectFade } from "swiper/modules";
@@ -31,7 +31,7 @@ export default function PromoBannerOceanic() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       fetch(`${apiUrl}/admin/ads/${ad.id}/click`, { method: "POST" });
-    } catch { }
+    } catch {}
     window.open(ad.linkUrl, "_blank", "noopener,noreferrer");
   };
 
@@ -50,8 +50,12 @@ export default function PromoBannerOceanic() {
         className="rounded-2xl md:rounded-3xl overflow-hidden bg-slate-900"
       >
         {sortedAds.map((ad, i) => {
-          const title = locale === "ar" ? ad.titleAr || ad.title : ad.title || ad.titleAr;
-          const content = locale === "ar" ? ad.contentAr || ad.content : ad.content || ad.contentAr;
+          const title =
+            locale === "ar" ? ad.titleAr || ad.title : ad.title || ad.titleAr;
+          const content =
+            locale === "ar"
+              ? ad.contentAr || ad.content
+              : ad.content || ad.contentAr;
 
           return (
             <SwiperSlide key={ad.id}>
@@ -59,16 +63,13 @@ export default function PromoBannerOceanic() {
                 className="relative w-full h-[200px] sm:h-[220px] md:h-[260px] cursor-pointer group"
                 onClick={() => handleAdClick(ad)}
               >
-                <Image
+                <img
                   src={ad.imageUrl}
                   alt={title || "Ad"}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 1280px"
-                  className="object-cover transition-transform duration-[1.4s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
-                  priority={i === 0}
+                  className="object-cover w-full h-full transition-transform duration-[1.4s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
                 />
 
-                <div className="absolute inset-0 bg-gradient-to-r from-[#001a23]/95 via-[#001a23]/60 to-transparent rtl:bg-gradient-to-l" />
+                <div className="absolute inset-0 bg-linear-to-r from-[#001a23]/95 via-[#001a23]/60 to-transparent rtl:bg-gradient-to-l" />
 
                 <div className="relative h-full flex flex-col justify-center p-5 sm:p-6 md:p-10 text-white max-w-2xl">
                   <AnimatePresence mode="wait">
@@ -101,7 +102,7 @@ export default function PromoBannerOceanic() {
                       {ad.linkUrl && (
                         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm bg-cyan-600 text-white font-bold transition-all hover:bg-cyan-500 hover:shadow-[0_0_16px_rgba(6,182,212,0.35)] group/btn">
                           {locale === "ar" ? "اكتشف الآن" : "Explore Now"}
-                          <motion.span 
+                          <motion.span
                             className="inline-block"
                             animate={{ x: [0, 4, 0] }}
                             transition={{
@@ -130,8 +131,8 @@ export default function PromoBannerOceanic() {
               key={i}
               onClick={() => swiperRef.current?.slideToLoop(i)}
               className={`h-2 transition-[width,background-color,box-shadow] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] rounded-full ${
-                selectedIndex === i 
-                  ? "w-12 bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" 
+                selectedIndex === i
+                  ? "w-12 bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]"
                   : "w-2 bg-slate-300 hover:bg-slate-400"
               }`}
               aria-label={`Go to slide ${i + 1}`}
