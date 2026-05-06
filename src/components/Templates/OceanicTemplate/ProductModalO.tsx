@@ -1,19 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiArrowLeft, FiArrowRight } from 'react-icons/fi';
-import Image from 'next/image';
-import { useLocale } from 'next-intl';
-import type { MenuItem } from '@/types/menu';
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiX, FiArrowLeft, FiArrowRight } from "react-icons/fi";
+import { useLocale } from "next-intl";
+import type { MenuItem } from "@/types/menu";
 import {
   SKY_CART_UPDATED_EVENT,
   readSkyCartFromCookie,
   upsertSkyCartQuantityFromMenuItem,
-} from '@/lib/skyTemplateCart';
-import { useTableCartAllowed } from '@/hooks/useTableCartAllowed';
-import { resolveMenuItemImageSrc } from '@/lib/menuItemImage';
+} from "@/lib/skyTemplateCart";
+import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 
 interface ProductModalProps {
   item: MenuItem | null;
@@ -23,11 +22,11 @@ interface ProductModalProps {
 
 const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
   const locale = useLocale();
-  const isAr = locale === 'ar';
+  const isAr = locale === "ar";
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
   const isTableOrder =
-    Boolean(searchParams.get('table')?.trim()) && tableCartAllowed;
+    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
 
@@ -37,7 +36,9 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
     } else {
       document.body.style.overflow = "";
     }
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [item]);
 
   useEffect(() => {
@@ -61,11 +62,20 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
   }, [item]);
 
   const displayName = item ? (isAr ? item.nameAr : item.nameEn) : "";
-  const displayDesc = item ? (isAr ? (item.descriptionAr ?? item.description) : (item.descriptionEn ?? item.description)) : "";
-  const hasDiscount = !!item?.originalPrice && (item.originalPrice as number) > item.price;
-  const savedAmount = hasDiscount && item ? (item.originalPrice as number) - item.price : 0;
-  const discountPct = item?.discountPercent
-    ?? (hasDiscount && item ? Math.round((savedAmount / (item.originalPrice as number)) * 100) : 0);
+  const displayDesc = item
+    ? isAr
+      ? (item.descriptionAr ?? item.description)
+      : (item.descriptionEn ?? item.description)
+    : "";
+  const hasDiscount =
+    !!item?.originalPrice && (item.originalPrice as number) > item.price;
+  const savedAmount =
+    hasDiscount && item ? (item.originalPrice as number) - item.price : 0;
+  const discountPct =
+    item?.discountPercent ??
+    (hasDiscount && item
+      ? Math.round((savedAmount / (item.originalPrice as number)) * 100)
+      : 0);
 
   return (
     <AnimatePresence>
@@ -101,16 +111,13 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
           >
             {/* Header Image Section */}
             <div className=" relative w-full aspect-[4/3] md:aspect-[16/10] overflow-hidden bg-gradient-to-br from-[#002433] via-[#002b3a] to-[#003544]">
-              <Image
+              <img
                 src={resolveMenuItemImageSrc(item.image)}
                 alt={displayName}
-                fill
-                sizes="(max-width: 520px) 95vw, 520px"
-                className="object-contain p-4"
-                priority
+                className="object-cover w-full h-full"
               />
               {/* Gradient Overlay (bottom only, lighter to keep image visible) */}
-              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#001a23] to-transparent pointer-events-none" />
+              <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-[#001a23] to-transparent pointer-events-none" />
 
               {/* Close Button */}
               <motion.button
@@ -121,7 +128,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                 }}
                 whileTap={{ scale: 0.96, transition: { duration: 0.15 } }}
                 onClick={onClose}
-                className={`absolute top-5 ${isAr ? 'left-5' : 'right-5'} z-30 w-11 h-11
+                className={`absolute top-5 ${isAr ? "left-5" : "right-5"} z-30 w-11 h-11
                            bg-black/30 backdrop-blur-xl border border-white/15 rounded-full
                            flex items-center justify-center text-white hover:bg-white/20 transition-colors`}
               >
@@ -278,7 +285,11 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                            hover:bg-cyan-500 hover:border-cyan-400 hover:shadow-[0_10px_30px_rgba(6,182,212,0.35)] transition-[background,border-color,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
               >
                 <span>{isAr ? "العودة للقائمة" : "Back to Menu"}</span>
-                {isAr ? <FiArrowLeft className="group-hover:-translate-x-1.5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"/> : <FiArrowRight className="group-hover:translate-x-1.5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"/>}
+                {isAr ? (
+                  <FiArrowLeft className="group-hover:-translate-x-1.5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]" />
+                ) : (
+                  <FiArrowRight className="group-hover:translate-x-1.5 transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]" />
+                )}
               </motion.button>
             </div>
           </motion.div>
