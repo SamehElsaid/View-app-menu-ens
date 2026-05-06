@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, type SyntheticEvent } from "react";
 import { useLocale } from "next-intl";
 import LoadImage from "@/components/ImageLoad";
 
@@ -139,8 +139,8 @@ const PromoBanner = ({ menuId, ownerPlanType }: PromoBannerProps) => {
                     alt={title}
                     fill
                     className="object-cover transition-transform duration-1000 group-hover:scale-110"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
+                    onError={(e: SyntheticEvent<HTMLImageElement, Event>) => {
+                      e.currentTarget.style.display = "none";
                     }}
                   />
                 ) : (
