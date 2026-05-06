@@ -1,6 +1,6 @@
-import {NextConfig} from 'next';
-import createNextIntlPlugin from 'next-intl/plugin';
- 
+import { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -13,9 +13,13 @@ const nextConfig: NextConfig = {
         hostname: "localhost",
         port: "5000",
       },
+      {
+        protocol: "https",
+        hostname: "**",
+      },
     ],
   },
 };
- 
+
 const withNextIntl = createNextIntlPlugin();
 export default withNextIntl(nextConfig);
