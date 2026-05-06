@@ -8,6 +8,7 @@ import type { Category, MenuItem } from "@/types/menu";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
+import LoadImage from "@/components/ImageLoad";
 import {
   SKY_CART_UPDATED_EVENT,
   readSkyCartFromCookie,
@@ -151,10 +152,11 @@ function EmeraldMenuCard({
         className="relative h-52 overflow-hidden"
         style={{ backgroundColor: imageBg }}
       >
-        <img
+        <LoadImage
           src={imageSrc}
           alt={locale === "ar" ? dish.nameAr : dish.nameEn}
-          className="object-cover w-full h-full transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.06]"
+          fill
+          className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.06]"
         />
         {badgeText && (
           <span
@@ -353,10 +355,11 @@ function EmeraldDishModal({
           className="relative aspect-[4/3] shrink-0"
           style={{ backgroundColor: imageBg }}
         >
-          <img
+          <LoadImage
             src={resolveMenuItemImageSrc(dish.image)}
             alt={locale === "ar" ? dish.nameAr : dish.nameEn}
-            className="object-cover w-full h-full"
+            fill
+            className="object-cover"
           />
           <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent" />
 

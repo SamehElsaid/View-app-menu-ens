@@ -9,6 +9,7 @@ import { FaXTwitter } from "react-icons/fa6";
 import { useAppSelector } from "@/store/hooks";
 import type { WorkingHours } from "@/types/menu";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
+import LoadImage from "@/components/ImageLoad";
 
 const DAY_KEYS: (keyof WorkingHours)[] = [
   "sunday",
@@ -145,10 +146,12 @@ const Footer = () => {
               <div className="absolute inset-0 rounded-full bg-cyan-400/40 blur-xl" />
               <div className="relative w-12 h-12 rounded-full bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.3)] overflow-hidden border border-white/20">
                 {logoSrc ? (
-                  <img
+                  <LoadImage
                     src={logoSrc}
                     alt={displayName}
-                    className="object-cover w-full h-full"
+                    fill
+                    className="object-cover"
+                    disableLazy
                   />
                 ) : (
                   <span className="text-cyan-700 font-bold text-xl tracking-tighter">
@@ -191,10 +194,12 @@ const Footer = () => {
               >
                 {footerLogoSrc ? (
                   <div className="relative mb-4 h-16 w-16 mx-auto md:mx-0 overflow-hidden rounded-2xl border border-white/15 bg-white/5">
-                    <img
+                    <LoadImage
                       src={footerLogoSrc}
                       alt={displayName}
-                      className="object-contain w-full h-full p-2"
+                      fill
+                      className="object-contain p-2"
+                      disableLazy
                     />
                   </div>
                 ) : null}

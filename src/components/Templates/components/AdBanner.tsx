@@ -1,11 +1,11 @@
 import { useRef, useState } from "react";
-import Image from "next/image";
 import { useLocale } from "next-intl";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import type { Swiper as SwiperType } from "swiper";
 import { useAppSelector } from "@/store/hooks";
 import { Ad } from "@/types/Ad";
+import LoadImage from "@/components/ImageLoad";
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -92,13 +92,12 @@ export default function AdVBanner() {
                     >
                       {/* Background Image */}
                       <div className="absolute inset-0">
-                        <Image
+                        <LoadImage
                           src={ad.imageUrl}
                           alt={title}
                           fill
                           className="object-cover"
-                          priority
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 1200px"
+                          disableLazy
                         />
                         {/* Gradient Overlay — أغمق على الجانب النصّي لقراءة أوضح */}
                         <div className="absolute inset-0 bg-linear-to-r from-black/90 via-black/65 to-black/35" />

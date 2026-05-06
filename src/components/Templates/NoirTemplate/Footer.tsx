@@ -7,6 +7,7 @@ import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { useAppSelector } from "@/store/hooks";
 import type { WorkingHours } from "@/types/menu";
+import LoadImage from "@/components/ImageLoad";
 
 const DAY_KEYS: (keyof WorkingHours)[] = [
   "sunday",
@@ -98,10 +99,12 @@ export default function Footer() {
               <div>
                 {menuInfo?.footerLogo ? (
                   <div className="relative mb-4 h-14 w-14 overflow-hidden rounded-lg border border-violet/20">
-                    <img
+                    <LoadImage
                       src={menuInfo.footerLogo}
                       alt={displayName}
-                      className="object-contain w-full h-full p-1"
+                      fill
+                      className="object-contain p-1"
+                      disableLazy
                     />
                   </div>
                 ) : null}

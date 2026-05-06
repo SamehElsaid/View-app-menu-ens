@@ -1,9 +1,9 @@
 import React from "react";
-import Image from "next/image";
 import { useLocale } from "next-intl";
 import { FooterProps } from "@/types/menu";
 import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import LoadImage from "@/components/ImageLoad";
 
 type NeonFooterProps = FooterProps & {
   primaryColor?: string;
@@ -135,12 +135,13 @@ export const Footer: React.FC<NeonFooterProps> = ({
           <div className="lg:col-span-2">
             <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
               {displayLogo ? (
-                <Image
+                <LoadImage
                   src={displayLogo}
                   alt={menuName}
                   width={56}
                   height={56}
                   className="w-14 h-14 rounded-xl object-cover border border-slate-700"
+                  disableLazy
                 />
               ) : (
                 <div

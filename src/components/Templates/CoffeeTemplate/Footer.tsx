@@ -1,7 +1,7 @@
 import { useLocale } from "next-intl";
-import Image from "next/image";
 import Link from "next/link";
 import { IoLocationOutline, IoCallOutline } from "react-icons/io5";
+import LoadImage from "@/components/ImageLoad";
 
 interface FooterProps {
   menuName?: string;
@@ -145,11 +145,12 @@ const Footer = ({
             <Link href="/" className="flex items-center gap-3 mb-4">
               {displayLogo ? (
                 <div className="relative w-10 h-10 rounded-lg overflow-hidden">
-                  <Image
+                  <LoadImage
                     src={displayLogo}
                     alt={menuName || "Logo"}
                     fill
                     className="object-cover"
+                    disableLazy
                   />
                 </div>
               ) : null}

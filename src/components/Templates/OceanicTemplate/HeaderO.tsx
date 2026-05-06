@@ -6,6 +6,7 @@ import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { FaGlobe } from "react-icons/fa";
+import LoadImage from "@/components/ImageLoad";
 
 export default function HeaderO() {
   const locale = useLocale();
@@ -50,10 +51,12 @@ export default function HeaderO() {
         >
           <div className="relative w-11 h-11 rounded-full bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.3)] overflow-hidden border border-white/20">
             {menuInfo?.logo ? (
-              <img
+              <LoadImage
                 src={menuInfo.logo}
                 alt={siteName}
-                className="object-cover w-full h-full"
+                fill
+                className="object-cover"
+                disableLazy
               />
             ) : (
               <span className="text-white font-bold text-xl tracking-tighter">

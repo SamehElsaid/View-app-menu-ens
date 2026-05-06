@@ -1,11 +1,11 @@
 "use client";
 import React, { useState } from "react";
-import Image from "next/image";
 import { MdOutlineRestaurantMenu, MdRestaurant } from "react-icons/md";
 import { FiMenu, FiPhoneCall, FiX } from "react-icons/fi";
 import { LanguageToggle } from "./LanguageToggle";
 import { useLocale, useTranslations } from "next-intl";
 import Drawer from "@/components/Global/Drawer";
+import LoadImage from "@/components/ImageLoad";
 import { useAppSelector } from "@/store/hooks";
 import { Icon } from "../components/Icon";
 import { useCategoryNav } from "./CategoryNavContext";
@@ -67,14 +67,13 @@ function NavBar({
             ) : null}
             <div className="min-w-0 text-2xl font-black tracking-tighter flex items-center gap-2">
               {logo ? (
-                <Image
+                <LoadImage
                   src={logo}
                   alt={menuName || ""}
                   width={40}
                   height={40}
-                  sizes="40px"
                   className="relative h-10 w-10 shrink-0 rounded-full object-contain transition-transform duration-300 group-hover:scale-110"
-                  unoptimized
+                  disableLazy
                 />
               ) : (
                 <>

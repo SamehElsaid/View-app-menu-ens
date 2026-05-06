@@ -8,6 +8,7 @@ import { Autoplay, Pagination } from "swiper/modules";
 import { useAppSelector } from "@/store/hooks";
 import type { Ad } from "@/types/Ad";
 import { useNoirTheme, shadowGlow, NoirChevronRight } from "./NoirThemeContext";
+import LoadImage from "@/components/ImageLoad";
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -71,10 +72,11 @@ export default function PromoBannerN() {
                       "cubic-bezier(0.25, 0.1, 0.25, 1)",
                   }}
                 >
-                  <img
+                  <LoadImage
                     src={ad.imageUrl}
                     alt={title}
-                    className="object-cover w-full h-full sm:saturate-[0.72] sm:brightness-[0.9]"
+                    fill
+                    className="object-cover sm:saturate-[0.72] sm:brightness-[0.9]"
                   />
                   <div className="pointer-events-none absolute inset-0 z-1 rtl:scale-x-[-1]" />
                 </div>

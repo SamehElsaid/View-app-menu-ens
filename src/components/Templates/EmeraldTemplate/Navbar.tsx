@@ -8,6 +8,7 @@ import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
 import { LanguageToggle } from "../Default/LanguageToggle";
+import LoadImage from "@/components/ImageLoad";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -50,10 +51,12 @@ export default function Navbar() {
                 borderColor: ringSoft,
               }}
             >
-              <img
+              <LoadImage
                 src={menuInfo.logo}
-                alt=""
-                className="object-cover w-full h-full"
+                alt={displayName}
+                fill
+                className="object-cover"
+                disableLazy
               />
             </div>
           ) : (

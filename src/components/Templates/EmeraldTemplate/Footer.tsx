@@ -3,6 +3,7 @@
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
+import LoadImage from "@/components/ImageLoad";
 
 export default function Footer() {
   const locale = useLocale() as "ar" | "en";
@@ -32,10 +33,12 @@ export default function Footer() {
                 borderColor: ringSoft,
               }}
             >
-              <img
+              <LoadImage
                 src={menuInfo.logo}
-                alt=""
-                className="object-cover w-full h-full"
+                alt={displayName}
+                fill
+                className="object-cover"
+                disableLazy
               />
             </div>
           ) : (

@@ -12,6 +12,7 @@ import OceanicTemplate from "@/components/Templates/OceanicTemplate";
 import { useLocale } from "next-intl";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import LoadImage from "@/components/ImageLoad";
 
 export default function Page() {
   const menu = useAppSelector((state) => state.menu);
@@ -25,11 +26,13 @@ export default function Page() {
           <div className="w-full max-w-md rounded-xl border bg-white p-6 text-center shadow-md space-y-4">
             {menu.menuInfo.logo && (
               <div className="mb-2 flex justify-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <LoadImage
                   src={menu.menuInfo.logo}
                   alt={menu.menuInfo.name}
+                  width={80}
+                  height={80}
                   className="h-20 w-20 rounded-full object-cover"
+                  disableLazy
                 />
               </div>
             )}

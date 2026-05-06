@@ -13,6 +13,7 @@ import {
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
+import LoadImage from "@/components/ImageLoad";
 
 interface ProductModalProps {
   item: MenuItem | null;
@@ -106,15 +107,16 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
             }}
             className="oceanic-modal-scroll fixed z-[70] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
                        w-[95%] max-w-[520px] max-h-[92vh] overflow-y-auto rounded-[2.5rem]
-                       bg-gradient-to-b from-[#002b36] via-[#00222d] to-[#001a23]
+                       bg-linear-to-b from-[#002b36] via-[#00222d] to-[#001a23]
                        border border-white/10 shadow-[0_30px_100px_rgba(0,0,0,0.6)]"
           >
             {/* Header Image Section */}
-            <div className=" relative w-full aspect-[4/3] md:aspect-[16/10] overflow-hidden bg-gradient-to-br from-[#002433] via-[#002b3a] to-[#003544]">
-              <img
+            <div className=" relative w-full aspect-4/3 md:aspect-16/10 overflow-hidden bg-linear-to-br from-[#002433] via-[#002b3a] to-[#003544]">
+              <LoadImage
                 src={resolveMenuItemImageSrc(item.image)}
                 alt={displayName}
                 className="object-cover w-full h-full"
+                disableLazy={true}
               />
               {/* Gradient Overlay (bottom only, lighter to keep image visible) */}
               <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-[#001a23] to-transparent pointer-events-none" />

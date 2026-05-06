@@ -5,13 +5,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import Image from "next/image";
 import { toast } from "react-toastify";
 import { useAppSelector } from "@/store/hooks";
 import { arabCurrencies, Currency } from "@/constants/currencies";
 import { axiosPost } from "@/shared/axiosCall";
 import { FiX } from "react-icons/fi";
 import { IoCartOutline } from "react-icons/io5";
+import LoadImage from "@/components/ImageLoad";
 import {
   notifySkyCartUpdated,
   readSkyCartFromCookie,
@@ -436,13 +436,12 @@ export default function RequestStaffButton() {
                           >
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex items-start gap-3">
-                                <Image
+                                <LoadImage
                                   src={item.image}
                                   alt={item.name}
                                   className="h-12 w-12 rounded-lg object-cover border border-(--bg-main)/15 bg-white"
                                   width={48}
                                   height={48}
-                                  loading="lazy"
                                 />
                                 <div>
                                   <p className="line-clamp-1 text-sm font-semibold text-zinc-900">

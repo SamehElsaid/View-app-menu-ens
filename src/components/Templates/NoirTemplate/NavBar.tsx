@@ -6,6 +6,7 @@ import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import { useNoirTheme, shadowGlow } from "./NoirThemeContext";
 import { LanguageToggle } from "../Default/LanguageToggle";
+import LoadImage from "@/components/ImageLoad";
 
 export default function NavBar() {
   const [scrolled, setScrolled] = useState(false);
@@ -37,10 +38,12 @@ export default function NavBar() {
             className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full ring-1 ring-violet/20"
             style={{ boxShadow: shadowGlow(primary, 20, 0.25) }}
           >
-            <img
+            <LoadImage
               src={menuInfo.logo}
-              alt=""
-              className="object-cover w-full h-full"
+              alt={displayName}
+              fill
+              className="object-cover"
+              disableLazy
             />
           </div>
         ) : (

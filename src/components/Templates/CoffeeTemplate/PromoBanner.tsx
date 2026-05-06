@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useLocale } from "next-intl";
+import LoadImage from "@/components/ImageLoad";
 
 interface Ad {
   id: number;
@@ -133,10 +134,11 @@ const PromoBanner = ({ menuId, ownerPlanType }: PromoBannerProps) => {
               {/* Background Image */}
               <div className="absolute inset-0 h-full w-full">
                 {ad.imageUrl ? (
-                  <img
+                  <LoadImage
                     src={ad.imageUrl}
                     alt={title}
-                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                    fill
+                    className="object-cover transition-transform duration-1000 group-hover:scale-110"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = "none";
                     }}

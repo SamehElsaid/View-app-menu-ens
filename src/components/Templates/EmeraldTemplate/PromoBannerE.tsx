@@ -8,6 +8,7 @@ import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { useAppSelector } from "@/store/hooks";
 import type { Ad } from "@/types/Ad";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
+import LoadImage from "@/components/ImageLoad";
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -64,10 +65,11 @@ export default function PromoBannerE() {
                 className="relative w-full h-[220px] sm:h-[300px] md:h-[380px] cursor-pointer group"
                 onClick={() => handleAdClick(ad)}
               >
-                <img
+                <LoadImage
                   src={ad.imageUrl}
                   alt={title}
-                  className="object-cover w-full h-full transition-transform duration-1000 group-hover:scale-110"
+                  fill
+                  className="object-cover transition-transform duration-1000 group-hover:scale-110"
                 />
 
                 <div

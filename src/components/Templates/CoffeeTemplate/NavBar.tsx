@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter, usePathname } from "@/i18n/navigation";
-import Image from "next/image";
+import LoadImage from "@/components/ImageLoad";
 import Link from "next/link";
 import { FiLayers, FiX } from "react-icons/fi";
 
@@ -95,7 +95,7 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
             <Link href="/" className="flex items-center gap-3 group">
               {menuLogo && (
                 <div className="relative w-10 h-10 rounded-lg overflow-hidden">
-                  <Image
+                  <LoadImage
                     src={menuLogo}
                     alt={menuName || "Logo"}
                     fill

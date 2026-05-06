@@ -9,6 +9,7 @@ import type { Swiper as SwiperType } from "swiper";
 import { useAppSelector } from "@/store/hooks";
 import type { Ad } from "@/types/Ad";
 import { motion, AnimatePresence } from "framer-motion";
+import LoadImage from "@/components/ImageLoad";
 import "swiper/css";
 import "swiper/css/effect-fade";
 
@@ -63,10 +64,11 @@ export default function PromoBannerOceanic() {
                 className="relative w-full h-[200px] sm:h-[220px] md:h-[260px] cursor-pointer group"
                 onClick={() => handleAdClick(ad)}
               >
-                <img
+                <LoadImage
                   src={ad.imageUrl}
                   alt={title || "Ad"}
-                  className="object-cover w-full h-full transition-transform duration-[1.4s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
+                  fill
+                  className="object-cover transition-transform duration-[1.4s] ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-[1.04]"
                 />
 
                 <div className="absolute inset-0 bg-linear-to-r from-[#001a23]/95 via-[#001a23]/60 to-transparent rtl:bg-gradient-to-l" />
