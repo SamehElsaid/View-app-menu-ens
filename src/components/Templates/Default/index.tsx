@@ -19,20 +19,22 @@ function Default() {
       <style jsx global>
         {globalStyles}
       </style>
-      <NavBar
-        logo={menuInfo?.logo || null}
-        menuName={menuInfo?.name || null}
-      />
-      <HeroSection />
-      <AdVBanner />
-      <Suspense fallback={null}>
-        <MenuSection currency={menuInfo?.currency || "AED"} />
-      </Suspense>
-      <Footer
-        workingHours={menuInfo?.workingHours || null}
-        menuInfo={menuInfo || null}
-      />
-      {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
+      <div className="menu-template-root">
+        <NavBar
+          logo={menuInfo?.logo || null}
+          menuName={menuInfo?.name || null}
+        />
+        <HeroSection />
+        <AdVBanner />
+        <Suspense fallback={null}>
+          <MenuSection currency={menuInfo?.currency || "AED"} />
+        </Suspense>
+        <Footer
+          workingHours={menuInfo?.workingHours || null}
+          menuInfo={menuInfo || null}
+        />
+        {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
+      </div>
     </CategoryNavProvider>
   );
 }

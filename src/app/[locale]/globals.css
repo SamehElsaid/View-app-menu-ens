@@ -1,5 +1,7 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap");
 
 @import "tailwindcss";
 
@@ -2943,4 +2945,16 @@ html {
   66% {
     transform: translate(-20px, 20px) scale(0.95);
   }
+}
+
+/* ============================================
+   Templates (Themes) — Arabic font only
+   Tajawal as primary, Cairo as fallback.
+   Scoped to the .menu-template-root wrapper so
+   it does NOT affect the rest of the app (body,
+   SunEditor, dashboard pages, etc.).
+   ============================================ */
+.menu-template-root,
+.menu-template-root * {
+  font-family: "Tajawal", "Cairo", sans-serif !important;
 }

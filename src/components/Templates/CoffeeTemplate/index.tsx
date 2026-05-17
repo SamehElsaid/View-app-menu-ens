@@ -32,7 +32,7 @@ function CoffeeTemplate() {
   }, [menu?.categories, menu?.menu]);
 
   return (
-    <main className="min-h-screen bg-[#17120F]">
+    <main className="menu-template-root min-h-screen bg-[#17120F]">
       <Navbar
         menuName={menu?.menuInfo?.name || undefined}
         menuLogo={menu?.menuInfo?.logo || undefined}

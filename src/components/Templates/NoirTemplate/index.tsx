@@ -39,7 +39,7 @@ function NoirTemplate() {
     <NoirThemeProvider primary={primary} secondary={secondary}>
       <main
         id="top"
-        className="bg-[#141422] text-text-primary min-h-screen"
+        className="menu-template-root bg-[#141422] text-text-primary min-h-screen"
         style={mainStyle}
       >
         <NavBar />

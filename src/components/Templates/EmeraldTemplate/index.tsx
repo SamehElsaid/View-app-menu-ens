@@ -26,7 +26,7 @@ function EmeraldTemplate() {
 
   return (
     <EmeraldThemeProvider primary={primary} secondary={secondary}>
-      <main className="min-h-screen bg-[#fafaf9] text-stone-900 antialiased scroll-smooth  pt-24  md:pb-0">
+      <main className="menu-template-root min-h-screen bg-[#fafaf9] text-stone-900 antialiased scroll-smooth  pt-24  md:pb-0">
         <Navbar />
         <PromoBannerE />
         <section

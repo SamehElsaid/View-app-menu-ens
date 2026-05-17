@@ -139,7 +139,7 @@ function SkyTemplate() {
   const subtitle = customizationsHeroSubtitle || menuInfo?.description;
 
   return (
-    <main className="min-h-screen  bg-white text---text-main)">
+    <main className="menu-template-root min-h-screen  bg-white text---text-main)">
       <style jsx global>
         {globalStyle}
       </style>
