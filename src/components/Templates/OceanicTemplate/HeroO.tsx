@@ -5,7 +5,6 @@ import { FaChevronDown } from "react-icons/fa";
 import { useLocale } from "next-intl";
 
 import { useAppSelector } from "@/store/hooks";
-import LoadImage from "@/components/ImageLoad";
 
 const HeroO = () => {
   const locale = useLocale();
@@ -19,12 +18,10 @@ const HeroO = () => {
   return (
     <section className="relative min-h-[85svh] md:min-h-[80vh] lg:min-h-[78vh] flex items-center justify-center overflow-hidden bg-[#001a23] py-20 md:py-24">
       <div className="absolute inset-0 z-0">
-        <LoadImage
+        <img
           src="/images/hero-bg.jpg"
           alt="Hero Background"
-          fill
-          className="object-cover object-center max-sm:transform-none sm:scale-105"
-          disableLazy
+          className="absolute inset-0 w-full h-full object-cover object-center max-sm:transform-none sm:scale-105"
         />
         <div className="absolute inset-0 bg-linear-to-b from-black/70 via-transparent to-[#001a23]" />
       </div>

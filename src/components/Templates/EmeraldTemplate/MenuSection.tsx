@@ -176,7 +176,7 @@ function EmeraldMenuCard({
       </div>
 
       <div className="p-5">
-        <h3 className="font-serif font-700 text-stone-900 text-lg leading-tight mb-2 transition-colors duration-200 group-hover:text-[var(--em-p)]">
+        <h3 className="font-serif font-700 text-stone-900 text-lg mb-2 transition-colors duration-200 group-hover:text-[var(--em-p)]">
           {locale === "ar" ? dish.nameAr : dish.nameEn}
         </h3>
         <p className="font-sans text-stone-500 text-sm leading-relaxed line-clamp-2">
@@ -409,7 +409,7 @@ function EmeraldDishModal({
         </div>
 
         <div className="flex-1 overflow-y-auto md:overflow-y-visible px-6 py-5 md:px-7 md:py-6">
-          <h2 className="font-serif italic text-stone-900 text-xl md:text-2xl font-700 leading-tight mb-3 text-balance">
+          <h2 className="font-serif italic text-stone-900 text-xl md:text-2xl font-700 mb-3 text-balance">
             {locale === "ar" ? dish.nameAr : dish.nameEn}
           </h2>
 
@@ -547,7 +547,7 @@ export default function MenuSection({
         </p>
         <h2
           id="menu-heading"
-          className="font-serif italic text-stone-900 text-[clamp(2rem,4vw,3rem)] leading-tight tracking-tight"
+          className="font-serif italic text-stone-900 text-[clamp(2rem,4vw,3rem)] tracking-tight"
         >
           {locale === "ar" ? "القائمة" : "Menu"}
         </h2>

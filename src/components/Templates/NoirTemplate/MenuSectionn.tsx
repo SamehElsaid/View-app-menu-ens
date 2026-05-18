@@ -83,7 +83,7 @@ function CategoryTabs({
                     : "bg-violet/4 text-text-secondary border border-violet/18 hover:border-violet/30 hover:bg-violet/8"
                 }`}
             >
-              <span className="leading-tight max-w-[14rem] sm:max-w-none truncate">
+              <span className=" max-w-[14rem] sm:max-w-none truncate">
                 {label}
               </span>
             </button>
@@ -167,9 +167,7 @@ function NoirMenuCard({
         <p className="text-xs tracking-[0.3em] uppercase text-cyan mb-1">
           {catLabel}
         </p>
-        <h3 className="font-display text-lg font-light leading-tight mb-1">
-          {name}
-        </h3>
+        <h3 className="font-display text-lg font-light mb-1">{name}</h3>
         {desc && (
           <p className="text-xs text-text-secondary leading-relaxed mb-3 line-clamp-2">
             {desc}
@@ -333,7 +331,7 @@ function NoirDetailModal({
           </p>
           <h3
             id="detail-modal-title"
-            className="font-display text-4xl font-light leading-tight mb-4"
+            className="font-display text-4xl font-light mb-4"
           >
             {name}
           </h3>
@@ -445,7 +443,7 @@ export default function MenuSectionn({
       <p className="text-sm tracking-[0.5em] uppercase text-violet mb-4">
         {locale === "ar" ? "— القائمة الكاملة —" : "— Full Menu —"}
       </p>
-      <h2 className="font-display text-[clamp(2rem,5vw,3.5rem)] font-light leading-tight mb-12">
+      <h2 className="font-display text-[clamp(2rem,5vw,3.5rem)] font-light mb-12">
         <em className="italic text-lavender">
           {locale === "ar" ? "إبداعات" : "Chef's"}
         </em>{" "}
