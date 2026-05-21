@@ -71,11 +71,12 @@ export const globalStyles = `
 
   html[dir="rtl"] body,
   html[lang="ar"] body {
-    font-family: "Cairo", sans-serif;
+    font-family: "Tajawal", "Cairo", sans-serif;
   }
 
-  .font-cairo {
-    font-family: "Cairo", sans-serif;
+  .font-cairo,
+  .font-arabic {
+    font-family: "Tajawal", "Cairo", sans-serif;
   }
   .font-poppins {
     font-family: "Poppins", sans-serif;
@@ -254,11 +255,12 @@ export const globalStylesSky = `
 
   html[dir="rtl"] body,
   html[lang="ar"] body {
-    font-family: "Cairo", sans-serif;
+    font-family: "Tajawal", "Cairo", sans-serif;
   }
 
-  .font-cairo {
-    font-family: "Cairo", sans-serif;
+  .font-cairo,
+  .font-arabic {
+    font-family: "Tajawal", "Cairo", sans-serif;
   }
   .font-poppins {
     font-family: "Poppins", sans-serif;

@@ -10,10 +10,14 @@ export const encryptData = (data: unknown): string => {
 };
 
 export const decryptData = (encodedData: string): object => {
+  if (!encodedData?.trim()) {
+    return {};
+  }
+
   const key = process.env.NEXT_PUBLIC_ENCRYPTION_KEY as string;
 
   if (!key) {
-    throw new Error("Encryption key missing");
+    return {};
   }
 
   try {

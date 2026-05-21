@@ -13,7 +13,7 @@ function NeonTemplate() {
   const secondaryColor = menu?.menuCustomizations?.secondaryColor || "#06b6d4";
 
   return (
-    <main className="min-h-screen bg-white dark:bg-slate-950">
+    <main className="menu-template-root min-h-screen bg-white dark:bg-slate-950">
       <Navbar
         menuName={menu?.menuInfo?.name}
         logo={menu?.menuInfo?.logo ?? undefined}

@@ -21,9 +21,10 @@ const getMenu = async (locale: string) => {
   // memos.ensmenu.com
   const subdomain = host.split(".")[0];
 
-  const slug = process.env.NEXT_PUBLIC_Dev
-    ? process.env.NEXT_PUBLIC_SUB_DOMAIN
-    : subdomain;
+  const isDev =
+    process.env.NEXT_PUBLIC_DEV === "true" ||
+    process.env.NEXT_PUBLIC_Dev === "true";
+  const slug = isDev ? process.env.NEXT_PUBLIC_SUB_DOMAIN : subdomain;
 
   const response = await axiosGet<{ data: MenuResponse }>(
     `/public/menu/${slug}`,

@@ -19,6 +19,7 @@ function Default() {
       <style jsx global>
         {globalStyles}
       </style>
+      <div className="menu-template-root">
       <NavBar
         logo={menuInfo?.logo || null}
         menuName={menuInfo?.name || null}
@@ -33,6 +34,7 @@ function Default() {
         menuInfo={menuInfo || null}
       />
       {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
+      </div>
     </CategoryNavProvider>
   );
 }

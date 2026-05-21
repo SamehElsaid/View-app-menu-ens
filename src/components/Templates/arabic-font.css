@@ -1,0 +1,7 @@
+/* Menu templates — Arabic only: Tajawal + Cairo fallback */
+html[dir="rtl"] .menu-template-root,
+html[dir="rtl"] .menu-template-root *,
+html[lang="ar"] .menu-template-root,
+html[lang="ar"] .menu-template-root * {
+  font-family: "Tajawal", "Cairo", sans-serif !important;
+}

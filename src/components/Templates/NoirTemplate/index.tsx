@@ -30,7 +30,9 @@ function NoirTemplate() {
 
   const mainStyle: CSSProperties = {
     fontFamily:
-      locale === "ar" ? '"Cairo", sans-serif' : '"DM Sans", sans-serif',
+      locale === "ar"
+        ? '"Tajawal", "Cairo", sans-serif'
+        : '"DM Sans", sans-serif',
     // Tailwind @theme noir tokens (text-violet, text-cyan, text-lavender, …)
     ["--color-violet" as string]: primary,
     ["--color-cyan" as string]: secondary,
@@ -42,7 +44,7 @@ function NoirTemplate() {
     <NoirThemeProvider primary={primary} secondary={secondary}>
       <main
         id="top"
-        className="bg-[#141422] text-text-primary min-h-screen"
+        className="menu-template-root bg-[#141422] text-text-primary min-h-screen"
         style={mainStyle}
       >
         <NavBar />
