@@ -30,7 +30,7 @@ function NoirTemplate() {
 
   const mainStyle: CSSProperties = {
     fontFamily:
-      locale === "ar" ? '"Cairo", sans-serif' : '"DM Sans", sans-serif',
+      locale === "ar" ? '"Tajawal", sans-serif' : '"DM Sans", sans-serif',
     // Tailwind @theme noir tokens (text-violet, text-cyan, text-lavender, …)
     ["--color-violet" as string]: primary,
     ["--color-cyan" as string]: secondary,

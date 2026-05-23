@@ -6,7 +6,7 @@ export const globalStyles = `
   /* ============================
    Fonts
    ============================ */
-  @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
+  @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@200;300;400;500;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
   @import url("https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css");
 
   /* ============================
@@ -71,11 +71,14 @@ export const globalStyles = `
 
   html[dir="rtl"] body,
   html[lang="ar"] body {
-    font-family: "Cairo", sans-serif;
+    font-family: "Tajawal", sans-serif;
   }
 
   .font-cairo {
     font-family: "Cairo", sans-serif;
+  }
+  .font-tajawal {
+    font-family: "Tajawal", sans-serif;
   }
   .font-poppins {
     font-family: "Poppins", sans-serif;
@@ -188,7 +191,7 @@ export const globalStylesSky = `
   /* ============================
    Fonts
    ============================ */
-  @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
+  @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@200;300;400;500;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
   @import url("https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css");
 
   /* ============================
@@ -254,11 +257,14 @@ export const globalStylesSky = `
 
   html[dir="rtl"] body,
   html[lang="ar"] body {
-    font-family: "Cairo", sans-serif;
+    font-family: "Tajawal", sans-serif;
   }
 
   .font-cairo {
     font-family: "Cairo", sans-serif;
+  }
+  .font-tajawal {
+    font-family: "Tajawal", sans-serif;
   }
   .font-poppins {
     font-family: "Poppins", sans-serif;

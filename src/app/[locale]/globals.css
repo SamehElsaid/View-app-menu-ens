@@ -1,11 +1,24 @@
-@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap");
 
 @import "tailwindcss";
 
-/* Arabic typography — Cairo across all menu templates */
+/* Arabic typography — Tajawal across all menu templates */
+html[dir="rtl"],
+html[lang="ar"] {
+  --font-body: "Tajawal", sans-serif;
+  --font-sans: "Tajawal", sans-serif;
+  --font-serif: "Tajawal", sans-serif;
+  --font-heading: "Tajawal", sans-serif;
+  --font-display: "Tajawal", sans-serif;
+  --font-arabic: "Tajawal", sans-serif;
+  --font-cairo: "Tajawal", sans-serif;
+  --font-tajawal: "Tajawal", sans-serif;
+  --font-logo: "Tajawal", sans-serif;
+}
+
 html[dir="rtl"] body,
 html[lang="ar"] body {
-  font-family: "Cairo", sans-serif;
+  font-family: "Tajawal", sans-serif !important;
 }
 
 html[dir="rtl"] .font-body,
@@ -15,8 +28,18 @@ html[dir="rtl"] .font-heading,
 html[dir="rtl"] .font-display,
 html[dir="rtl"] .font-arabic,
 html[dir="rtl"] .font-cairo,
-html[dir="rtl"] .font-tajawal {
-  font-family: "Cairo", sans-serif;
+html[dir="rtl"] .font-tajawal,
+html[dir="rtl"] .font-logo,
+html[lang="ar"] .font-body,
+html[lang="ar"] .font-sans,
+html[lang="ar"] .font-serif,
+html[lang="ar"] .font-heading,
+html[lang="ar"] .font-display,
+html[lang="ar"] .font-arabic,
+html[lang="ar"] .font-cairo,
+html[lang="ar"] .font-tajawal,
+html[lang="ar"] .font-logo {
+  font-family: "Tajawal", sans-serif !important;
 }
 
 /* Material Symbols font removed - replaced with @iconify/react SVG icons */
@@ -35,8 +58,8 @@ html[dir="rtl"] .font-tajawal {
   --color-ens-dark-section: 240 15% 12%;
 
   --font-body: "Cairo", sans-serif;
-  --font-tajawal: "Cairo", sans-serif;
-  --font-arabic: "Cairo", sans-serif;
+  --font-tajawal: "Tajawal", sans-serif;
+  --font-arabic: "Tajawal", sans-serif;
   --font-cairo: "Cairo", sans-serif;
   --font-heading: "Cairo", sans-serif;
   --text-xs: 12px;
@@ -209,7 +232,7 @@ html[dir="rtl"] .font-tajawal {
 
 [dir="rtl"] .oceanic-root,
 [dir="rtl"] .oceanic-root * {
-  font-family: "Cairo", system-ui, sans-serif;
+  font-family: "Tajawal", system-ui, sans-serif;
 }
 
 [dir="ltr"] .oceanic-root,
