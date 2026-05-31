@@ -374,7 +374,7 @@ export default function RequestStaffButton() {
       >
         <IoCartOutline className="h-6 w-6" />
       </button>
-      <span className="max-w-40 truncate rounded-full border border-(--bg-main)/20 bg-white/95 px-3 py-1 text-center text-xs font-medium text-(--bg-main) shadow-sm">
+      <span className="max-w-40 truncate rounded-full border border-(--bg-main)/20 bg-white/95 px-3 py-1 text-center text-base font-medium text-(--bg-main) shadow-base">
         {labels.cart}: {totalQuantity}
       </span>
 
@@ -406,7 +406,7 @@ export default function RequestStaffButton() {
                     <h2 className="text-lg font-bold text-(--bg-main)">
                       {labels.cart}
                     </h2>
-                    <p className="text-xs text-(--bg-main)/70">
+                    <p className="text-base text-(--bg-main)/70">
                       {step === 1 ? labels.step1 : labels.step2}
                     </p>
                   </div>
@@ -424,7 +424,7 @@ export default function RequestStaffButton() {
               {step === 1 ? (
                 <div className="flex flex-1 flex-col overflow-hidden">
                   <div className="flex-1 overflow-y-auto px-4 py-3">
-                    <h3 className="mb-2 text-sm font-semibold text-(--bg-main)">
+                    <h3 className="mb-2 text-base font-semibold text-(--bg-main)">
                       {labels.products}
                     </h3>
                     {cartItemsForOrder.length ? (
@@ -444,15 +444,15 @@ export default function RequestStaffButton() {
                                   height={48}
                                 />
                                 <div>
-                                  <p className="line-clamp-1 text-sm font-semibold text-zinc-900">
+                                  <p className="line-clamp-1 text-base font-semibold text-zinc-900">
                                     {item.name}
                                   </p>
-                                  <p className="mt-1 text-xs text-zinc-600">
+                                  <p className="mt-1 text-base text-zinc-600">
                                     {item.price.toFixed(2)} {getCurrency()}
                                   </p>
                                 </div>
                               </div>
-                              <div className="rounded-lg bg-white p-1 shadow-sm">
+                              <div className="rounded-lg bg-white p-1 shadow-base">
                                 <div className="flex items-center gap-1">
                                   <button
                                     type="button"
@@ -462,7 +462,7 @@ export default function RequestStaffButton() {
                                   >
                                     -
                                   </button>
-                                  <span className="min-w-6 text-center text-sm font-semibold text-(--bg-main)">
+                                  <span className="min-w-6 text-center text-base font-semibold text-(--bg-main)">
                                     {item.quantity}
                                   </span>
                                   <button
@@ -476,7 +476,7 @@ export default function RequestStaffButton() {
                                 </div>
                               </div>
                             </div>
-                            <p className="mt-2 text-xs font-medium text-zinc-700">
+                            <p className="mt-2 text-base font-medium text-zinc-700">
                               {(item.quantity * item.price).toFixed(2)}{" "}
                               {getCurrency()}
                             </p>
@@ -484,13 +484,13 @@ export default function RequestStaffButton() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="rounded-lg border border-dashed border-zinc-300 p-4 text-center text-sm text-zinc-500">
+                      <p className="rounded-lg border border-dashed border-zinc-300 p-4 text-center text-base text-zinc-500">
                         {labels.empty}
                       </p>
                     )}
                   </div>
                   <div className="border-t border-(--bg-main)/15 bg-white px-4 py-3">
-                    <div className="mb-3 flex items-center justify-between text-sm">
+                    <div className="mb-3 flex items-center justify-between text-base">
                       <span className="font-medium text-zinc-600">{labels.total}</span>
                       <strong className="text-base text-(--bg-main)">
                         {totalPrice.toFixed(2)} {getCurrency()}
@@ -500,7 +500,7 @@ export default function RequestStaffButton() {
                       type="button"
                       onClick={goToStep2}
                       disabled={!cartItemsForOrder.length}
-                      className="w-full rounded-lg bg-(--bg-main) px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-400"
+                      className="w-full rounded-lg bg-(--bg-main) px-4 py-2.5 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-400"
                     >
                       {labels.next}
                     </button>
@@ -511,7 +511,7 @@ export default function RequestStaffButton() {
                   <div>
                     <label
                       htmlFor="customer-name"
-                      className="mb-2 block text-sm font-semibold text-(--bg-main)"
+                      className="mb-2 block text-base font-semibold text-(--bg-main)"
                     >
                       {labels.name}
                     </label>
@@ -521,7 +521,7 @@ export default function RequestStaffButton() {
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
                       placeholder={labels.namePlaceholder}
-                      className="w-full rounded-lg border border-(--bg-main)/30 px-3 py-2 text-sm outline-none ring-(--bg-main)/30 focus:ring-2"
+                      className="w-full rounded-lg border border-(--bg-main)/30 px-3 py-2 text-base outline-none ring-(--bg-main)/30 focus:ring-2"
                     />
                   </div>
                   <div className="space-y-2 border-t border-(--bg-main)/15 pt-3">
@@ -529,14 +529,14 @@ export default function RequestStaffButton() {
                       type="button"
                       onClick={confirmOrder}
                       disabled={isConfirming}
-                      className="w-full rounded-lg bg-(--bg-main) px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-400"
+                      className="w-full rounded-lg bg-(--bg-main) px-4 py-2.5 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-400"
                     >
                       {isConfirming ? "..." : labels.confirm}
                     </button>
                     <button
                       type="button"
                       onClick={() => setStep(1)}
-                      className="w-full rounded-lg border border-(--bg-main)/20 px-4 py-2.5 text-sm font-medium text-(--bg-main) transition hover:bg-(--bg-main)/10"
+                      className="w-full rounded-lg border border-(--bg-main)/20 px-4 py-2.5 text-base font-medium text-(--bg-main) transition hover:bg-(--bg-main)/10"
                     >
                       {labels.back}
                     </button>

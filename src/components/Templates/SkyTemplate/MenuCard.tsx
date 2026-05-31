@@ -113,7 +113,7 @@ export default function MenuCard({
 
           {/* Floating Category Tag - Sky Blue */}
           <div className="absolute top-6 right-6 z-10">
-            <span className="bg-(--bg-main)/90 backdrop-blur-md text-white text-[10px] font-black px-4 py-2 rounded-full shadow-sm tracking-widest uppercase border border-white/20">
+            <span className="bg-(--bg-main)/90 backdrop-blur-md text-white text-base font-black px-4 py-2 rounded-full shadow-base tracking-widest uppercase border border-white/20">
               {itemCategoryName}
             </span>
           </div>
@@ -125,10 +125,10 @@ export default function MenuCard({
             </span>
             {item.originalPrice && item.discountPercent && (
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs text-white/80 line-through">
+                <span className="text-base text-white/80 line-through">
                   {item.originalPrice} {getCurrency()}
                 </span>
-                <span className="text-xs font-black bg-white text-(--bg-main) px-2 py-0.5 rounded-full">
+                <span className="text-base font-black bg-white text-(--bg-main) px-2 py-0.5 rounded-full">
                   -{item.discountPercent}%
                 </span>
               </div>
@@ -145,7 +145,7 @@ export default function MenuCard({
             <div className="w-8 h-1 bg-(--bg-main)/10 rounded-full group-hover:w-16 transition-all duration-500" />
           </div>
 
-          <p className="text-(--bg-main)/70 text-sm leading-relaxed mb-8 h-12 overflow-hidden font-medium opacity-90 line-clamp-2">
+          <p className="text-(--bg-main)/70 text-lg leading-relaxed mb-8 h-12 overflow-hidden font-medium opacity-90 line-clamp-2">
             {itemDescription}
           </p>
 
@@ -158,7 +158,7 @@ export default function MenuCard({
                   onAddToCart(selectedQuantity);
                   setSelectedQuantity(1);
                 }}
-                className="rounded-xl bg-(--bg-main) px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                className="rounded-xl bg-(--bg-main) px-4 py-2 text-base font-semibold text-white transition-opacity hover:opacity-90"
               >
                 {addToCartLabel}
               </button>
@@ -175,7 +175,7 @@ export default function MenuCard({
                 >
                   -
                 </button>
-                <span className="min-w-6 text-center text-sm font-semibold text-(--bg-main)">
+                <span className="min-w-6 text-center text-base font-semibold text-(--bg-main)">
                   {selectedQuantity}
                 </span>
                 <button
@@ -193,7 +193,7 @@ export default function MenuCard({
             </div>
           )}
           {isTableOrder && quantity > 0 && (
-            <p className="mt-2 text-xs text-(--bg-main)/70">
+            <p className="mt-2 text-base text-(--bg-main)/70">
               {locale === "ar" ? `في السلة: ${quantity}` : `In cart: ${quantity}`}
             </p>
           )}
@@ -229,7 +229,7 @@ export default function MenuCard({
             {/* Close Button */}
             <button
               onClick={handleClose}
-              className={`absolute top-6 z-30 w-12 h-12 rounded-full bg-(--bg-main)/90 backdrop-blur-sm flex items-center justify-center text-white hover:bg-(--bg-main) transition-all duration-300 shadow-lg ${
+              className={`absolute top-6 z-30 w-12 h-12 rounded-full bg-(--bg-main)/90 backdrop-blur-base flex items-center justify-center text-white hover:bg-(--bg-main) transition-all duration-300 shadow-lg ${
                 direction === "rtl" ? "left-6" : "right-6"
               }`}
             >
@@ -249,7 +249,7 @@ export default function MenuCard({
               {/* Category Badge */}
               {itemCategoryName && (
                 <div
-                  className={`absolute top-6 bg-(--bg-main)/90 backdrop-blur-md text-white text-xs font-black px-4 py-2 rounded-full shadow-sm tracking-widest uppercase border border-white/20 ${
+                  className={`absolute top-6 bg-(--bg-main)/90 backdrop-blur-md text-white text-base font-black px-4 py-2 rounded-full shadow-base tracking-widest uppercase border border-white/20 ${
                     direction === "rtl" ? "right-6" : "left-6"
                   }`}
                 >
@@ -280,7 +280,7 @@ export default function MenuCard({
               </div>
 
               {/* Description */}
-              <p className="text-(--bg-main)/70 text-base leading-relaxed font-medium">
+              <p className="w-full text-(--bg-main)/70 text-lg leading-relaxed font-medium text-balance wrap-break-word">
                 {itemDescription}
               </p>
 
@@ -293,7 +293,7 @@ export default function MenuCard({
                       onAddToCart(selectedQuantity);
                       setSelectedQuantity(1);
                     }}
-                    className="rounded-xl bg-(--bg-main) px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                    className="rounded-xl bg-(--bg-main) px-4 py-2 text-base font-semibold text-white transition-opacity hover:opacity-90"
                   >
                     {addToCartLabel}
                   </button>
@@ -310,7 +310,7 @@ export default function MenuCard({
                     >
                       -
                     </button>
-                    <span className="min-w-6 text-center text-sm font-semibold text-(--bg-main)">
+                    <span className="min-w-6 text-center text-base font-semibold text-(--bg-main)">
                       {selectedQuantity}
                     </span>
                     <button
@@ -328,7 +328,7 @@ export default function MenuCard({
                 </div>
               )}
               {isTableOrder && quantity > 0 && (
-                <p className="text-sm text-(--bg-main)/70">
+                <p className="text-base text-(--bg-main)/70">
                   {locale === "ar" ? `في السلة: ${quantity}` : `In cart: ${quantity}`}
                 </p>
               )}
@@ -346,7 +346,7 @@ export default function MenuCard({
                     <span className="text-lg text-(--bg-main)/50 line-through font-medium">
                       {item.originalPrice} {getCurrency()}
                     </span>
-                    <span className="text-sm font-black bg-(--bg-main) text-white px-3 py-1 rounded-full">
+                    <span className="text-base font-black bg-(--bg-main) text-white px-3 py-1 rounded-full">
                       -{item.discountPercent}%
                     </span>
                   </div>

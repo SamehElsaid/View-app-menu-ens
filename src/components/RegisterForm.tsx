@@ -192,7 +192,7 @@ export default function RegisterForm() {
       <div className="flex items-center justify-center mt-6">
         <LinkTo
           href="/auth/login"
-          className="text-sm font-medium  text-center hover:text-accent-purple/80 transition-all duration-200"
+          className="text-base font-medium  text-center hover:text-accent-purple/80 transition-all duration-200"
         >
           {t("auth.haveAccount")}{" "}
           <span className="font-bold underline text-accent-purple">

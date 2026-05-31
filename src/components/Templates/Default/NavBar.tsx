@@ -48,7 +48,7 @@ function NavBar({
               <button
                 type="button"
                 onClick={toggleCategoriesDrawer}
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border shadow-sm transition ${
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border shadow-base transition ${
                   categoriesDrawerOpen
                     ? "border-(--bg-main) bg-(--bg-main) text-white hover:bg-(--bg-main)/90"
                     : "border border-zinc-200 bg-white text-zinc-700 hover:border-(--bg-main) hover:text-(--bg-main)"
@@ -65,7 +65,7 @@ function NavBar({
                 )}
               </button>
             ) : null}
-            <div className="min-w-0 text-2xl font-black tracking-tighter flex items-center gap-2">
+            <div className="min-w-0 text-lg md:text-xl font-black tracking-tighter flex items-center gap-2">
               {logo ? (
                 <LoadImage
                   src={logo}
@@ -77,8 +77,8 @@ function NavBar({
                 />
               ) : (
                 <>
-                  <MdRestaurant className="relative shrink-0 text-3xl transition-transform duration-300 group-hover:scale-110" />
-                  <span className="truncate text-2xl font-black tracking-tighter">
+                  <MdRestaurant className="relative shrink-0 text-xl md:text-2xl transition-transform duration-300 group-hover:scale-110" />
+                  <span className="truncate text-lg md:text-xl font-black tracking-tighter">
                     {menuName}
                   </span>
                 </>
@@ -86,7 +86,7 @@ function NavBar({
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-4 text-xs font-bold text-zinc-600 sm:gap-8 sm:text-sm md:gap-8">
+          <div className="flex shrink-0 items-center gap-4 text-base font-bold text-zinc-600 sm:gap-8 sm:text-base md:gap-8">
             <a
               href="#menu"
               className="hover:text-(--bg-main) flex items-center gap-1 transition-colors"
@@ -104,7 +104,7 @@ function NavBar({
             </a>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <div className="bg-(--bg-main) text-white  rounded-full font-bold text-sm shadow-md shadow-purple-200">
+            <div className="bg-(--bg-main) text-white  rounded-full font-bold text-base shadow-md shadow-purple-200">
               <LanguageToggle />
             </div>
           </div>

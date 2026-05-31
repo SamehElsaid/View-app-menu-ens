@@ -86,23 +86,23 @@ export default function PromoBannerOceanic() {
                         ease: [0.16, 1, 0.3, 1],
                       }}
                     >
-                      <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-cyan-500/20 backdrop-blur-md text-cyan-300 text-[10px] sm:text-xs font-bold mb-3 tracking-[0.15em] uppercase border border-cyan-500/30">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-cyan-500/20 backdrop-blur-md text-cyan-300 text-[10px] sm:text-base font-bold mb-3 tracking-[0.15em] uppercase border border-cyan-500/30">
                         <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
                         {locale === "ar" ? "اعلان خاص" : "Special ADS"}
                       </span>
 
-                      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3  font-display tracking-tight line-clamp-2">
+                      <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3  font-body tracking-tight line-clamp-2">
                         {title}
                       </h2>
 
                       {content && (
-                        <p className="text-sm md:text-base text-white/70 mb-4 line-clamp-2 font-light max-w-lg leading-relaxed">
+                        <p className="text-base md:text-base text-white/70 mb-4 line-clamp-2 font-light max-w-lg leading-relaxed">
                           {content}
                         </p>
                       )}
 
                       {ad.linkUrl && (
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm bg-cyan-600 text-white font-bold transition-all hover:bg-cyan-500 hover:shadow-[0_0_16px_rgba(6,182,212,0.35)] group/btn">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-base bg-cyan-600 text-white font-bold transition-all hover:bg-cyan-500 hover:shadow-[0_0_16px_rgba(6,182,212,0.35)] group/btn">
                           {locale === "ar" ? "اكتشف الآن" : "Explore Now"}
                           <motion.span
                             className="inline-block"

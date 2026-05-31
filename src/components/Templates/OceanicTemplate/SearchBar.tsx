@@ -76,7 +76,7 @@ const SearchBar = ({ value, onChange }: SearchBarProps) => {
             shadow-[0_8px_30px_rgb(0,0,0,0.04)]
             focus:outline-none focus:ring-4 focus:ring-cyan-500/10 focus:border-cyan-500/30
             focus:bg-white/80 transition-all duration-300
-            font-arabic
+            font-body
           `}
         />
 
@@ -89,7 +89,7 @@ const SearchBar = ({ value, onChange }: SearchBarProps) => {
               onClick={handleClear}
               className={`
                 absolute ${isAr ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2
-                w-8 h-8 rounded-full bg-slate-200/50 backdrop-blur-sm
+                w-8 h-8 rounded-full bg-slate-200/50 backdrop-blur-base
                 flex items-center justify-center hover:bg-red-50 hover:text-red-500
                 transition-all duration-200 group
               `}
@@ -100,7 +100,7 @@ const SearchBar = ({ value, onChange }: SearchBarProps) => {
         </AnimatePresence>
       </div>
 
-      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent blur-sm" />
+      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent blur-base" />
     </motion.div>
   );
 };

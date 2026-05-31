@@ -1,11 +1,14 @@
 import { useAppSelector } from "@/store/hooks";
 import React, { Suspense } from "react";
+import { useLocale } from "next-intl";
 import { Navbar } from "./NavBar";
 import { HeroSection } from "./HeroSection";
 import { Footer } from "./Footer";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
+import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
 
 function NeonTemplate() {
+  const locale = useLocale();
   const menu = useAppSelector((state) => state.menu);
   const [selectedCategory, setSelectedCategory] = React.useState("all");
 
@@ -13,7 +16,10 @@ function NeonTemplate() {
   const secondaryColor = menu?.menuCustomizations?.secondaryColor || "#06b6d4";
 
   return (
-    <main className="min-h-screen bg-white dark:bg-slate-950">
+    <main
+      className="menu-template font-body min-h-screen bg-white dark:bg-slate-950"
+      style={{ fontFamily: menuTemplateFontFamily(locale) }}
+    >
       <Navbar
         menuName={menu?.menuInfo?.name}
         logo={menu?.menuInfo?.logo ?? undefined}

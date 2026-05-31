@@ -21,7 +21,7 @@ const HeroO = () => {
         <img
           src="/images/hero-bg.jpg"
           alt="Hero Background"
-          className="absolute inset-0 w-full h-full object-cover object-center max-sm:transform-none sm:scale-105"
+          className="absolute inset-0 w-full h-full object-cover object-center max-base:transform-none sm:scale-105"
         />
         <div className="absolute inset-0 bg-linear-to-b from-black/70 via-transparent to-[#001a23]" />
       </div>
@@ -50,9 +50,9 @@ const HeroO = () => {
         </svg>
       </div>
 
-      <div className="relative z-20 text-center px-6 max-w-4xl mx-auto">
+      <div className="relative z-20 w-full min-w-0 text-center px-4 sm:px-6 max-w-4xl mx-auto">
         <motion.p
-          className={`italic block text-cyan-200/90 font-serif font-bold mt-6 text-[clamp(1.8rem,5vw,3.5rem)] leading-[1.2] drop-shadow-xl max-w-4xl mx-auto ${
+          className={` block text-cyan-200/90 font-body font-bold mt-6 text-[clamp(1.25rem,3.5vw,2.25rem)] leading-[1.2] drop-shadow-xl max-w-4xl mx-auto ${
             isAr ? "tracking-normal" : "uppercase tracking-[0.3em]"
           }`}
           initial={{ opacity: 0, y: 16 }}
@@ -63,19 +63,19 @@ const HeroO = () => {
         </motion.p>
 
         <motion.h1
-          className="font-display text-[clamp(2.5rem,8vw,6rem)] font-light leading-[1.05] tracking-tight mb-6 text-white"
+          className="font-body text-[clamp(1.75rem,5.5vw,3.75rem)] font-light leading-[1.05] tracking-tight mb-6 text-white"
           initial={{ opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.95, delay: 0.28, ease: [0.16, 1, 0.3, 1] }}
         >
-          <span className="block drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+          <span className="block drop-shadow-[0_4px_20px_rgba(0,0,0,0.5)] text-balance wrap-break-word">
             {menuInfo?.name}
           </span>
         </motion.h1>
 
         {menuInfo?.description && (
           <motion.p
-            className="mx-auto mb-10 max-w-2xl text-base md:text-lg lg:text-xl text-white/85 leading-relaxed italic drop-shadow-md"
+            className="mx-auto mb-10 w-full max-w-2xl px-1 text-base md:text-lg lg:text-xl text-white/85 leading-relaxed drop-shadow-md text-balance wrap-break-word"
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
@@ -103,7 +103,7 @@ const HeroO = () => {
         >
           <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] transition-none" />
 
-          <span className="relative font-arabic tracking-wide">
+          <span className="relative font-body text-lg tracking-wide">
             {locale === "ar" ? "استكشف قائمتنا" : "Explore Our Menu"}
           </span>
           <motion.span

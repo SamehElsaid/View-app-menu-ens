@@ -110,7 +110,7 @@ const MenuSectionO = () => {
   }, [activeCategory, searchQuery, menuFromStore]);
 
   return (
-    <section id="menu" className="py-24 px-4 relative bg-[#fdfdfd]">
+    <section id="menu" className="py-24 px-4 relative bg-transparent">
       <div className="max-w-screen-2xl mx-auto">
         <motion.div
           className="text-center mb-12"
@@ -119,8 +119,8 @@ const MenuSectionO = () => {
           viewport={{ once: true, margin: "-48px" }}
           transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h2 className="text-4xl md:text-6xl font-light text-[#001a23] mb-4 font-display tracking-tight">
-            <span className="block font-bold opacity-20 text-sm md:text-base uppercase tracking-[0.3em] mb-2">
+          <h2 className="text-3xl md:text-4xl font-light text-[#001a23] mb-4 font-body tracking-tight">
+            <span className="block font-bold opacity-20 text-base md:text-base uppercase tracking-[0.3em] mb-2">
               {menuInfo?.name}
             </span>
             {isAr ? "المنيو" : "The Menu"}
@@ -214,7 +214,7 @@ const MenuSectionO = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               >
-                <p className="text-slate-400 text-xl font-arabic">
+                <p className="text-slate-400 text-xl font-body">
                   {isAr
                     ? "عذراً، لم نجد ما تبحث عنه"
                     : "Sorry, no treasures found here"}

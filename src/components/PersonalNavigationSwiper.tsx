@@ -66,7 +66,7 @@ export default function PersonalNavigationSwiper({
                 href={item.href}
                 onClick={() => (!isActive(item.href) ? setLoading(true) : null)}
                 className={`
-                  inline-block px-4 md:px-6 py-2.5 rounded-lg font-medium text-sm md:text-base
+                  inline-block px-4 md:px-6 py-2.5 rounded-lg font-medium text-base md:text-base
                   transition-all duration-200 whitespace-nowrap
                   ${
                     isActive(item.href)

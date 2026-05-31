@@ -60,26 +60,26 @@ export default function HeroN() {
   return (
     <>
       <NoirBackgroundLayers />
-      <section className="flex flex-col items-center justify-center text-center px-8 pt-50 pb-16 relative">
+      <section className="flex flex-col items-center justify-center text-center w-full min-w-0 px-4 sm:px-8 pt-50 pb-16 relative">
         {menuLabel ? (
-          <p className="font-body text-[0.7rem] tracking-[0.5em] uppercase text-cyan mb-6 opacity-0 animate-fade-up [animation-delay:0.2s]">
+          <p className="font-body text-lg tracking-[0.5em] uppercase text-cyan mb-6 opacity-0 animate-fade-up [animation-delay:0.2s]">
             — {menuLabel} —
           </p>
         ) : null}
 
-        <h1 className="font-display text-[clamp(2.5rem,7vw,5rem)] font-light leading-none tracking-tight mb-4 opacity-0 animate-fade-up [animation-delay:0.4s]">
+        <h2 className="font-body w-full max-w-4xl text-[clamp(2.5rem,7vw,5rem)] font-light leading-none tracking-tight mb-4 opacity-0 animate-fade-up [animation-delay:0.4s] text-balance wrap-break-word">
           {line2 ? (
             <>
               <span>{line1}</span>
-              <em className="italic block text-lavender">{line2}</em>
+              <span className=" block text-lavender">{line2}</span>
             </>
           ) : (
             <span>{line1}</span>
           )}
-        </h1>
+        </h2>
 
         {heroSubtitle ? (
-          <p className="font-display italic text-lg text-text-secondary max-w-[500px] leading-relaxed mb-12 opacity-0 animate-fade-up [animation-delay:0.6s]">
+          <p className="font-body w-full max-w-[500px] mx-auto text-lg text-text-secondary leading-relaxed mb-12 opacity-0 animate-fade-up [animation-delay:0.6s] text-balance wrap-break-word">
             {heroSubtitle}
           </p>
         ) : null}
@@ -93,7 +93,7 @@ export default function HeroN() {
 
         <a
           href="#menu"
-          className="font-body inline-flex items-center gap-3 text-white text-sm tracking-[0.2em] uppercase no-underline py-4 px-10 rounded-[3px] cursor-pointer transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] opacity-0 animate-fade-up [animation-delay:1s]"
+          className="font-body inline-flex items-center gap-3 text-white text-base tracking-[0.2em] uppercase no-underline py-4 px-10 rounded-[3px] cursor-pointer transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.97] opacity-0 animate-fade-up [animation-delay:1s]"
           style={{
             background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
             boxShadow: `0 0 30px ${primary}4d`,

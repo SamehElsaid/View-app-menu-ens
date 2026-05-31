@@ -41,7 +41,7 @@ const Navbar = ({ menuName, menuLogo, whatsapp }: NavbarProps) => {
                 />
               </div>
             )}
-            <span className="font-heading text-xl md:text-2xl font-semibold">
+            <span className="font-body text-xl md:text-2xl font-semibold">
               {menuName || ""}
             </span>
           </Link>

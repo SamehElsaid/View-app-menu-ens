@@ -10,11 +10,11 @@ const HeroSection = ({ menuName, menuDescription }: HeroSectionProps) => {
 
   return (
     <section className="pt-32 pb-16 text-center">
-      <div className="container mx-auto px-6">
-        <h1 className="font-heading text-5xl md:text-7xl font-bold mt-4 mb-6 text-[#F2B705]">
+      <div className="container mx-auto w-full min-w-0 px-4 sm:px-6">
+        <h1 className="font-body !text-3xl md:!text-5xl font-bold mt-4 mb-6 text-[#F2B705] text-balance wrap-break-word">
           {menuName || (locale === "ar" ? "قائمتنا" : "Our Menu")}
         </h1>
-        <p className="text-[#B6AA99] max-w-2xl mx-auto text-lg leading-relaxed">
+        <p className="w-full max-w-2xl mx-auto text-[#B6AA99] text-base md:text-base leading-relaxed text-balance wrap-break-word">
           {menuDescription ||
             (locale === "ar"
               ? "اكتشف مجموعتنا المنتقاة بعناية من الكوكتيلات الحرفية والنبيذ الفاخر والمشروبات الروحية المميزة. كل مشروب يروي قصة."
@@ -22,7 +22,7 @@ const HeroSection = ({ menuName, menuDescription }: HeroSectionProps) => {
         </p>
         <div className="flex items-center justify-center gap-4 mt-8">
           <div className="w-16 h-px bg-[#F2B705]/50" />
-          <span className="text-[#F2B705] text-2xl">✦</span>
+          <span className="text-[#F2B705] text-lg md:text-xl">✦</span>
           <div className="w-16 h-px bg-[#F2B705]/50" />
         </div>
       </div>

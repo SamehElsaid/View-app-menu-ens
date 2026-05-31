@@ -192,7 +192,7 @@ const MenuItem = ({
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="absolute end-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-[#3B332E] bg-[#221D1A]/95 text-[#F4EEE7] backdrop-blur-sm transition hover:border-[#F2B705]/50 hover:bg-[#F2B705] hover:text-[#17120F]"
+          className="absolute end-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-[#3B332E] bg-[#221D1A]/95 text-[#F4EEE7] backdrop-blur-base transition hover:border-[#F2B705]/50 hover:bg-[#F2B705] hover:text-[#17120F]"
           aria-label={locale === "ar" ? "إغلاق" : "Close"}
         >
           <FiX className="text-xl" />
@@ -215,7 +215,7 @@ const MenuItem = ({
           <div className="mb-4 flex flex-wrap items-start gap-2.5 sm:gap-3">
             <h3
               id={titleId}
-              className="font-heading text-balance text-xl font-semibold leading-snug tracking-tight text-[#F4EEE7] sm:text-2xl"
+              className="font-body text-balance !text-lg font-semibold leading-snug tracking-tight text-[#F4EEE7] sm:!text-xl"
             >
               {locale === "ar" ? displayNameAr : name}
             </h3>
@@ -227,25 +227,25 @@ const MenuItem = ({
           </div>
 
           {(displayDescription || displayDescriptionAr) && (
-            <p className="mb-6 text-[0.9375rem] leading-[1.7] text-[#B6AA99] sm:text-base">
+            <p className="mb-6 w-full text-[0.9375rem] leading-[1.7] text-[#B6AA99] sm:text-base text-balance wrap-break-word">
               {locale === "ar" ? displayDescriptionAr : displayDescription}
             </p>
           )}
 
           <div className="flex flex-col items-stretch gap-2 border-t border-[#3B332E]/80 pt-5">
             {priceLine ? (
-              <span className="text-end text-sm tabular-nums tracking-tight text-[#857a6c] line-through">
+              <span className="text-end text-base tabular-nums tracking-tight text-[#857a6c] line-through">
                 {originalPrice}
                 <span className="ms-1.5">{curr}</span>
               </span>
             ) : null}
-            <span className="flex flex-wrap items-baseline justify-end gap-x-1.5 gap-y-0.5 font-heading text-2xl font-semibold tabular-nums tracking-tight text-[#F2B705] sm:text-[1.75rem]">
+            <span className="flex flex-wrap items-baseline justify-end gap-x-1.5 gap-y-0.5 font-body text-xl font-semibold tabular-nums tracking-tight text-[#F2B705] sm:text-2xl">
               <span>{normalizedPrice}</span>
-              <span className="text-base font-medium text-[#d4a846] sm:text-lg">
+              <span className="text-base font-medium text-[#d4a846] sm:text-base">
                 {curr}
               </span>
               {hasDiscount ? (
-                <span className="text-sm font-medium text-[#8a8278]">
+                <span className="text-base font-medium text-[#8a8278]">
                   ({discountPercent}% off)
                 </span>
               ) : null}
@@ -258,7 +258,7 @@ const MenuItem = ({
                 <button
                   type="button"
                   onClick={addTableLineToCart}
-                  className="rounded-xl bg-[#F2B705] px-4 py-2.5 text-sm font-semibold text-[#17120F] transition hover:bg-[#e5a804]"
+                  className="rounded-xl bg-[#F2B705] px-4 py-2.5 text-base font-semibold text-[#17120F] transition hover:bg-[#e5a804]"
                 >
                   {locale === "ar" ? "أضف إلى السلة" : "Add to cart"}
                 </button>
@@ -271,7 +271,7 @@ const MenuItem = ({
                   >
                     −
                   </button>
-                  <span className="min-w-8 text-center text-sm font-semibold text-[#F4EEE7]">
+                  <span className="min-w-8 text-center text-base font-semibold text-[#F4EEE7]">
                     {selectedQty}
                   </span>
                   <button
@@ -285,7 +285,7 @@ const MenuItem = ({
                 </div>
               </div>
               {inCartQty > 0 ? (
-                <p className="text-center text-sm text-[#B6AA99]">
+                <p className="text-center text-base text-[#B6AA99]">
                   {locale === "ar"
                     ? `في السلة: ${inCartQty}`
                     : `In cart: ${inCartQty}`}
@@ -301,7 +301,7 @@ const MenuItem = ({
   return (
     <>
       <div
-        className="animate-fade-in overflow-hidden rounded-xl border border-[#3B332E]/90 bg-gradient-to-br from-[#252019] to-[#1a1613] shadow-sm shadow-black/20 sm:p-0"
+        className="animate-fade-in overflow-hidden rounded-xl border border-[#3B332E]/90 bg-gradient-to-br from-[#252019] to-[#1a1613] shadow-base shadow-black/20 sm:p-0"
         style={{ animationDelay: `${delay}ms` }}
       >
       <button
@@ -322,7 +322,7 @@ const MenuItem = ({
           <div className="flex min-w-0 flex-1 items-center justify-between gap-3">
             <div className="min-w-0 flex-1 text-start">
               <div className="flex flex-col gap-1.5 sm:flex-row sm:items-baseline sm:gap-2">
-                <h3 className="font-heading text-[1.05rem] font-semibold leading-snug tracking-tight text-[#F4EEE7] transition-colors group-hover:text-[#F2E6C9] sm:text-lg md:text-xl">
+                <h3 className="font-body !text-base font-semibold leading-snug tracking-tight text-[#F4EEE7] transition-colors group-hover:text-[#F2E6C9] sm:!text-base md:!text-lg">
                   {locale === "ar" ? displayNameAr : name}
                 </h3>
                 {(tag || tagAr) && (
@@ -334,18 +334,18 @@ const MenuItem = ({
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1 border-s border-[#3B332E]/50 ps-3">
               {priceLine && (
-                <span className="text-xs tabular-nums text-[#857a6c] line-through sm:text-sm">
+                <span className="text-base tabular-nums text-[#857a6c] line-through sm:text-base">
                   {originalPrice}
                   <span className="ms-1">{curr}</span>
                 </span>
               )}
-              <span className="flex flex-wrap items-baseline justify-end gap-x-1 font-heading text-lg font-semibold tabular-nums tracking-tight text-[#F2B705] sm:text-xl md:text-2xl">
+              <span className="flex flex-wrap items-baseline justify-end gap-x-1 font-body text-base font-semibold tabular-nums tracking-tight text-[#F2B705] sm:text-lg md:text-xl">
                 <span>{normalizedPrice}</span>
-                <span className="text-xs font-medium text-[#c9a227] sm:text-sm">
+                <span className="text-base font-medium text-[#c9a227] sm:text-base">
                   {curr}
                 </span>
                 {hasDiscount ? (
-                  <span className="whitespace-nowrap text-[10px] font-medium text-[#7d756a] sm:text-xs">
+                  <span className="whitespace-nowrap text-[10px] font-medium text-[#7d756a] sm:text-base">
                     ({discountPercent}% off)
                   </span>
                 ) : null}
@@ -364,18 +364,18 @@ const MenuItem = ({
             <div className="flex items-center gap-1 rounded-lg border border-[#3B332E] bg-[#1a1613] px-1 py-0.5">
               <button
                 type="button"
-                className="flex h-8 w-8 items-center justify-center rounded-md text-[#F4EEE7] text-sm"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-[#F4EEE7] text-base"
                 onClick={() => setCardPickQty((q) => Math.max(1, q - 1))}
                 aria-label={locale === "ar" ? "تقليل" : "Decrease"}
               >
                 −
               </button>
-              <span className="min-w-7 text-center text-sm font-semibold text-[#F4EEE7]">
+              <span className="min-w-7 text-center text-base font-semibold text-[#F4EEE7]">
                 {cardPickQty}
               </span>
               <button
                 type="button"
-                className="flex h-8 w-8 items-center justify-center rounded-md text-[#F4EEE7] text-sm"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-[#F4EEE7] text-base"
                 onClick={() => setCardPickQty((q) => q + 1)}
                 aria-label={locale === "ar" ? "زيادة" : "Increase"}
               >
@@ -385,7 +385,7 @@ const MenuItem = ({
             <button
               type="button"
               onClick={addCardLine}
-              className="rounded-lg bg-[#F2B705] px-3 py-1.5 text-xs font-semibold text-[#17120F] transition hover:bg-[#e5a804]"
+              className="rounded-lg bg-[#F2B705] px-3 py-1.5 text-base font-semibold text-[#17120F] transition hover:bg-[#e5a804]"
             >
               {locale === "ar" ? "أضف للسلة" : "Add to cart"}
             </button>

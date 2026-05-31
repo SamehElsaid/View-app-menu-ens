@@ -58,12 +58,12 @@ function UserDropDown() {
       <button
         type="button"
         onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-        className=" flex items-center justify-center w-10 h-10 rounded-full border border-transparent bg-purple-50 dark:bg-purple-500/20 px-2 py-1 text-sm font-medium text-purple-600 dark:text-purple-400 transition-all duration-300 hover:bg-purple-100 dark:hover:bg-purple-500/30 hover:border-purple-200 dark:hover:border-purple-500/40"
+        className=" flex items-center justify-center w-10 h-10 rounded-full border border-transparent bg-purple-50 dark:bg-purple-500/20 px-2 py-1 text-base font-medium text-purple-600 dark:text-purple-400 transition-all duration-300 hover:bg-purple-100 dark:hover:bg-purple-500/30 hover:border-purple-200 dark:hover:border-purple-500/40"
       >
         {userInitial.split("").map((char) => (
           <span
             key={char}
-            className="text-sm font-bold text-purple-600 dark:text-purple-400"
+            className="text-base font-bold text-purple-600 dark:text-purple-400"
           >
             {char}
           </span>
@@ -90,10 +90,10 @@ function UserDropDown() {
             <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white dark:border-slate-800 bg-emerald-500" />
           </div>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-slate-900 dark:text-white">
+            <span className="text-base font-semibold text-slate-900 dark:text-white">
               {(userName as string) ?? "John Doe"}
             </span>
-            <span className="text-xs capitalize text-slate-500 dark:text-slate-400">
+            <span className="text-base capitalize text-slate-500 dark:text-slate-400">
               {(userRole as string) ?? "Admin"}
             </span>
           </div>
@@ -105,7 +105,7 @@ function UserDropDown() {
               key={item.label}
               href={item.href}
               onClick={() => setIsProfileMenuOpen(false)}
-              className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-slate-700 dark:text-slate-300 transition-all duration-200 hover:bg-purple-50 dark:hover:bg-purple-500/20 hover:text-purple-600 dark:hover:text-purple-400"
+              className="flex items-center gap-3 rounded-xl px-3 py-2 text-base text-slate-700 dark:text-slate-300 transition-all duration-200 hover:bg-purple-50 dark:hover:bg-purple-500/20 hover:text-purple-600 dark:hover:text-purple-400"
             >
               <span className="text-base text-purple-500 dark:text-purple-400">
                 {item.icon}
@@ -119,7 +119,7 @@ function UserDropDown() {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-red-600 dark:text-red-400 transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-500/20"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-base font-medium text-red-600 dark:text-red-400 transition-all duration-200 hover:bg-red-50 dark:hover:bg-red-500/20"
           >
             <span className="text-base">
               <FiLogOut />

@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 
 import LoadImage from "@/components/ImageLoad";
-import { FiGlobe, FiMenu, FiMoon, FiSun, FiX } from "react-icons/fi";
+import { FiGlobe, FiMoon, FiSun } from "react-icons/fi";
 
 interface NavbarProps {
   menuName?: string;
@@ -28,13 +28,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   const isRTL = locale === "ar";
 
   const NAV_ITEMS = [
-    { key: "home", path: "#home" },
-
-    { key: "contact", path: "#contact" },
-  ];
+    { key: "home", path: "#home" }  ];
 
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const theme = localStorage.getItem("theme");
@@ -107,7 +103,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
                   }}
                 >
-                  <span className="text-white font-bold text-lg">
+                  <span className="text-white font-bold text-base md:text-lg">
                     {menuName}
                   </span>
                 </div>
@@ -121,7 +117,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 key={item.key}
                 href={item.path}
                 onClick={(e) => handleNavClick(e, item.path)}
-                className={`relative text-sm font-semibold transition-all duration-300 ${
+                className={`relative text-base font-semibold transition-all duration-300 ${
                   pathname === item.path
                     ? ""
                     : "text-slate-700 dark:text-slate-300"
@@ -187,59 +183,43 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </div>
 
-          <button
-            className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <FiX size={28} /> : <FiMenu size={28} />}
-          </button>
-        </div>
+          <div className="lg:hidden flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              aria-label="Toggle language"
+              className="flex items-center gap-2 h-10 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-base font-semibold text-slate-700 dark:text-slate-300 transition-all duration-300"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = `${primaryColor}20`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "";
+              }}
+            >
+              <FiGlobe className="w-5 h-5" />
+              {locale === "ar" ? "EN" : "عربي"}
+            </button>
 
-        {isOpen && (
-          <div
-            className="lg:hidden mt-4 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-2xl p-6 space-y-4"
-            style={{
-              border: `1px solid ${primaryColor}20`,
-            }}
-          >
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.key}
-                href={item.path}
-                onClick={(e) => {
-                  handleNavClick(e, item.path);
-                  setIsOpen(false);
-                }}
-                className="block text-slate-800 dark:text-slate-200 font-medium transition-colors"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = primaryColor;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "";
-                }}
-              >
-                {t(item.key)}
-              </Link>
-            ))}
-            <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
-              <button
-                onClick={toggleLanguage}
-                className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300"
-              >
-                <FiGlobe className="w-5 h-5" />
-                {locale === "ar" ? "EN" : "عربي"}
-              </button>
-              <button onClick={toggleDarkMode}>
-                {isDarkMode ? (
-                  <FiSun className="w-5 h-5" />
-                ) : (
-                  <FiMoon className="w-5 h-5" />
-                )}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={toggleDarkMode}
+              aria-label="Toggle theme"
+              className="w-10 h-10 flex shrink-0 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 transition-all duration-300"
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = `${primaryColor}20`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "";
+              }}
+            >
+              {isDarkMode ? (
+                <FiSun className="w-5 h-5 text-amber-500" />
+              ) : (
+                <FiMoon className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+              )}
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </header>
   );

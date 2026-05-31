@@ -20,7 +20,7 @@ export default function Page() {
   const tableCartAllowed = useTableCartAllowed();
 
   return (
-    <main>
+    <main className="menu-template font-body">
       {menu.menuInfo?.isActive === false ? (
         <div className="flex min-h-screen items-center justify-center px-4">
           <div className="w-full max-w-md rounded-xl border bg-white p-6 text-center shadow-md space-y-4">

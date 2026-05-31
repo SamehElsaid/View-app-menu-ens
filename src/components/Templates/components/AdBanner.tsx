@@ -9,7 +9,7 @@ import LoadImage from "@/components/ImageLoad";
 import "swiper/css";
 import "swiper/css/pagination";
 
-export default function AdVBanner() {
+export default function AdVBanner({ compact = false }: { compact?: boolean }) {
   const ads = useAppSelector((state) => state.menu.ads) ?? [];
   const locale = useLocale();
   const rtl = locale === "ar";
@@ -105,7 +105,7 @@ export default function AdVBanner() {
 
                       {/* شارة إعلان ثابتة أعلى الصورة */}
                       <div
-                        className={`absolute top-2.5 z-20 flex items-center gap-1.5 rounded-full border border-white/80 bg-black/75 px-2 py-1 text-white shadow-md backdrop-blur-sm sm:top-3 sm:px-2.5 sm:py-1 ${
+                        className={`absolute top-2.5 z-20 flex items-center gap-1.5 rounded-full border border-white/80 bg-black/75 px-2 py-1 text-white shadow-md backdrop-blur-base sm:top-3 sm:px-2.5 sm:py-1 ${
                           rtl ? "left-3 sm:left-5" : "right-3 sm:right-5"
                         }`}
                       >
@@ -127,13 +127,19 @@ export default function AdVBanner() {
                         }`}
                       >
                         {/* Title */}
-                        <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-3 max-w-2xl [text-shadow:0_4px_28px_rgba(0,0,0,0.85)]">
+                        <h3
+                          className={`font-bold mb-3 max-w-2xl [text-shadow:0_4px_28px_rgba(0,0,0,0.85)] ${
+                            compact
+                              ? "!text-lg sm:!text-xl md:!text-2xl"
+                              : "text-xl sm:text-2xl md:text-3xl lg:text-4xl"
+                          }`}
+                        >
                           {title}
                         </h3>
 
                         {/* Description */}
                         {content && (
-                          <p className="text-xs sm:text-sm md:text-base text-white mb-4 max-w-xl leading-relaxed line-clamp-2 font-medium [text-shadow:0_2px_14px_rgba(0,0,0,0.75)]">
+                          <p className="text-md sm:text-md md:text-md text-white mb-4 max-w-xl leading-relaxed line-clamp-2 font-medium [text-shadow:0_2px_14px_rgba(0,0,0,0.75)]">
                             {content}
                           </p>
                         )}
@@ -141,7 +147,7 @@ export default function AdVBanner() {
                         {/* CTA Button */}
                         {ad.linkUrl && (
                           <button
-                            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm rounded-full border border-white/40 bg-white/25 backdrop-blur-md hover:bg-white/40 text-white font-semibold shadow-md transition-all duration-300 group-hover:translate-x-1"
+                            className="inline-flex items-center gap-1.5 px-4 py-2 text-base rounded-full border border-white/40 bg-white/25 backdrop-blur-md hover:bg-white/40 text-white font-semibold shadow-md transition-all duration-300 group-hover:translate-x-1"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleAdClick(ad);
@@ -182,7 +188,7 @@ export default function AdVBanner() {
             <>
               <button
                 onClick={() => swiperRef.current?.slidePrev()}
-                className={`absolute top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300 ${
+                className={`absolute top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 backdrop-blur-base flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300 ${
                   rtl ? "right-2 sm:right-4" : "left-2 sm:left-4"
                 }`}
                 aria-label="Previous"
@@ -203,7 +209,7 @@ export default function AdVBanner() {
               </button>
               <button
                 onClick={() => swiperRef.current?.slideNext()}
-                className={`absolute top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300 ${
+                className={`absolute top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 backdrop-blur-base flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300 ${
                   rtl ? "left-2 sm:left-4" : "right-2 sm:right-4"
                 }`}
                 aria-label="Next"

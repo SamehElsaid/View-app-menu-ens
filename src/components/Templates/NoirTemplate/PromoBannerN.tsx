@@ -83,16 +83,16 @@ export default function PromoBannerN() {
 
                 <div className="relative z-10 flex min-h-[200px] w-full max-w-3xl flex-col justify-center px-3 py-5 text-white sm:min-h-0 sm:h-full sm:px-6 sm:py-6 md:p-8">
                   <div className="animate-slide-up motion-reduce:animate-none">
-                    <p className="mb-1.5 text-[0.6rem] tracking-[0.22em] uppercase text-cyan sm:mb-2 sm:text-xs sm:tracking-[0.5em]">
+                    <p className="mb-1.5 text-[0.6rem] tracking-[0.22em] uppercase text-cyan sm:mb-2 sm:text-base sm:tracking-[0.5em]">
                       {locale === "ar" ? "— اعلان خاص —" : "— Special ADS —"}
                     </p>
 
-                    <h2 className="font-display mb-1.5 line-clamp-2 text-lg font-light italic leading-snug [text-shadow:0_4px_24px_rgba(0,0,0,0.85)] sm:mb-3 sm:line-clamp-none sm:text-2xl sm:md:text-3xl md:leading-[1.15]">
+                    <h2 className="font-body mb-1.5 line-clamp-2 text-lg font-light  leading-snug [text-shadow:0_4px_24px_rgba(0,0,0,0.85)] sm:mb-3 sm:line-clamp-none sm:text-2xl sm:md:text-3xl md:leading-[1.15]">
                       {title}
                     </h2>
 
                     {content && (
-                      <p className="font-display mb-3 line-clamp-2 max-w-xl text-[11px] italic leading-relaxed  [text-shadow:0_2px_12px_rgba(0,0,0,0.75)] sm:mb-4 sm:text-sm md:text-base">
+                      <p className="font-body mb-3 line-clamp-2 max-w-xl text-[11px]  leading-relaxed  [text-shadow:0_2px_12px_rgba(0,0,0,0.75)] sm:mb-4 sm:text-base md:text-base">
                         {content}
                       </p>
                     )}
@@ -154,7 +154,7 @@ function AdCtaLink({
       target="_blank"
       rel="noopener noreferrer"
       onClick={onClickStop}
-      className="inline-flex w-fit max-w-full shrink-0 items-center gap-2 rounded-[3px] px-4 py-2 text-[10px] tracking-[0.12em] text-white uppercase no-underline transition-[transform,box-shadow] duration-300 sm:gap-3 sm:px-7 sm:py-2.5 sm:text-sm sm:tracking-[0.2em] bg-linear-to-br from-violet to-cyan hover:-translate-y-0.5 active:scale-[0.98]"
+      className="inline-flex w-fit max-w-full shrink-0 items-center gap-2 rounded-[3px] px-4 py-2 text-[10px] tracking-[0.12em] text-white uppercase no-underline transition-[transform,box-shadow] duration-300 sm:gap-3 sm:px-7 sm:py-2.5 sm:text-base sm:tracking-[0.2em] bg-linear-to-br from-violet to-cyan hover:-translate-y-0.5 active:scale-[0.98]"
       style={{ boxShadow: baseShadow }}
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = hoverShadow;

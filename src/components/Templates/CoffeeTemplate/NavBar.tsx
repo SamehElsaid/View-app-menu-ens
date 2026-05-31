@@ -103,7 +103,7 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
                   />
                 </div>
               )}
-              <span className="font-heading text-xl md:text-2xl font-semibold text-[#F2B705]">
+              <span className="font-body text-xl md:text-lg font-semibold text-[#F2B705]">
                 {menuName ||
                   (locale === "ar" ? "البلوط الذهبي" : "The Golden Oak")}
               </span>
@@ -117,7 +117,7 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
                       key={link.en}
                       type="button"
                       onClick={scrollToMenu}
-                      className="hidden md:block text-[#B6AA99] hover:text-[#F2B705] transition-colors duration-300 text-sm font-medium tracking-wide uppercase"
+                      className="hidden md:block text-[#B6AA99] hover:text-[#F2B705] transition-colors duration-300 text-base font-medium tracking-wide uppercase"
                     >
                       {locale === "ar" ? link.ar : link.en}
                     </button>
@@ -127,7 +127,7 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
                   <a
                     key={link.en}
                     href={`#${link.en.toLowerCase()}`}
-                    className="hidden md:block text-[#B6AA99] hover:text-[#F2B705] transition-colors duration-300 text-sm font-medium tracking-wide uppercase"
+                    className="hidden md:block text-[#B6AA99] hover:text-[#F2B705] transition-colors duration-300 text-base font-medium tracking-wide uppercase"
                   >
                     {locale === "ar" ? link.ar : link.en}
                   </a>
@@ -153,7 +153,7 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
                     d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
                   />
                 </svg>
-                <span className="text-sm font-medium">
+                <span className="text-base font-medium">
                   {locale === "ar" ? "EN" : "عربي"}
                 </span>
               </button>
@@ -188,12 +188,12 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
             aria-label={locale === "ar" ? "إغلاق" : "Close overlay"}
           />
           <aside
-            className={`absolute top-0 flex h-full w-full max-w-sm flex-col bg-[#221D1A] shadow-2xl ${panelSideClass}`}
+            className={`absolute top-0 flex h-full w-full max-w-base flex-col bg-[#221D1A] shadow-2xl ${panelSideClass}`}
           >
             <div className="flex items-center justify-between border-b border-[#3B332E] px-5 py-4">
               <h2
                 id="coffee-categories-panel-title"
-                className="font-heading text-lg font-semibold text-[#F2B705]"
+                className="font-body !text-base font-semibold text-[#F2B705]"
               >
                 {categoriesLabel}
               </h2>

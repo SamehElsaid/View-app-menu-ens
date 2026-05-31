@@ -1,5 +1,6 @@
 import { useAppSelector } from "@/store/hooks";
 import { Suspense, useMemo } from "react";
+import { useLocale } from "next-intl";
 import Navbar from "./NavBar";
 import HeroSection from "./HeroSection";
 import PromoBanner from "./PromoBanner";
@@ -7,8 +8,10 @@ import MenuCategory from "./MenuCategory";
 import { Category, MenuItem } from "@/types/menu";
 import Footer from "./Footer";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
+import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
 
 function CoffeeTemplate() {
+  const locale = useLocale();
   const menu = useAppSelector((state) => state.menu);
 
   const categoriesWithItems = useMemo(() => {
@@ -32,7 +35,10 @@ function CoffeeTemplate() {
   }, [menu?.categories, menu?.menu]);
 
   return (
-    <main className="min-h-screen bg-[#17120F]">
+    <main
+      className="menu-template font-body min-h-screen bg-[#17120F]"
+      style={{ fontFamily: menuTemplateFontFamily(locale) }}
+    >
       <Navbar
         menuName={menu?.menuInfo?.name || undefined}
         menuLogo={menu?.menuInfo?.logo || undefined}
@@ -73,7 +79,7 @@ function CoffeeTemplate() {
           </Suspense>
         ) : (
           <div className="text-center py-20">
-            <p className="text-[#B6AA99] text-lg">
+            <p className="text-[#B6AA99] text-base">
               {menu?.menuInfo?.name || "Menu"} - No items available
             </p>
           </div>

@@ -59,16 +59,16 @@ export default function HeaderO() {
                 disableLazy
               />
             ) : (
-              <span className="text-white font-bold text-xl tracking-tighter">
+              <span className="text-white font-bold text-lg tracking-tighter">
                 {logoLetter}
               </span>
             )}
             <div className="absolute inset-0 rounded-full border border-white/20 animate-pulse pointer-events-none" />
           </div>
 
-          <h1 className="text-base sm:text-xl font-bold text-white font-display tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] truncate max-w-[55vw] sm:max-w-none">
+          <h2 className="text-base sm:text-lg font-bold text-white font-body tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] truncate max-w-[55vw] sm:max-w-none">
             {siteName}
-          </h1>
+          </h2>
         </motion.div>
 
         <div className="flex items-center gap-3">
@@ -76,7 +76,7 @@ export default function HeaderO() {
             onClick={toggleLanguage}
             className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/30
                        bg-white/15 text-white backdrop-blur-md hover:bg-white/25
-                       transition-[background,transform,border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] text-sm font-bold shadow-md
+                       transition-[background,transform,border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] text-base font-bold shadow-md
                        drop-shadow-[0_2px_4px_rgba(0,0,0,0.4)]"
             aria-label="Switch language"
           >

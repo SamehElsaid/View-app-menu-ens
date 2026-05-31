@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiArrowLeft, FiArrowRight } from "react-icons/fi";
@@ -34,11 +35,14 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
   useEffect(() => {
     if (item) {
       document.body.style.overflow = "hidden";
+      document.body.classList.add("modal-open");
     } else {
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open");
     }
     return () => {
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open");
     };
   }, [item]);
 
@@ -78,7 +82,9 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
       ? Math.round((savedAmount / (item.originalPrice as number)) * 100)
       : 0);
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <AnimatePresence>
       {item && (
         <>
@@ -89,7 +95,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed inset-0 z-[60] bg-[#001a23]/85 backdrop-blur-md"
+            className="fixed inset-0 z-[100] bg-[#001a23]/85 backdrop-blur-md"
             onClick={onClose}
           />
 
@@ -105,7 +111,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
               damping: 32,
               mass: 0.85,
             }}
-            className="oceanic-modal-scroll fixed z-[70] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+            className="oceanic-modal-scroll fixed z-[110] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
                        w-[95%] max-w-[520px] max-h-[92vh] overflow-y-auto rounded-[2.5rem]
                        bg-linear-to-b from-[#002b36] via-[#00222d] to-[#001a23]
                        border border-white/10 shadow-[0_30px_100px_rgba(0,0,0,0.6)]"
@@ -149,7 +155,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                     damping: 28,
                     mass: 0.65,
                   }}
-                  className="absolute top-5 start-5 z-20 bg-gradient-to-br from-rose-500 to-red-600 text-white text-xs font-extrabold px-3.5 py-1.5 rounded-full shadow-[0_10px_25px_rgba(244,63,94,0.5)] ring-2 ring-white/20"
+                  className="absolute top-5 start-5 z-20 bg-gradient-to-br from-rose-500 to-red-600 text-white text-base font-extrabold px-3.5 py-1.5 rounded-full shadow-[0_10px_25px_rgba(244,63,94,0.5)] ring-2 ring-white/20"
                 >
                   -{discountPct}%
                 </motion.div>
@@ -167,11 +173,11 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                   ease: [0.16, 1, 0.3, 1],
                 }}
               >
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 font-display">
+                <h4 className="text-lg md:text-xl font-bold text-white mb-3 font-body">
                   {displayName}
-                </h2>
+                </h4>
 
-                <p className="text-cyan-100/70 text-sm md:text-base leading-relaxed mb-6 font-arabic">
+                <p className="w-full text-cyan-100/70 text-base md:text-base leading-relaxed mb-6 font-body text-balance wrap-break-word">
                   {displayDesc}
                 </p>
 
@@ -183,7 +189,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                     duration: 0.62,
                     ease: [0.16, 1, 0.3, 1],
                   }}
-                  className="mb-8 p-4 md:p-5 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-sm"
+                  className="mb-8 p-4 md:p-5 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-base"
                 >
                   <div className="flex flex-col items-center text-center gap-2">
                     <span className="text-[11px] uppercase tracking-widest text-cyan-300/60 font-bold">
@@ -195,10 +201,10 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                           {item.originalPrice}
                         </span>
                       )}
-                      <span className="text-cyan-400 font-extrabold text-3xl font-display leading-none">
+                      <span className="text-cyan-400 font-extrabold text-2xl font-body leading-none">
                         {item.price}
                       </span>
-                      <span className="text-cyan-500/70 text-xs font-bold uppercase tracking-wider">
+                      <span className="text-cyan-500/70 text-lg font-bold uppercase tracking-wider">
                         {currency}
                       </span>
                     </div>
@@ -206,10 +212,10 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
 
                   {hasDiscount && (
                     <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-center gap-3">
-                      <span className="text-sm text-emerald-300/90 font-semibold">
+                      <span className="text-base text-emerald-300/90 font-semibold">
                         {isAr ? "وفّرت" : "You save"}
                       </span>
-                      <span className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-sm font-extrabold px-3.5 py-1.5 rounded-full">
+                      <span className="bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-base font-extrabold px-3.5 py-1.5 rounded-full">
                         {savedAmount} {currency}
                       </span>
                     </div>
@@ -228,14 +234,14 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                   }}
                   className="mb-6 space-y-2"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-base">
                     <button
                       type="button"
                       onClick={() => {
                         upsertSkyCartQuantityFromMenuItem(item, selectedQty);
                         setSelectedQty(1);
                       }}
-                      className="rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-cyan-500"
+                      className="rounded-xl bg-cyan-600 px-4 py-2.5 text-base font-bold text-white transition hover:bg-cyan-500"
                     >
                       {isAr ? "أضف إلى السلة" : "Add to cart"}
                     </button>
@@ -250,7 +256,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                       >
                         −
                       </button>
-                      <span className="min-w-8 text-center text-sm font-semibold text-white">
+                      <span className="min-w-8 text-center text-base font-semibold text-white">
                         {selectedQty}
                       </span>
                       <button
@@ -264,7 +270,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                     </div>
                   </div>
                   {inCartQty > 0 ? (
-                    <p className="text-center text-sm text-cyan-200/70">
+                    <p className="text-center text-base text-cyan-200/70">
                       {isAr
                         ? `في السلة: ${inCartQty}`
                         : `In cart: ${inCartQty}`}
@@ -297,7 +303,8 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 };
 

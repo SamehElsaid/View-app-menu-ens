@@ -54,7 +54,7 @@ function CategoryTabs({
       dir={locale === "ar" ? "rtl" : "ltr"}
     >
       <div
-        className="flex gap-3 md:gap-4 w-max min-w-0 mx-auto px-2 sm:px-4 py-1 snap-x snap-mandatory"
+        className="flex gap-2 sm:gap-2.5 md:gap-3 w-max min-w-0 mx-auto px-2 sm:px-4 py-1 snap-x snap-mandatory"
         role="tablist"
         aria-label={locale === "ar" ? "تصنيفات القائمة" : "Menu categories"}
       >
@@ -76,14 +76,14 @@ function CategoryTabs({
                     }
                   : { animationDelay: `${i * 45}ms` }
               }
-              className={`font-body flex min-h-[48px] items-center justify-center gap-2 text-base sm:text-[1.05rem] font-medium tracking-wide sm:tracking-[0.14em] uppercase py-3 px-6 sm:px-8 rounded-full cursor-pointer whitespace-nowrap transition-all duration-300 hover:scale-[1.04] hover:-translate-y-0.5 active:scale-[0.98] animate-slide-up motion-reduce:animate-none motion-reduce:hover:scale-100 motion-reduce:hover:translate-y-0 snap-start shrink-0
+              className={`font-body flex min-h-[40px] items-center justify-center gap-1.5 text-base sm:text-base font-medium tracking-wide sm:tracking-[0.12em] uppercase py-2 px-4 sm:px-5 rounded-full cursor-pointer whitespace-nowrap transition-all duration-300 hover:scale-[1.04] hover:-translate-y-0.5 active:scale-[0.98] animate-slide-up motion-reduce:animate-none motion-reduce:hover:scale-100 motion-reduce:hover:translate-y-0 snap-start shrink-0
                 ${
                   isActive
                     ? "bg-linear-to-br from-violet to-cyan text-white border border-white/10 ring-1 ring-white/15 shadow-lg"
                     : "bg-violet/4 text-text-secondary border border-violet/18 hover:border-violet/30 hover:bg-violet/8"
                 }`}
             >
-              <span className=" max-w-[14rem] sm:max-w-none truncate">
+              <span className="max-w-[12rem] sm:max-w-none truncate">
                 {label}
               </span>
             </button>
@@ -123,7 +123,7 @@ function NoirMenuCard({
 
   return (
     <div
-      className="group relative cursor-pointer overflow-hidden rounded-sm border border-violet/8 bg-glass backdrop-blur-lg transition-all duration-300 ease-out hover:-translate-y-1 active:scale-[0.995] motion-reduce:hover:translate-y-0 animate-slide-up motion-reduce:animate-none"
+      className="group relative cursor-pointer overflow-hidden rounded-base border border-violet/8 bg-glass backdrop-blur-lg transition-all duration-300 ease-out hover:-translate-y-1 active:scale-[0.995] motion-reduce:hover:translate-y-0 animate-slide-up motion-reduce:animate-none"
       style={{
         boxShadow: defaultShadow,
         animationDelay: `${idx * 45}ms`,
@@ -155,7 +155,7 @@ function NoirMenuCard({
           />
         </div>
         {item.discountPercent ? (
-          <div className="absolute top-3 end-3 z-2 text-white text-xs tracking-[0.15em] uppercase py-0.5 px-2 rounded-xs bg-violet/90">
+          <div className="absolute top-3 end-3 z-2 text-white text-base tracking-[0.15em] uppercase py-0.5 px-2 rounded-base bg-violet/90">
             {locale === "ar"
               ? `${item.discountPercent}٪ خصم`
               : `${item.discountPercent}% off`}
@@ -164,18 +164,21 @@ function NoirMenuCard({
       </div>
 
       <div className="p-4">
-        <p className="text-xs tracking-[0.3em] uppercase text-cyan mb-1">
+        <p className="font-body text-lg tracking-[0.3em] uppercase text-white/70 mb-1">
           {catLabel}
         </p>
-        <h3 className="font-display text-lg font-light mb-1">{name}</h3>
+        <h4 className="font-body text-xl font-light mb-1">{name}</h4>
         {desc && (
-          <p className="text-xs text-text-secondary leading-relaxed mb-3 line-clamp-2">
+          <p className="font-body text-base text-text-secondary leading-relaxed mb-3 line-clamp-2">
             {desc}
           </p>
         )}
         <div className="flex items-center justify-between">
-          <span className="font-display text-lg font-light text-lavender">
-            {currencyLabel} {item.price}
+          <span className="font-body text-lg font-light flex items-baseline gap-1.5">
+            <span className="text-base font-body tracking-wide text-cyan">
+              {currencyLabel}
+            </span>
+            <span className="text-lavender">{item.price}</span>
           </span>
         </div>
 
@@ -189,18 +192,18 @@ function NoirMenuCard({
               <div className="flex items-center gap-1 rounded-lg border border-violet/20 bg-black/20 px-0.5 py-0.5">
                 <button
                   type="button"
-                  className="flex h-7 w-7 items-center justify-center rounded-md text-text-secondary text-sm"
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-text-secondary text-base"
                   onClick={() => setCardPickQty((q) => Math.max(1, q - 1))}
                   aria-label={locale === "ar" ? "تقليل" : "Decrease"}
                 >
                   −
                 </button>
-                <span className="min-w-6 text-center text-xs text-text-primary">
+                <span className="min-w-6 text-center text-base text-text-primary">
                   {cardPickQty}
                 </span>
                 <button
                   type="button"
-                  className="flex h-7 w-7 items-center justify-center rounded-md text-text-secondary text-sm"
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-text-secondary text-base"
                   onClick={() => setCardPickQty((q) => q + 1)}
                   aria-label={locale === "ar" ? "زيادة" : "Increase"}
                 >
@@ -326,28 +329,32 @@ function NoirDetailModal({
         </div>
 
         <div className="p-8">
-          <p className="text-sm tracking-[0.3em] uppercase text-cyan mb-3">
+          <p className="font-body text-base tracking-[0.3em] uppercase text-white/70 mb-3">
             {catLabel}
           </p>
           <h3
             id="detail-modal-title"
-            className="font-display text-4xl font-light mb-4"
+            className="font-body text-xl font-light mb-4"
           >
             {name}
           </h3>
           {desc && (
-            <p className="text-sm text-text-secondary leading-relaxed mb-6">
+            <p className="font-body w-full text-base text-text-secondary leading-relaxed mb-6 text-balance wrap-break-word">
               {desc}
             </p>
           )}
 
           <div className="flex items-center justify-between gap-4">
-            <span className="font-display text-3xl font-light text-lavender">
-              {currencyLabel} {item.price}
+            <span className="font-body text-xl font-light flex items-baseline gap-2">
+              <span className="text-lg font-body tracking-wide text-cyan">
+                {currencyLabel}
+              </span>
+              <span className="text-lavender">{item.price}</span>
             </span>
             {item.originalPrice && item.originalPrice > item.price && (
-              <span className="text-sm text-text-secondary line-through">
-                {currencyLabel} {item.originalPrice}
+              <span className="text-lg text-text-secondary line-through flex items-baseline gap-1">
+                <span className="text-cyan/70">{currencyLabel}</span>
+                <span>{item.originalPrice}</span>
               </span>
             )}
           </div>
@@ -361,7 +368,7 @@ function NoirDetailModal({
                     upsertSkyCartQuantityFromMenuItem(item, selectedQty);
                     setSelectedQty(1);
                   }}
-                  className="rounded-full border border-violet/40 bg-linear-to-br from-violet to-cyan px-5 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
+                  className="rounded-full border border-violet/40 bg-linear-to-br from-violet to-cyan px-5 py-2.5 text-base font-medium text-white transition hover:opacity-90"
                 >
                   {locale === "ar" ? "أضف إلى السلة" : "Add to cart"}
                 </button>
@@ -374,7 +381,7 @@ function NoirDetailModal({
                   >
                     −
                   </button>
-                  <span className="min-w-8 text-center text-sm text-text-primary">
+                  <span className="min-w-8 text-center text-base text-text-primary">
                     {selectedQty}
                   </span>
                   <button
@@ -388,7 +395,7 @@ function NoirDetailModal({
                 </div>
               </div>
               {inCartQty > 0 ? (
-                <p className="text-sm text-text-secondary">
+                <p className="font-body text-base text-text-secondary">
                   {locale === "ar"
                     ? `في السلة: ${inCartQty}`
                     : `In cart: ${inCartQty}`}
@@ -440,15 +447,15 @@ export default function MenuSectionn({
 
   return (
     <>
-      <p className="text-sm tracking-[0.5em] uppercase text-violet mb-4">
+      <p className="font-body text-lg tracking-[0.5em] uppercase text-violet mb-4">
         {locale === "ar" ? "— القائمة الكاملة —" : "— Full Menu —"}
       </p>
-      <h2 className="font-display text-[clamp(2rem,5vw,3.5rem)] font-light mb-12">
-        <em className="italic text-lavender">
+      <h3 className="font-body text-2xl font-light mb-12">
+        <span className=" text-lavender">
           {locale === "ar" ? "إبداعات" : "Chef's"}
-        </em>{" "}
+        </span>{" "}
         <span>{locale === "ar" ? "الشيف" : "Creations"}</span>
-      </h2>
+      </h3>
 
       <CategoryTabs
         categories={categories}

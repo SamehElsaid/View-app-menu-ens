@@ -93,7 +93,7 @@ export default function MenuSection({ currency }: { currency: string }) {
       className={`max-w-7xl mx-auto scroll-mt-32 relative ${isModalOpen ? "z-11111111111" : "z-10"} mt-36`}
     >
       <div ref={menuTitleRef} className="text-center mb-20">
-        <h2 className="text-4xl md:text-6xl font-black mb-6">
+        <h2 className="!text-2xl md:!text-4xl font-black mb-6">
           <span className="text-(--bg-main) bg-(--bg-main)/10 px-4 py-1 rounded-2xl">
             {t("title")}
           </span>
@@ -114,7 +114,7 @@ export default function MenuSection({ currency }: { currency: string }) {
             <button
               type="button"
               onClick={() => setActiveCategory(category.id as number)}
-              className={`inline-flex min-w-0 max-w-[min(90vw,18rem)] items-center justify-center gap-1.5 rounded-2xl px-4 py-2.5 text-xs font-black shadow-sm transition-all duration-300 sm:max-w-none sm:px-10 sm:py-4 sm:text-sm ${
+              className={`inline-flex min-w-0 max-w-[min(90vw,18rem)] items-center justify-center gap-1.5 rounded-2xl px-4 py-2.5 text-base font-black shadow-base transition-all duration-300 sm:max-w-none sm:px-10 sm:py-4 sm:text-base ${
                 category.id === activeCategory
                   ? "bg-(--bg-main) text-white shadow-(--bg-main)"
                   : "border border-zinc-100 bg-white text-zinc-500 hover:border-(--bg-main) hover:text-(--bg-main)"
@@ -122,7 +122,7 @@ export default function MenuSection({ currency }: { currency: string }) {
             >
               <Icon
                 name={getCategoryIconName(category as MenuCategoryLike)}
-                className="shrink-0 text-sm sm:text-base"
+                className="shrink-0 text-base sm:text-base"
               />
               <span className="min-w-0 truncate text-start">
                 {locale === "ar"
