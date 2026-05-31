@@ -56,7 +56,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const lang = locale === "ar" ? "ar" : "en";
-  const defaults = defaultMetadata[lang] ?? defaultMetadata.en;
+  const defaults = defaultMetadata[lang] ?? defaultMetadata.ar;
   const data = await getMenu(locale);
   const title = data?.menu?.name ?? defaults.title;
   const description = data?.menu?.description ?? defaults.description;
@@ -77,8 +77,8 @@ export async function generateMetadata({
     },
     alternates: {
       languages: {
+        ar: "/",
         en: "/en",
-        ar: "/ar",
       },
     },
   };

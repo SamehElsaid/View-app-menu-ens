@@ -6,8 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { FiGlobe } from "react-icons/fi";
 
 const LANGUAGES = [
-  { locale: "en", label: "English", subLabel: "EN" },
   { locale: "ar", label: "العربية", subLabel: "AR" },
+  { locale: "en", label: "English", subLabel: "EN" },
 ];
 
 export default function LanguageSwitcher() {
@@ -43,7 +43,8 @@ export default function LanguageSwitcher() {
   }, [isOpen]);
 
   const activeLanguage =
-    LANGUAGES.find((item) => item.locale === locale) ?? LANGUAGES[0];
+    LANGUAGES.find((item) => item.locale === locale) ??
+    LANGUAGES.find((item) => item.locale === "ar")!;
 
   return (
     <div ref={dropdownRef} className="relative inline-flex w-fit items-center">
