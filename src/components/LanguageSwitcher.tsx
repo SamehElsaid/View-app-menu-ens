@@ -43,7 +43,8 @@ export default function LanguageSwitcher() {
   }, [isOpen]);
 
   const activeLanguage =
-    LANGUAGES.find((item) => item.locale === locale) ?? LANGUAGES[0];
+    LANGUAGES.find((item) => item.locale === locale) ??
+    LANGUAGES.find((item) => item.locale === "ar")!;
 
   return (
     <div ref={dropdownRef} className="relative inline-flex w-fit items-center">

@@ -21,17 +21,19 @@ export function resolveMenuItemImageSrc(
     return trimmed;
   }
 
-  // Next bundled assets — must stay on the Next origin, never the API host
+  // Next.js bundled assets (default placeholder) — must not be sent to the API host.
   if (trimmed.startsWith("/_next/")) {
-    return typeof window !== "undefined"
-      ? `${window.location.origin}${trimmed}`
-      : trimmed;
+    return trimmed;
   }
 
   const baseApi = process.env.NEXT_PUBLIC_BASE_URL;
   if (!baseApi) return trimmed;
 
   const baseHost = baseApi.replace(/\/api\/?$/, "");
+  if (trimmed.startsWith(baseHost)) {
+    return trimmed;
+  }
+
   const normalizedPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
   return `${baseHost}${normalizedPath}`;
 }
