@@ -1,8 +1,11 @@
+"use client";
+
 /**
  * Table-order cart (cookie `sky_template_cart`): shared by all menu templates + RequestStaffButton.
  * Invalid entries (missing id, NaN keys, etc.) are dropped on read.
  */
 
+import { startTransition } from "react";
 import type { MenuItem } from "@/types/menu";
 
 export const SKY_CART_COOKIE_KEY = "sky_template_cart";
@@ -68,8 +71,26 @@ export function readSkyCartFromCookie(): Record<number, SkyCartItem> {
   }
 }
 
+/** Notify cart listeners after the current render/commit (avoids cross-component setState during render). */
 export function notifySkyCartUpdated(): void {
-  window.dispatchEvent(new Event(SKY_CART_UPDATED_EVENT));
+  if (typeof window === "undefined") return;
+  setTimeout(() => {
+    window.dispatchEvent(new Event(SKY_CART_UPDATED_EVENT));
+  }, 0);
+}
+
+/** Subscribe with deferred, low-priority cart state sync (safe for cross-component updates). */
+export function subscribeSkyCartUpdated(onSync: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+
+  const handler = () => {
+    requestAnimationFrame(() => {
+      startTransition(onSync);
+    });
+  };
+
+  window.addEventListener(SKY_CART_UPDATED_EVENT, handler);
+  return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, handler);
 }
 
 export function writeSkyCartToCookie(

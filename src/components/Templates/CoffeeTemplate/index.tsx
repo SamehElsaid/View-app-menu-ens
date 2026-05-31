@@ -49,10 +49,7 @@ function CoffeeTemplate() {
       />
 
       <div className="container mx-auto px-6 pb-20" id="menu">
-        <PromoBanner
-          menuId={menu?.menuInfo?.id || undefined}
-          ownerPlanType={menu?.menuInfo?.ownerPlanType || undefined}
-        />
+        <PromoBanner />
 
         {categoriesWithItems.length > 0 ? (
           <Suspense fallback={null}>

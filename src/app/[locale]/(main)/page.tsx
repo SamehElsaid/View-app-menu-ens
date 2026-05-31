@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
 import Default from "@/components/Templates/Default";
 import SkyTemplate from "@/components/Templates/SkyTemplate";
@@ -11,6 +11,7 @@ import NoirTemplate from "@/components/Templates/NoirTemplate";
 import OceanicTemplate from "@/components/Templates/OceanicTemplate";
 import { useLocale } from "next-intl";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
+import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import LoadImage from "@/components/ImageLoad";
 
@@ -18,6 +19,34 @@ export default function Page() {
   const menu = useAppSelector((state) => state.menu);
   const locale = useLocale();
   const tableCartAllowed = useTableCartAllowed();
+
+  useEffect(() => {
+    // #region agent log
+    fetch("http://127.0.0.1:7773/ingest/063f37bd-1e27-42ea-99bc-275a715baf43", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Debug-Session-Id": "2f5282",
+      },
+      body: JSON.stringify({
+        sessionId: "2f5282",
+        hypothesisId: "H3-H4",
+        location: "page.tsx:client",
+        message: "redux menu state",
+        data: {
+          theme: menu.theme,
+          hasMenuInfo: Boolean(menu.menuInfo),
+          menuActive: menu.menuInfo?.isActive,
+          itemCount: menu.menu?.length ?? 0,
+        },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion
+  }, [menu.theme, menu.menuInfo, menu.menu]);
+
+  const showTemplates =
+    menu.menuInfo?.isActive !== false && Boolean(menu.theme);
 
   return (
     <main>
@@ -44,7 +73,7 @@ export default function Page() {
             </p>
           </div>
         </div>
-      ) : (
+      ) : showTemplates ? (
         <>
           {menu.theme === "default" && <Default />}
           {menu.theme === "sky" && <SkyTemplate />}
@@ -58,7 +87,22 @@ export default function Page() {
               <RequestStaffButton />
             </Suspense>
           ) : null}
+          <OrderChatbotGate />
         </>
+      ) : (
+        <div className="flex min-h-screen items-center justify-center px-4">
+          <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 text-center shadow-md space-y-3">
+            <h1 className="text-lg font-bold text-zinc-800">
+              {locale === "ar" ? "تعذّر تحميل المنيو" : "Menu could not load"}
+            </h1>
+            <p className="text-sm text-zinc-600 leading-relaxed">
+              {locale === "ar"
+                ? "تأكد أن سيرفر الـ API يعمل وأن إعدادات NEXT_PUBLIC_SUB_DOMAIN صحيحة في ملف .env"
+                : "Ensure the API server is running and NEXT_PUBLIC_SUB_DOMAIN is set in .env"}
+            </p>
+          </div>
+          <OrderChatbotGate />
+        </div>
       )}
     </main>
   );

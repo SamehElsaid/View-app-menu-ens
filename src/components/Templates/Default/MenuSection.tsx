@@ -6,8 +6,8 @@ import { MenuItem } from "@/types/menu";
 import { useLocale, useTranslations } from "next-intl";
 
 import {
-  SKY_CART_UPDATED_EVENT,
   readSkyCartFromCookie,
+  subscribeSkyCartUpdated,
   upsertSkyCartQuantityFromMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
@@ -66,8 +66,7 @@ export default function MenuSection({ currency }: { currency: string }) {
   useEffect(() => {
     const sync = () => setCart(readSkyCartFromCookie());
     sync();
-    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return subscribeSkyCartUpdated(sync);
   }, []);
 
   const handleAddToCart = (item: MenuItem, quantityToAdd: number) => {

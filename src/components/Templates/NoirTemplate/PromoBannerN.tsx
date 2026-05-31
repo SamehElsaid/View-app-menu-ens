@@ -87,7 +87,7 @@ export default function PromoBannerN() {
                       {locale === "ar" ? "— اعلان خاص —" : "— Special ADS —"}
                     </p>
 
-                    <h2 className="font-display mb-1.5 line-clamp-2 text-lg font-light italic leading-snug [text-shadow:0_4px_24px_rgba(0,0,0,0.85)] sm:mb-3 sm:line-clamp-none sm:text-2xl sm:leading-tight md:text-3xl md:leading-[1.15]">
+                    <h2 className="font-display mb-1.5 line-clamp-2 text-lg font-light italic leading-snug [text-shadow:0_4px_24px_rgba(0,0,0,0.85)] sm:mb-3 sm:line-clamp-none sm:text-2xl sm:md:text-3xl md:leading-[1.15]">
                       {title}
                     </h2>
 

@@ -1,4 +1,3 @@
-
 import "@/app/[locale]/globals.css";
 import { NextIntlClientProvider } from "next-intl";
 import RenderInProvider from "@/components/Global/RenderInProvider";
@@ -8,7 +7,6 @@ import "react-datepicker/dist/react-datepicker.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "swiper/css";
-import "suneditor/dist/css/suneditor.min.css";
 import "swiper/css/navigation";
 import "swiper/css/free-mode";
 import "react-lazy-load-image-component/src/effects/blur.css";
@@ -16,7 +14,8 @@ import { Metadata } from "next/types";
 
 export const metadata: Metadata = {
   title: "ENSmenu",
-  description: "ENSmenu is a platform for creating digital menus for restaurants and cafes",
+  description:
+    "ENSmenu is a platform for creating digital menus for restaurants and cafes",
 };
 
 // Script to prevent flash of wrong theme

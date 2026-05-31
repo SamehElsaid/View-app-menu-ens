@@ -1,10 +1,46 @@
-
-@import url("https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap");
 
 @import "tailwindcss";
 
-/* Oceanic template scoped tokens & animations */
-@import "../../components/Templates/OceanicTemplate/oceanic.css";
+/* Arabic typography — Tajawal across all menu templates */
+html[dir="rtl"],
+html[lang="ar"] {
+  --font-body: "Tajawal", sans-serif;
+  --font-sans: "Tajawal", sans-serif;
+  --font-serif: "Tajawal", sans-serif;
+  --font-heading: "Tajawal", sans-serif;
+  --font-display: "Tajawal", sans-serif;
+  --font-arabic: "Tajawal", sans-serif;
+  --font-cairo: "Tajawal", sans-serif;
+  --font-tajawal: "Tajawal", sans-serif;
+  --font-logo: "Tajawal", sans-serif;
+}
+
+html[dir="rtl"] body,
+html[lang="ar"] body {
+  font-family: "Tajawal", sans-serif !important;
+}
+
+html[dir="rtl"] .font-body,
+html[dir="rtl"] .font-sans,
+html[dir="rtl"] .font-serif,
+html[dir="rtl"] .font-heading,
+html[dir="rtl"] .font-display,
+html[dir="rtl"] .font-arabic,
+html[dir="rtl"] .font-cairo,
+html[dir="rtl"] .font-tajawal,
+html[dir="rtl"] .font-logo,
+html[lang="ar"] .font-body,
+html[lang="ar"] .font-sans,
+html[lang="ar"] .font-serif,
+html[lang="ar"] .font-heading,
+html[lang="ar"] .font-display,
+html[lang="ar"] .font-arabic,
+html[lang="ar"] .font-cairo,
+html[lang="ar"] .font-tajawal,
+html[lang="ar"] .font-logo {
+  font-family: "Tajawal", sans-serif !important;
+}
 
 /* Material Symbols font removed - replaced with @iconify/react SVG icons */
 /* This eliminates the 3.4MB font file from the critical path */
@@ -21,8 +57,11 @@
   --color-ens-gray: 240 10% 96%;
   --color-ens-dark-section: 240 15% 12%;
 
-  --font-body: "Tajawal", sans-serif;
+  --font-body: "Cairo", sans-serif;
   --font-tajawal: "Tajawal", sans-serif;
+  --font-arabic: "Tajawal", sans-serif;
+  --font-cairo: "Cairo", sans-serif;
+  --font-heading: "Cairo", sans-serif;
   --text-xs: 12px;
   --text-sm: 13px;
   --text-base: 14px;
@@ -147,6 +186,107 @@
   /* Noir Template Animations */
   --animate-fade-up: fade-up 1s ease-out forwards;
   --animate-float-blob: float-blob 20s ease-in-out infinite;
+
+  /* Oceanic Template */
+  --animate-wave: wave 14s ease-in-out infinite;
+  --animate-bubble-rise: bubble-rise ease-in-out infinite;
+
+  @keyframes wave {
+    0%,
+    100% {
+      transform: translateX(0) translateY(0);
+    }
+    25% {
+      transform: translateX(-3px) translateY(-5px);
+    }
+    50% {
+      transform: translateX(3px) translateY(0);
+    }
+    75% {
+      transform: translateX(-2px) translateY(-3px);
+    }
+  }
+
+  @keyframes bubble-rise {
+    0% {
+      transform: translateY(100vh) scale(0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.6;
+    }
+    90% {
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateY(-100px) scale(1);
+      opacity: 0;
+    }
+  }
+}
+
+/* Oceanic template */
+.oceanic-root {
+  --font-display: "Cairo", system-ui, sans-serif;
+}
+
+[dir="rtl"] .oceanic-root,
+[dir="rtl"] .oceanic-root * {
+  font-family: "Tajawal", system-ui, sans-serif;
+}
+
+[dir="ltr"] .oceanic-root,
+[dir="ltr"] .oceanic-root * {
+  font-family: "Playfair Display", serif;
+}
+
+.oceanic-tabs-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #06b6d4 transparent;
+}
+
+.oceanic-tabs-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.oceanic-tabs-scroll::-webkit-scrollbar-track {
+  background: rgba(8, 145, 178, 0.08);
+  border-radius: 9999px;
+}
+
+.oceanic-tabs-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #0891b2, #0ea5e9);
+  border-radius: 9999px;
+  box-shadow: 0 0 6px rgba(14, 165, 233, 0.45);
+}
+
+.oceanic-tabs-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #0e7490, #0284c7);
+}
+
+.oceanic-modal-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #0ea5e9 transparent;
+}
+
+.oceanic-modal-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.oceanic-modal-scroll::-webkit-scrollbar-track {
+  background: rgba(8, 145, 178, 0.08);
+  border-radius: 9999px;
+  margin: 8px 0;
+}
+
+.oceanic-modal-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #0891b2, #0ea5e9);
+  border-radius: 9999px;
+  box-shadow: 0 0 8px rgba(14, 165, 233, 0.5);
+}
+
+.oceanic-modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #0e7490, #0284c7);
 }
 
 :root {
@@ -304,7 +444,7 @@ h1,
 .display-3,
 .display-2,
 .display-1 {
-  @apply font-bold leading-tight mb-[10px];
+  @apply font-bold mb-[10px];
 }
 .h6,
 h6,

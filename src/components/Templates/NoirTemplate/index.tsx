@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { Suspense } from "react";
+import { useLocale } from "next-intl";
 import NavBar from "./NavBar";
 import MenuSectionn from "./MenuSectionn";
 import Footer from "./Footer";
@@ -14,6 +15,7 @@ import {
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
 
 function NoirTemplate() {
+  const locale = useLocale();
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
   const storeMenuItems = useAppSelector((state) => state.menu.menu);
   const storeCategories = useAppSelector((state) => state.menu.categories);
@@ -27,7 +29,8 @@ function NoirTemplate() {
     menuCustomizations?.secondaryColor?.trim() || NOIR_DEFAULT_SECONDARY;
 
   const mainStyle: CSSProperties = {
-    fontFamily: '"DM Sans", sans-serif',
+    fontFamily:
+      locale === "ar" ? '"Tajawal", sans-serif' : '"DM Sans", sans-serif',
     // Tailwind @theme noir tokens (text-violet, text-cyan, text-lavender, …)
     ["--color-violet" as string]: primary,
     ["--color-cyan" as string]: secondary,

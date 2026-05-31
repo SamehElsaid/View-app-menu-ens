@@ -10,7 +10,7 @@ import { arabCurrencies, type Currency } from "@/constants/currencies";
 import { useLocale } from "next-intl";
 import type { MenuItem } from "@/types/menu";
 import {
-  SKY_CART_UPDATED_EVENT,
+  subscribeSkyCartUpdated,
   readSkyCartFromCookie,
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
@@ -86,8 +86,7 @@ const MenuItem = ({
       setInCartQty(c[id]?.quantity ?? 0);
     };
     sync();
-    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return subscribeSkyCartUpdated(sync);
   }, [open, id]);
 
   const displayNameAr = nameAr || name;
@@ -145,8 +144,7 @@ const MenuItem = ({
       setCardInCart(c[id]?.quantity ?? 0);
     };
     sync();
-    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return subscribeSkyCartUpdated(sync);
   }, [id]);
 
   const addCardLine = () => {

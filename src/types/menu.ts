@@ -17,6 +17,8 @@ export interface WorkingHours {
 export interface MenuInfo {
   id: number;
   name: string;
+  /** When API provides a distinct venue name; otherwise frontend uses `name`. */
+  restaurantName?: string | null;
   slug: string;
   description: string;
   logo: string | null;

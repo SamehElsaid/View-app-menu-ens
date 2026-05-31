@@ -13,9 +13,9 @@ import Footer from "./Footer";
 import MenuCard from "./MenuCard";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
 import {
-  SKY_CART_UPDATED_EVENT,
   isValidSkyCartItemId,
   readSkyCartFromCookie,
+  subscribeSkyCartUpdated,
   writeSkyCartToCookie,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
@@ -63,13 +63,8 @@ function SkyTemplate() {
   }, [cart]);
 
   useEffect(() => {
-    const handleCartUpdated = () => {
-      setCart(readSkyCartFromCookie());
-    };
-
-    window.addEventListener(SKY_CART_UPDATED_EVENT, handleCartUpdated);
-    return () =>
-      window.removeEventListener(SKY_CART_UPDATED_EVENT, handleCartUpdated);
+    const sync = () => setCart(readSkyCartFromCookie());
+    return subscribeSkyCartUpdated(sync);
   }, []);
 
   const updateCartQuantity = (item: MenuItem, nextQuantity: number) => {

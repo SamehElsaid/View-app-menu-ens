@@ -127,7 +127,7 @@ export default function AdVBanner() {
                         }`}
                       >
                         {/* Title */}
-                        <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-3 leading-tight max-w-2xl [text-shadow:0_4px_28px_rgba(0,0,0,0.85)]">
+                        <h3 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-3 max-w-2xl [text-shadow:0_4px_28px_rgba(0,0,0,0.85)]">
                           {title}
                         </h3>
 

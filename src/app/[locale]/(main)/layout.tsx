@@ -1,6 +1,7 @@
 import Header from "@/components/Global/Header";
 import UseDispatchMenu from "@/hooks/UseDispatchMenu";
-import { axiosGet } from "@/shared/axiosCall";
+import { resolveMenuSlug } from "@/lib/menuSlug";
+import { serverGet } from "@/shared/serverApi";
 import { MenuItem, MenuInfo, MenuCustomizations, Category } from "@/types/menu";
 import { Ad } from "@/types/Ad";
 import { headers } from "next/headers";
@@ -17,23 +18,47 @@ type MenuResponse = {
 const getMenu = async (locale: string) => {
   const headersList = await headers();
   const host = headersList.get("host") || "";
+  const { slug, devMode, configuredSlug, hostname } = resolveMenuSlug(host);
 
-  // memos.ensmenu.com
-  const subdomain = host.split(".")[0];
-
-  const slug = process.env.NEXT_PUBLIC_Dev
-    ? process.env.NEXT_PUBLIC_SUB_DOMAIN
-    : subdomain;
-
-  const response = await axiosGet<{ data: MenuResponse }>(
+  const response = await serverGet<{ data: MenuResponse }>(
     `/public/menu/${slug}`,
     locale,
   );
 
-  if (response.status) {
-    return response?.data?.data;
-  }
-  return null;
+  const menuData = response.status ? response?.data?.data ?? null : null;
+
+  // #region agent log
+  fetch("http://127.0.0.1:7773/ingest/063f37bd-1e27-42ea-99bc-275a715baf43", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Debug-Session-Id": "2f5282",
+    },
+    body: JSON.stringify({
+      sessionId: "2f5282",
+      hypothesisId: "H1-H2",
+      location: "layout.tsx:getMenu",
+      message: "server menu fetch",
+      data: {
+        host,
+        hostname,
+        configuredSlug: configuredSlug ?? null,
+        devMode,
+        slug,
+        baseUrl: process.env.NEXT_PUBLIC_BASE_URL ?? null,
+        apiOk: response.status,
+        httpStatus: response.httpStatus ?? null,
+        fetchError: response.fetchError ?? null,
+        hasMenu: Boolean(menuData?.menu),
+        theme: menuData?.menu?.theme ?? null,
+        itemCount: menuData?.items?.length ?? 0,
+      },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion
+
+  return menuData;
 };
 
 const defaultMetadata: Record<string, { title: string; description: string }> =
@@ -56,7 +81,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const lang = locale === "ar" ? "ar" : "en";
-  const defaults = defaultMetadata[lang] ?? defaultMetadata.en;
+  const defaults = defaultMetadata[lang] ?? defaultMetadata.ar;
   const data = await getMenu(locale);
   const title = data?.menu?.name ?? defaults.title;
   const description = data?.menu?.description ?? defaults.description;

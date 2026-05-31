@@ -6,8 +6,8 @@ import { useSearchParams } from "next/navigation";
 import { FiGlobe } from "react-icons/fi";
 
 const LANGUAGES = [
-  { locale: "en", label: "English", subLabel: "EN" },
   { locale: "ar", label: "العربية", subLabel: "AR" },
+  { locale: "en", label: "English", subLabel: "EN" },
 ];
 
 export default function LanguageSwitcher() {

@@ -14,7 +14,7 @@ import { FaStar } from "react-icons/fa";
 import LoadImage from "@/components/ImageLoad";
 import PromoBanner from "../CoffeeTemplate/PromoBanner";
 import {
-  SKY_CART_UPDATED_EVENT,
+  subscribeSkyCartUpdated,
   readSkyCartFromCookie,
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
@@ -52,8 +52,7 @@ function NeonMenuItemCard({
       setInCart(c[item.id]?.quantity ?? 0);
     };
     sync();
-    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return subscribeSkyCartUpdated(sync);
   }, [item.id]);
 
   return (
@@ -93,11 +92,7 @@ function NeonMenuItemCard({
             {itemDescription}
           </p>
         )}
-        <div
-          className={`${
-            isProPlan ? "mt-4" : "mt-2"
-          } flex flex-col gap-3`}
-        >
+        <div className={`${isProPlan ? "mt-4" : "mt-2"} flex flex-col gap-3`}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span
               className="text-xs px-3 py-1 rounded-full font-semibold w-fit"
@@ -355,10 +350,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </div>
 
         <div className="container mx-auto px-4">
-          <PromoBanner
-            menuId={menuInfo?.id || undefined}
-            ownerPlanType={menuInfo?.ownerPlanType || undefined}
-          />
+          <PromoBanner />
         </div>
         {/* Menu Items Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

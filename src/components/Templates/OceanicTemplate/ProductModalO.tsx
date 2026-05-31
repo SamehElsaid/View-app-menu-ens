@@ -7,8 +7,8 @@ import { FiX, FiArrowLeft, FiArrowRight } from "react-icons/fi";
 import { useLocale } from "next-intl";
 import type { MenuItem } from "@/types/menu";
 import {
-  SKY_CART_UPDATED_EVENT,
   readSkyCartFromCookie,
+  subscribeSkyCartUpdated,
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
@@ -58,8 +58,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
       setInCartQty(c[item.id]?.quantity ?? 0);
     };
     sync();
-    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return subscribeSkyCartUpdated(sync);
   }, [item]);
 
   const displayName = item ? (isAr ? item.nameAr : item.nameEn) : "";

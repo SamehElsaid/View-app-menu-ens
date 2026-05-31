@@ -1,7 +1,14 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  startTransition,
+} from "react";
 import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -195,8 +202,10 @@ export default function RequestStaffButton() {
 
   useEffect(() => {
     setHasMounted(true);
-    setCart(readSkyCartFromCookie());
-    const intervalId = setInterval(() => setCart(readSkyCartFromCookie()), 1500);
+    const syncFromCookie = () =>
+      startTransition(() => setCart(readSkyCartFromCookie()));
+    syncFromCookie();
+    const intervalId = setInterval(syncFromCookie, 1500);
     return () => clearInterval(intervalId);
   }, []);
 
@@ -216,10 +225,6 @@ export default function RequestStaffButton() {
     [cartItemsForOrder],
   );
 
-  const persistCart = (nextCart: Record<number, SkyCartItem>) => {
-    writeSkyCartToCookie(nextCart);
-    notifySkyCartUpdated();
-  };
   const totalPrice = useMemo(
     () =>
       cartItemsForOrder.reduce(
@@ -282,25 +287,24 @@ export default function RequestStaffButton() {
   };
 
   const updateItemQuantity = (itemId: number, delta: number) => {
-    setCart((prev) => {
-      const item = prev[itemId];
-      if (!item) return prev;
+    const item = cart[itemId];
+    if (!item) return;
 
-      const nextQuantity = item.quantity + delta;
-      const nextCart = { ...prev };
+    const nextQuantity = item.quantity + delta;
+    const next: Record<number, SkyCartItem> = { ...cart };
 
-      if (nextQuantity <= 0) {
-        delete nextCart[itemId];
-      } else {
-        nextCart[itemId] = {
-          ...item,
-          quantity: nextQuantity,
-        };
-      }
+    if (nextQuantity <= 0) {
+      delete next[itemId];
+    } else {
+      next[itemId] = {
+        ...item,
+        quantity: nextQuantity,
+      };
+    }
 
-      persistCart(nextCart);
-      return nextCart;
-    });
+    setCart(next);
+    writeSkyCartToCookie(next);
+    notifySkyCartUpdated();
   };
 
   const confirmOrder = async () => {

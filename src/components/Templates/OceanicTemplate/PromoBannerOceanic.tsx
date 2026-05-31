@@ -91,7 +91,7 @@ export default function PromoBannerOceanic() {
                         {locale === "ar" ? "اعلان خاص" : "Special ADS"}
                       </span>
 
-                      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3 leading-tight font-display tracking-tight line-clamp-2">
+                      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 sm:mb-3  font-display tracking-tight line-clamp-2">
                         {title}
                       </h2>
 

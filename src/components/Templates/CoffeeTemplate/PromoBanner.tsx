@@ -1,107 +1,33 @@
 "use client";
 
-import { useState, useEffect, type SyntheticEvent } from "react";
+import { type SyntheticEvent } from "react";
 import { useLocale } from "next-intl";
+import { useAppSelector } from "@/store/hooks";
+import type { Ad } from "@/types/Ad";
 import LoadImage from "@/components/ImageLoad";
 
-interface Ad {
-  id: number;
-  title: string;
-  titleAr: string;
-  content: string;
-  contentAr: string;
-  imageUrl: string;
-  linkUrl: string;
-  position: string;
-}
-
-interface PromoBannerProps {
-  menuId?: number;
-  ownerPlanType?: string;
-}
-
-const PromoBanner = ({ menuId, ownerPlanType }: PromoBannerProps) => {
+const PromoBanner = () => {
   const locale = useLocale();
-  const [ads, setAds] = useState<Ad[]>([]);
-  const [loadingAds, setLoadingAds] = useState(true);
+  const ads = useAppSelector((state) => state.menu.ads) ?? [];
 
-  // Check if owner is on free plan (show global ads only for free users)
-  const isOwnerFreePlan = ownerPlanType === "free" || !ownerPlanType;
+  const bannerAds = [...ads]
+    .filter((ad) => ad.position === "banner" && ad.imageUrl)
+    .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
 
-  // Fetch ads based on owner plan type
-  useEffect(() => {
-    if (isOwnerFreePlan) {
-      // Free users: fetch global ads
-      fetchGlobalAds();
-    } else if (menuId) {
-      // Pro users: fetch menu-specific custom ads
-      fetchCustomAds();
-    } else {
-      setLoadingAds(false);
-    }
-  }, [isOwnerFreePlan, menuId]);
+  const handleAdClick = (ad: Ad) => {
+    if (!ad.linkUrl) return;
 
-  const fetchGlobalAds = async () => {
-    try {
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-      const response = await fetch(
-        `${apiUrl}/public/ads?position=banner&limit=5`,
+    const apiBase = process.env.NEXT_PUBLIC_BASE_URL;
+    if (apiBase) {
+      fetch(`${apiBase}/admin/ads/${ad.id}/click`, { method: "POST" }).catch(
+        () => undefined,
       );
-      if (response.ok) {
-        const data = await response.json();
-        const fetchedAds = data.data?.ads || [];
-        setAds(fetchedAds);
-      }
-    } catch (error) {
-      console.error("Error fetching global ads:", error);
-    } finally {
-      setLoadingAds(false);
     }
+
+    window.open(ad.linkUrl, "_blank", "noopener,noreferrer");
   };
 
-  const fetchCustomAds = async () => {
-    try {
-      const apiUrl =
-        process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-      const response = await fetch(
-        `${apiUrl}/public/menu/${menuId}/ads?position=banner&limit=5`,
-      );
-      if (response.ok) {
-        const data = await response.json();
-        const fetchedAds = data.data?.ads || [];
-        setAds(fetchedAds);
-      }
-    } catch (error) {
-      console.error("Error fetching custom ads:", error);
-    } finally {
-      setLoadingAds(false);
-    }
-  };
-
-  // Track ad click
-  const handleAdClick = async (ad: Ad) => {
-    if (ad.linkUrl) {
-      // Track click
-      try {
-        const apiUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-        await fetch(`${apiUrl}/admin/ads/${ad.id}/click`, {
-          method: "POST",
-        });
-      } catch (error) {
-        console.error("Error tracking ad click:", error);
-      }
-      // Open link
-      window.open(ad.linkUrl, "_blank", "noopener,noreferrer");
-    }
-  };
-
-  // Don't show if loading
-  if (loadingAds) return null;
-
-  // Show nothing if no ads (silently)
-  if (ads.length === 0) {
+  if (bannerAds.length === 0) {
     return null;
   }
 
@@ -111,7 +37,7 @@ const PromoBanner = ({ menuId, ownerPlanType }: PromoBannerProps) => {
       aria-label={locale === "ar" ? "إعلانات" : "Advertisements"}
     >
       <div className="grid gap-4 md:grid-cols-2 md:gap-5">
-        {ads.map((ad, index) => {
+        {bannerAds.map((ad, index) => {
           const title =
             locale === "ar" ? ad.titleAr || ad.title : ad.title || ad.titleAr;
           const content =
@@ -126,12 +52,11 @@ const PromoBanner = ({ menuId, ownerPlanType }: PromoBannerProps) => {
                 min-h-[240px] md:min-h-[300px] 
                 rounded-3xl 
                 transition-all duration-500
-                ${ads.length === 1 ? "col-span-full max-w-full" : "w-full"} 
+                ${bannerAds.length === 1 ? "col-span-full max-w-full" : "w-full"} 
               `}
               style={{ animationDelay: `${index * 150}ms` }}
               onClick={() => handleAdClick(ad)}
             >
-              {/* Background Image */}
               <div className="absolute inset-0 h-full w-full">
                 {ad.imageUrl ? (
                   <LoadImage
@@ -146,9 +71,7 @@ const PromoBanner = ({ menuId, ownerPlanType }: PromoBannerProps) => {
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-[#4c1121] to-[#9b2545]" />
                 )}
-                {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-[#4c1121]/55 to-black/20" />
-                {/* Content */}
                 <div className="absolute inset-0 flex flex-col justify-center p-5 md:p-6">
                   <h3 className="font-heading text-xl md:text-2xl font-bold text-[#F4EEE7] mb-1.5 [text-shadow:0_4px_24px_rgba(0,0,0,0.75)]">
                     {title}
@@ -159,8 +82,6 @@ const PromoBanner = ({ menuId, ownerPlanType }: PromoBannerProps) => {
                     </p>
                   )}
                 </div>
-
-                {/* Border glow on hover */}
                 <div className="absolute inset-0 border-2 border-transparent group-hover:border-[#F2B705]/50 rounded-xl transition-colors duration-300" />
               </div>
             </div>

@@ -11,8 +11,8 @@ import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import type { MenuItem } from "@/types/menu";
 import {
-  SKY_CART_UPDATED_EVENT,
   readSkyCartFromCookie,
+  subscribeSkyCartUpdated,
   upsertSkyCartQuantityFromMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
@@ -81,8 +81,7 @@ const MenuSectionO = () => {
   useEffect(() => {
     const sync = () => setCartById(readSkyCartFromCookie());
     sync();
-    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return subscribeSkyCartUpdated(sync);
   }, []);
 
   const handleAddToCart = (item: MenuItem, quantity: number) => {
