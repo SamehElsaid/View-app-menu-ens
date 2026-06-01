@@ -146,7 +146,7 @@ function SwiperCategory({
     : `relative z-10 rounded-2xl ${isGray ? "bg-white/20 backdrop-blur-base" : "bg-white"}`;
 
   return (
-    <div className={`mb-20 text-black ${stickyClasses}`}>
+    <div className={`mb-10 text-black ${stickyClasses}`}>
       <div className="overflow-hidden py-5 px-5  " ref={emblaRef}>
         <div className="flex gap-4" style={{ direction: direction }}>
           {children}
