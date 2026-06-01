@@ -73,7 +73,7 @@ export default function Footer({
       className="scroll-mt-28 py-16 bg-white border-t border-purple-50 text-center mt-20"
     >
       <div className="flex items-center justify-center gap-2 text-purple-600 mb-8">
-        <div className="text-2xl font-black tracking-tighter flex items-center gap-2 justify-center">
+        <div className="text-xl md:text-2xl font-black tracking-tighter flex items-center gap-2 justify-center">
           {menuInfo?.footerLogo ? (
             <LoadImage
               src={menuInfo?.footerLogo || ""}
@@ -88,7 +88,7 @@ export default function Footer({
                 name="restaurant-2-line"
                 className="relative text-(--text-3xl) transition-transform duration-300 group-hover:scale-110"
               />
-              <span className="text-2xl font-black tracking-tighter">
+              <span className="text-lg md:text-xl font-black tracking-tighter">
                 {menuInfo?.name || ""}
               </span>
             </>
@@ -97,7 +97,7 @@ export default function Footer({
       </div>
 
       {menuInfo?.footerDescriptionAr && (
-        <p className="mb-8 text-zinc-500 font-medium max-w-xl mx-auto px-4">
+        <p className="mb-8 w-full max-w-xl mx-auto px-4 text-zinc-500 font-medium text-balance wrap-break-word">
           {locale === "ar"
             ? menuInfo?.footerDescriptionAr
             : menuInfo?.footerDescriptionEn || ""}
@@ -107,11 +107,11 @@ export default function Footer({
       {/* Working Hours */}
       {hasWorkingHours && workingHours && (
         <div className="mt-8 mb-8">
-          <h4 className="text-lg font-bold mb-4 flex items-center justify-center gap-2">
+          <h4 className="!text-base font-bold mb-4 flex items-center justify-center gap-2">
             <Icon name="time-line" className="text-xl" />
             {t("workingHours")}
           </h4>
-          <div className="inline-grid grid-cols-2 gap-x-8 gap-y-2 text-sm text-start">
+          <div className="inline-grid grid-cols-2 gap-x-8 gap-y-2 text-base text-start">
             {DAY_KEYS.map((day) => {
               const d = workingHours[day];
               const hasHours = d && !d.closed && d.open && d.close;
@@ -142,7 +142,7 @@ export default function Footer({
 
       {socialLinks.length > 0 && (
         <div className="mt-8">
-          <h4 className="text-lg font-bold mb-4">{t("followUs")}</h4>
+          <h4 className="!text-base font-bold mb-4">{t("followUs")}</h4>
           <div className="flex justify-center gap-8">
             {socialLinks.map((social) => (
               <a
@@ -169,7 +169,7 @@ export default function Footer({
         className="
         flex items-center justify-center
         gap-1 mt-2
-        text-xs sm:text-sm
+        text-base sm:text-base
         text-(--text-muted)
       "
       >

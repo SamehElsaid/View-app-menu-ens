@@ -163,11 +163,11 @@ const Footer = () => {
             </div>
 
             <div className="flex flex-col items-start text-start">
-              <h3 className="text-xl font-bold text-white font-display tracking-tight leading-tight">
+              <h3 className="!text-lg font-bold text-white font-body tracking-tight leading-tight">
                 {displayName}
               </h3>
               {menuInfo?.description ? (
-                <span className="text-xs text-cyan-200/60 mt-1 line-clamp-2 max-w-md font-arabic">
+                <span className="text-base text-cyan-200/60 mt-1 line-clamp-2 max-w-md font-body">
                   {menuInfo.description}
                 </span>
               ) : null}
@@ -204,7 +204,7 @@ const Footer = () => {
                   </div>
                 ) : null}
                 {footerDescription ? (
-                  <p className="text-sm leading-relaxed text-cyan-100/75 font-arabic">
+                  <p className="w-full text-base leading-relaxed text-cyan-100/75 font-body text-balance wrap-break-word">
                     {footerDescription}
                   </p>
                 ) : null}
@@ -218,18 +218,18 @@ const Footer = () => {
                     className="space-y-3 text-center sm:text-start"
                     dir={isAr ? "rtl" : "ltr"}
                   >
-                    <h4 className="text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-400/90">
+                    <h4 className="!text-lg font-bold uppercase tracking-[0.2em] text-cyan-400/90">
                       {isAr ? "تواصل معنا" : "Contact"}
                     </h4>
                     {address ? (
-                      <p className="text-sm text-cyan-100/70 leading-relaxed font-arabic">
+                      <p className="text-base text-cyan-100/70 leading-relaxed font-body">
                         {address}
                       </p>
                     ) : null}
                     {phone ? (
                       <a
                         href={`tel:${phone.replace(/\s/g, "")}`}
-                        className="inline-block text-sm text-cyan-300 hover:text-cyan-200 transition-colors"
+                        className="inline-block text-base text-cyan-300 hover:text-cyan-200 transition-colors"
                         dir="ltr"
                       >
                         {phone}
@@ -243,10 +243,10 @@ const Footer = () => {
                     className="text-center sm:text-start"
                     dir={isAr ? "rtl" : "ltr"}
                   >
-                    <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-400/90">
+                    <h4 className="mb-3 !text-lg font-bold uppercase tracking-[0.2em] text-cyan-400/90">
                       {t("workingHours")}
                     </h4>
-                    <ul className="space-y-1.5 text-sm text-cyan-100/75 max-w-md mx-auto sm:mx-0">
+                    <ul className="space-y-1.5 text-base text-cyan-100/75 max-w-md mx-auto sm:mx-0">
                       {DAY_KEYS.map((day) => {
                         const d = workingHours[day];
                         const hasHours = d && !d.closed && d.open && d.close;
@@ -282,7 +282,7 @@ const Footer = () => {
 
             {socialLinks.length > 0 && (
               <div className="text-center md:text-start">
-                <h4 className="mb-4 text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-400/90">
+                <h4 className="mb-4 !text-lg font-bold uppercase tracking-[0.2em] text-cyan-400/90">
                   {t("followUs")}
                 </h4>
                 <div className="flex flex-wrap justify-center md:justify-start gap-3">
@@ -310,7 +310,7 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p
               dir={isAr ? "rtl" : "ltr"}
-              className="text-white/35 text-xs font-arabic tracking-wide text-center md:text-start"
+              className="text-white/35 text-base font-body tracking-wide text-center md:text-start"
             >
               {isAr ? (
                 <>
@@ -327,7 +327,7 @@ const Footer = () => {
             <div
               dir={isAr ? "rtl" : "ltr"}
               className={`flex items-center gap-2 text-[10px] tracking-[0.3em] text-white/25 ${
-                isAr ? "font-arabic" : "uppercase"
+                isAr ? "font-body" : "uppercase"
               }`}
             >
               <span>

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { useLocale } from "next-intl";
 import Navbar from "./Navbar";
 import MenuSection from "./MenuSection";
 import Footer from "./Footer";
@@ -10,8 +11,10 @@ import {
   EMERALD_DEFAULT_SECONDARY,
 } from "./EmeraldThemeContext";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
+import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
 
 function EmeraldTemplate() {
+  const locale = useLocale();
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
   const storeMenuItems = useAppSelector((state) => state.menu.menu);
   const storeCategories = useAppSelector((state) => state.menu.categories);
@@ -26,7 +29,10 @@ function EmeraldTemplate() {
 
   return (
     <EmeraldThemeProvider primary={primary} secondary={secondary}>
-      <main className="min-h-screen bg-[#fafaf9] text-stone-900 antialiased scroll-smooth  pt-24  md:pb-0">
+      <main
+        className="menu-template font-body min-h-screen bg-[#fafaf9] text-stone-900 antialiased scroll-baseooth  pt-24  md:pb-0"
+        style={{ fontFamily: menuTemplateFontFamily(locale) }}
+      >
         <Navbar />
         <PromoBannerE />
         <section

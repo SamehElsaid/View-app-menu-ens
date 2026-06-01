@@ -1,6 +1,6 @@
 function RatingBadge({ rating }: { rating: number }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full  bg-white/90 px-3 py-1 text-sm font-semibold ">
+    <span className="inline-flex items-center gap-1 rounded-full  bg-white/90 px-3 py-1 text-base font-semibold ">
       <svg
         className="h-4 w-4 text-yellow-400"
         viewBox="0 0 24 24"

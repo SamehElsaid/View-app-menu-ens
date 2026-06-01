@@ -12,6 +12,7 @@ import { MenuItem } from "@/types/menu";
 import Footer from "./Footer";
 import MenuCard from "./MenuCard";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
+import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
 import {
   isValidSkyCartItemId,
   readSkyCartFromCookie,
@@ -134,7 +135,10 @@ function SkyTemplate() {
   const subtitle = customizationsHeroSubtitle || menuInfo?.description;
 
   return (
-    <main className="min-h-screen  bg-white text---text-main)">
+    <main
+      className="menu-template font-body min-h-screen  bg-white text---text-main)"
+      style={{ fontFamily: menuTemplateFontFamily(locale) }}
+    >
       <style jsx global>
         {globalStyle}
       </style>

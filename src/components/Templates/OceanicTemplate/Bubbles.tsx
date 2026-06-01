@@ -10,30 +10,51 @@ interface Bubble {
   duration: number;
 }
 
-const BUBBLE_COUNT = 100;
+const DEFAULT_BUBBLE_COUNT = 100;
 
-const Bubbles = () => {
+interface BubblesProps {
+  className?: string;
+  count?: number;
+  /** viewport = full-page fixed layer; section = rises from container bottom (menu/footer) */
+  variant?: "viewport" | "section";
+}
+
+const Bubbles = ({
+  className = "fixed inset-0",
+  count = DEFAULT_BUBBLE_COUNT,
+  variant = "viewport",
+}: BubblesProps) => {
   const [bubbles, setBubbles] = useState<Bubble[]>([]);
 
   useEffect(() => {
-    // Generate bubbles only on the client side to avoid hydration mismatch
     setBubbles(
-      Array.from({ length: BUBBLE_COUNT }, (_, i) => ({
+      Array.from({ length: count }, (_, i) => ({
         id: i,
         size: Math.random() * 34 + 8,
         left: Math.random() * 100,
-        delay: Math.random() * 10,
-        duration: Math.random() * 12 + 7,
+        delay: Math.random() * 22,
+        duration:
+          variant === "section"
+            ? Math.random() * 20 + 32
+            : Math.random() * 12 + 7,
       })),
     );
-  }, []);
+  }, [count, variant]);
+
+  const animationClass =
+    variant === "section"
+      ? "animate-bubble-rise-section"
+      : "animate-bubble-rise";
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div
+      className={`${className} pointer-events-none overflow-hidden z-0`}
+      aria-hidden="true"
+    >
       {bubbles.map((bubble) => (
         <div
           key={bubble.id}
-          className="absolute rounded-full opacity-50 animate-bubble-rise"
+          className={`absolute rounded-full opacity-50 ${animationClass}`}
           style={{
             width: bubble.size,
             height: bubble.size,

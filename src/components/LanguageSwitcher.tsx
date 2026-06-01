@@ -63,17 +63,17 @@ export default function LanguageSwitcher() {
           isOpen
             ? "visible translate-y-0 opacity-100"
             : "invisible -translate-y-2 opacity-0"
-        } right-0 top-12 z-30 w-64 rounded-2xl border border-slate-100 bg-white p-4 text-sm text-slate-600 shadow-2xl transition-all duration-200`}
+        } right-0 top-12 z-30 w-64 rounded-2xl border border-slate-100 bg-white p-4 text-base text-slate-600 shadow-2xl transition-all duration-200`}
       >
         <div className="mb-3 flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary/10 text-secondary">
             <FiGlobe className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wide text-slate-400">
+            <p className="text-base uppercase tracking-wide text-slate-400">
               Language
             </p>
-            <p className="text-sm font-semibold text-slate-900">
+            <p className="text-base font-semibold text-slate-900">
               {activeLanguage.label}
             </p>
           </div>
@@ -96,18 +96,18 @@ export default function LanguageSwitcher() {
                   aria-selected={isActive}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-base font-semibold text-slate-600">
                       {item.subLabel}
                     </div>
                     <div className="text-left">
-                      <p className="text-sm font-medium">{item.label}</p>
-                      <p className="text-xs text-slate-400">
+                      <p className="text-base font-medium">{item.label}</p>
+                      <p className="text-base text-slate-400">
                         {item.locale.toUpperCase()}
                       </p>
                     </div>
                   </div>
                   {isActive && (
-                    <span className="text-xs font-semibold uppercase tracking-wide text-secondary">
+                    <span className="text-base font-semibold uppercase tracking-wide text-secondary">
                       Active
                     </span>
                   )}

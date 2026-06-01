@@ -154,16 +154,16 @@ export const Footer: React.FC<NeonFooterProps> = ({
                 </div>
               )}
               <div>
-                <h3 className="text-white text-xl md:text-2xl font-bold">
+                <h3 className="text-white !text-lg md:!text-xl font-bold">
                   {menuName || (isArabic ? "القائمة" : "Menu")}
                 </h3>
-                <p className="text-slate-400 text-sm">
+                <p className="text-slate-400 text-base">
                   {isArabic ? "تذوق التميز" : "Taste the excellence"}
                 </p>
               </div>
             </div>
             {footerDescription && (
-              <p className="text-slate-400 mb-4 leading-relaxed text-base">
+              <p className="w-full text-slate-400 mb-4 leading-relaxed text-base text-balance wrap-break-word">
                 {footerDescription}
               </p>
             )}
@@ -207,7 +207,7 @@ export const Footer: React.FC<NeonFooterProps> = ({
           {displayWorkingHours.length > 0 && (
             <div>
               <h4
-                className="text-lg font-bold mb-4"
+                className="!text-base font-bold mb-4"
                 style={{ color: primaryColor }}
               >
                 {isArabic ? "مواعيد العمل" : "Working Hours"}
@@ -216,7 +216,7 @@ export const Footer: React.FC<NeonFooterProps> = ({
                 {displayWorkingHours.map(
                   (item, index) =>
                     item && (
-                      <li key={index} className="text-slate-400 text-sm">
+                      <li key={index} className="text-slate-400 text-base">
                         <span className="font-medium text-slate-300">
                           {item.day}:
                         </span>{" "}
@@ -232,7 +232,7 @@ export const Footer: React.FC<NeonFooterProps> = ({
           {socialLinks.length > 0 && (
             <div>
               <h4
-                className="text-lg font-bold mb-4"
+                className="!text-base font-bold mb-4"
                 style={{ color: primaryColor }}
               >
                 {isArabic ? "تابعنا" : "Follow Us"}
@@ -266,7 +266,7 @@ export const Footer: React.FC<NeonFooterProps> = ({
 
         <div className="border-t border-slate-700 pt-8">
           <div className="flex flex-col items-center gap-6">
-            <p className="text-slate-500 text-base md:text-lg flex items-center gap-2 font-bold">
+            <p className="text-slate-500 text-base md:text-base flex items-center gap-2 font-bold">
               © {currentYear}{" "}
               <a
                 href="https://www.facebook.com/ENSEGYPTEG"

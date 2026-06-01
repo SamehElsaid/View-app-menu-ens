@@ -38,10 +38,10 @@ const MenuCategory = ({
   return (
     <section className="py-12">
       <div className="text-center mb-10">
-        <h2 className="text-4xl md:text-5xl font-semibold text-[#F2B705] mb-3">
+        <h2 className="!text-2xl md:!text-3xl font-semibold text-[#F2B705] mb-3">
           {locale === "ar" ? titleAr : title}
         </h2>
-        <p className="text-[#B6AA99] max-w-xl mx-auto">
+        <p className="text-[#B6AA99] text-base md:text-base max-w-xl mx-auto">
           {locale === "ar" ? descriptionAr : description}
         </p>
         <div className="w-24 h-px bg-[#F2B705]/50 mx-auto mt-6" />

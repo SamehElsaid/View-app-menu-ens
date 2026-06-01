@@ -28,11 +28,11 @@ export const ENSFixedBanner: React.FC = () => {
     >
       <div className="container mx-auto flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-            <FaGlobe className="text-sm" aria-hidden />
-            <span className="text-xs font-bold">ENS</span>
+          <div className="hidden sm:flex items-center gap-2 bg-white/20 backdrop-blur-base px-3 py-1 rounded-full">
+            <FaGlobe className="text-base" aria-hidden />
+            <span className="text-base font-bold">ENS</span>
           </div>
-          <p className="text-xs sm:text-sm font-medium">
+          <p className="text-base sm:text-base font-medium">
             {locale === "ar"
               ? "🚀 هل تريد منيو إلكتروني مثل هذا مجانا ؟ اضغط هنا !"
               : "🚀 Want a free digital menu like this? Click here!"}
@@ -47,7 +47,7 @@ export const ENSFixedBanner: React.FC = () => {
             className="
               inline-flex items-center gap-1.5
               bg-white text-purple-700
-              text-xs sm:text-sm font-bold
+              text-base sm:text-base font-bold
               px-3 sm:px-4 py-1.5 rounded-full
               transition-all duration-300
               hover:bg-white/90

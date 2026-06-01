@@ -73,11 +73,11 @@ const PromoBanner = () => {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-[#4c1121]/55 to-black/20" />
                 <div className="absolute inset-0 flex flex-col justify-center p-5 md:p-6">
-                  <h3 className="font-heading text-xl md:text-2xl font-bold text-[#F4EEE7] mb-1.5 [text-shadow:0_4px_24px_rgba(0,0,0,0.75)]">
+                  <h3 className="font-body !text-lg md:!text-xl font-bold text-[#F4EEE7] mb-1.5 [text-shadow:0_4px_24px_rgba(0,0,0,0.75)]">
                     {title}
                   </h3>
                   {content && (
-                    <p className="text-sm md:text-base font-semibold text-[#F2B705] [text-shadow:0_2px_14px_rgba(0,0,0,0.6)] line-clamp-2">
+                    <p className="text-base md:text-base font-semibold text-[#F2B705] [text-shadow:0_2px_14px_rgba(0,0,0,0.6)] line-clamp-2">
                       {content}
                     </p>
                   )}

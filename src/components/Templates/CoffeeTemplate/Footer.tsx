@@ -154,12 +154,12 @@ const Footer = ({
                   />
                 </div>
               ) : null}
-              <span className="font-heading text-2xl font-semibold text-[#F2B705]">
+              <span className="font-body text-lg md:text-xl font-semibold text-[#F2B705]">
                 {menuName || (isArabic ? "البلوط الذهبي" : "The Golden Oak")}
               </span>
             </Link>
             {footerDescription && (
-              <p className="text-[#B6AA99] text-sm leading-relaxed mb-4">
+              <p className="w-full text-[#B6AA99] text-base leading-relaxed mb-4 text-balance wrap-break-word">
                 {footerDescription}
               </p>
             )}
@@ -171,7 +171,7 @@ const Footer = ({
                   <div className="flex items-start gap-2">
                     <IoLocationOutline className="text-[#F2B705] !text-[18px] mt-0.5" />
                     <p
-                      className="text-[#B6AA99] text-sm"
+                      className="text-[#B6AA99] text-base"
                       dir={isArabic ? "rtl" : "ltr"}
                     >
                       {address}
@@ -183,7 +183,7 @@ const Footer = ({
                     <IoCallOutline className="text-[#F2B705] !text-[18px]" />
                     <a
                       href={`tel:${phone}`}
-                      className="text-[#B6AA99] text-sm hover:text-[#F2B705] transition-colors"
+                      className="text-[#B6AA99] text-base hover:text-[#F2B705] transition-colors"
                       dir="ltr"
                     >
                       {phone}
@@ -197,14 +197,14 @@ const Footer = ({
           {/* Working Hours */}
           {displayWorkingHours.length > 0 && (
             <div>
-              <h4 className="font-heading text-lg font-medium text-[#F4EEE7] mb-4">
+              <h4 className="font-body !text-base font-medium text-[#F4EEE7] mb-4">
                 {isArabic ? "مواعيد العمل" : "Working Hours"}
               </h4>
               <div className="space-y-2">
                 {displayWorkingHours.map(
                   (item, index) =>
                     item && (
-                      <div key={index} className="text-[#B6AA99] text-sm">
+                      <div key={index} className="text-[#B6AA99] text-base">
                         <span className="font-medium text-[#F4EEE7]">
                           {item.day}:
                         </span>{" "}
@@ -219,7 +219,7 @@ const Footer = ({
           {/* Social */}
           {socialLinks.length > 0 && (
             <div>
-              <h4 className="font-heading text-lg font-medium text-[#F4EEE7] mb-4">
+              <h4 className="font-body !text-base font-medium text-[#F4EEE7] mb-4">
                 {isArabic ? "تابعنا" : "Follow Us"}
               </h4>
               <div className="flex gap-4">
@@ -241,7 +241,7 @@ const Footer = ({
         </div>
 
         <div className="border-t border-[#3B332E] mt-12 pt-8 text-center">
-          <p className="text-[#B6AA99] text-sm">
+          <p className="text-[#B6AA99] text-base">
             © {currentYear}{" "}
             <a
               href="https://www.facebook.com/ENSEGYPTEG"

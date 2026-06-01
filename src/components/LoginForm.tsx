@@ -114,7 +114,7 @@ export default function LoginForm() {
         )}
       />
 
-      <h2 className="text-sm font-medium text-accent-purple text-end">
+      <h2 className="text-base font-medium text-accent-purple text-end">
         <LinkTo
           href="/auth/reset-password"
           className="w-fit ms-auto block hover:text-accent-purple/80 transition-all duration-200"
@@ -135,7 +135,7 @@ export default function LoginForm() {
           <div className="h-px flex-1 bg-slate-100" />
         </div>
         <div className="flex gap-6">
-          <button className="w-14 h-14 text-xl hover:bg-accent-purple/10! rounded-full glass-input flex items-center justify-center  transition-all shadow-sm">
+          <button className="w-14 h-14 text-xl hover:bg-accent-purple/10! rounded-full glass-input flex items-center justify-center  transition-all shadow-base">
             <FaGoogle className="text-accent-purple" />
           </button>
         </div>
@@ -143,7 +143,7 @@ export default function LoginForm() {
       <div className="flex items-center justify-center mt-6">
         <LinkTo
           href="/auth/register"
-          className="text-sm font-medium  text-center hover:text-accent-purple/80 transition-all duration-200"
+          className="text-base font-medium  text-center hover:text-accent-purple/80 transition-all duration-200"
         >
           {t("auth.dontHaveAccount")}{" "}
           <span className="font-bold underline text-accent-purple">

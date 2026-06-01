@@ -142,8 +142,8 @@ function SwiperCategory({
   }, [categories, activeCategory, setActiveCategory]);
 
   const stickyClasses = sticky
-    ? `sticky z-50 ${isGray ? "bg-white/20 backdrop-blur-sm lg:top-[100px] top-[60px]" : "bg-white lg:top-20 top-[60px]"}`
-    : `relative z-10 rounded-2xl ${isGray ? "bg-white/20 backdrop-blur-sm" : "bg-white"}`;
+    ? `sticky z-50 ${isGray ? "bg-white/20 backdrop-blur-base lg:top-[100px] top-[60px]" : "bg-white lg:top-20 top-[60px]"}`
+    : `relative z-10 rounded-2xl ${isGray ? "bg-white/20 backdrop-blur-base" : "bg-white"}`;
 
   return (
     <div className={`mb-20 text-black ${stickyClasses}`}>

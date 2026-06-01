@@ -71,14 +71,14 @@ export default function Footer() {
             </div>
           )}
           <span
-            className="font-serif italic text-sm font-700"
+            className="font-body  text-base font-700"
             style={{ color: primary }}
           >
             {displayName}
           </span>
         </div>
 
-        <p className="font-sans text-xs text-stone-400 !mb-0">
+        <p className="font-sans text-base text-stone-400 !mb-0">
           {locale === "ar"
             ? `© ${year} ${displayName}. جميع الحقوق محفوظة.`
             : `© ${year} ${displayName}. All rights reserved.`}
@@ -86,7 +86,7 @@ export default function Footer() {
 
         <p
           dir={locale === "ar" ? "rtl" : "ltr"}
-          className="font-sans text-xs text-stone-400 inline-flex flex-wrap items-center justify-center gap-1"
+          className="font-sans text-base text-stone-400 inline-flex flex-wrap items-center justify-center gap-1"
         >
           <span>
             {locale === "ar" ? "تصميم وتطوير" : "Designed & Developed by"}

@@ -25,10 +25,10 @@ export default function CustomInput({
 }: CustomInputProps) {
   return (
     <div className="space-y-1">
-      <label htmlFor={id} className="text-sm font-medium text-slate-700 dark:text-slate-300">
+      <label htmlFor={id} className="text-base font-medium text-slate-700 dark:text-slate-300">
         {label}
       </label>
-      <div className="relative flex items-center rounded-lg border border-slate-200 bg-white/80 shadow-sm transition focus-within:ring-2 focus-within:ring-accent-purple/30 dark:border-slate-700 dark:bg-slate-800/80">
+      <div className="relative flex items-center rounded-lg border border-slate-200 bg-white/80 shadow-base transition focus-within:ring-2 focus-within:ring-accent-purple/30 dark:border-slate-700 dark:bg-slate-800/80">
         <span className="pointer-events-none flex items-center pl-4 text-slate-400">
           {icon}
         </span>
@@ -44,7 +44,7 @@ export default function CustomInput({
         />
       </div>
       {error && (
-        <p id={`${id}-error`} className="text-sm text-red-500" role="alert">
+        <p id={`${id}-error`} className="text-base text-red-500" role="alert">
           {error}
         </p>
       )}

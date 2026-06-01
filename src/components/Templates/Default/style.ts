@@ -4,9 +4,8 @@
 
 export const globalStyles = `
   /* ============================
-   Fonts
+   Fonts (loaded via layout.tsx link)
    ============================ */
-  @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@200;300;400;500;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
   @import url("https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css");
 
   /* ============================
@@ -25,8 +24,8 @@ export const globalStyles = `
     --accent-glow: hsla(330, 85%, 55%, 0.35);
 
     /* Typography */
-    --text-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.75rem);
-    --text-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.875rem);
+    --text-base: clamp(0.7rem, 0.65rem + 0.25vw, 0.75rem);
+    --text-base: clamp(0.8rem, 0.75rem + 0.25vw, 0.875rem);
     --text-base: clamp(0.9rem, 0.85rem + 0.25vw, 1rem);
     --text-lg: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
     --text-xl: clamp(1.125rem, 1rem + 0.5vw, 1.25rem);
@@ -38,8 +37,8 @@ export const globalStyles = `
     --text-7xl: clamp(3.25rem, 2.25rem + 5vw, 4.5rem);
 
     /* Spacing */
-    --space-xs: 0.25rem;
-    --space-sm: 0.5rem;
+    --space-base: 0.25rem;
+    --space-base: 0.5rem;
     --space-md: 1rem;
     --space-lg: 1.5rem;
     --space-xl: 2rem;
@@ -58,8 +57,8 @@ export const globalStyles = `
   body {
     
     overflow-x: hidden;
-    font-family: "Poppins", sans-serif;
-    -webkit-font-smoothing: antialiased;
+    font-family: "Google Sans", sans-serif;
+    -webkit-font-baseoothing: antialiased;
     text-rendering: optimizeLegibility;
     line-height: 1.6;
   }
@@ -75,13 +74,13 @@ export const globalStyles = `
   }
 
   .font-cairo {
-    font-family: "Cairo", sans-serif;
+    font-family: "Google Sans", sans-serif;
   }
   .font-tajawal {
     font-family: "Tajawal", sans-serif;
   }
   .font-poppins {
-    font-family: "Poppins", sans-serif;
+    font-family: "Google Sans", sans-serif;
   }
 
   /* ============================
@@ -189,9 +188,8 @@ export const globalStyles = `
 
 export const globalStylesSky = `
   /* ============================
-   Fonts
+   Fonts (loaded via layout.tsx link)
    ============================ */
-  @import url("https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Tajawal:wght@200;300;400;500;700;800;900&family=Poppins:wght@300;400;500;600;700;800;900&display=swap");
   @import url("https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css");
 
   /* ============================
@@ -211,8 +209,8 @@ export const globalStylesSky = `
     --accent-glow: hsla(330, 85%, 55%, 0.35);
 
     /* Typography */
-    --text-xs: clamp(0.7rem, 0.65rem + 0.25vw, 0.75rem);
-    --text-sm: clamp(0.8rem, 0.75rem + 0.25vw, 0.875rem);
+    --text-base: clamp(0.7rem, 0.65rem + 0.25vw, 0.75rem);
+    --text-base: clamp(0.8rem, 0.75rem + 0.25vw, 0.875rem);
     --text-base: clamp(0.9rem, 0.85rem + 0.25vw, 1rem);
     --text-lg: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
     --text-xl: clamp(1.125rem, 1rem + 0.5vw, 1.25rem);
@@ -224,8 +222,8 @@ export const globalStylesSky = `
     --text-7xl: clamp(3.25rem, 2.25rem + 5vw, 4.5rem);
 
     /* Spacing */
-    --space-xs: 0.25rem;
-    --space-sm: 0.5rem;
+    --space-base: 0.25rem;
+    --space-base: 0.5rem;
     --space-md: 1rem;
     --space-lg: 1.5rem;
     --space-xl: 2rem;
@@ -244,8 +242,8 @@ export const globalStylesSky = `
   body {
  
     overflow-x: hidden;
-    font-family: "Poppins", sans-serif;
-    -webkit-font-smoothing: antialiased;
+    font-family: "Google Sans", sans-serif;
+    -webkit-font-baseoothing: antialiased;
     text-rendering: optimizeLegibility;
     line-height: 1.6;
   }
@@ -261,13 +259,13 @@ export const globalStylesSky = `
   }
 
   .font-cairo {
-    font-family: "Cairo", sans-serif;
+    font-family: "Google Sans", sans-serif;
   }
   .font-tajawal {
     font-family: "Tajawal", sans-serif;
   }
   .font-poppins {
-    font-family: "Poppins", sans-serif;
+    font-family: "Google Sans", sans-serif;
   }
 
   /* ============================

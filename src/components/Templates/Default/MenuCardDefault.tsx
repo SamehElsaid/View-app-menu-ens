@@ -97,7 +97,7 @@ export const MenuCardDefault = ({
     <>
       <div
         onClick={handleCardClick}
-        className="relative bg-white/95 backdrop-blur-sm  rounded-[2.5rem] shadow-xl shadow-(--bg-main)/5 border border-(--bg-main)/10 flex flex-col items-center text-center group transition-shadow hover:shadow-(--bg-main)/15 overflow-hidden cursor-pointer"
+        className="relative bg-white/95 backdrop-blur-base  rounded-[2.5rem] shadow-xl shadow-(--bg-main)/5 border border-(--bg-main)/10 flex flex-col items-center text-center group transition-shadow hover:shadow-(--bg-main)/15 overflow-hidden cursor-pointer"
       >
         {/* FULL CARD SMOKE BACKGROUND */}
 
@@ -119,16 +119,16 @@ export const MenuCardDefault = ({
         </div>
 
         <div className="relative z-10 w-full p-6">
-          <h3 className="text-2xl font-black mb-2 text-zinc-900 group-hover:text-(--bg-main) transition-colors">
+          <h3 className="!text-lg font-black mb-2 text-zinc-900 group-hover:text-(--bg-main) transition-colors">
             {itemName}
           </h3>
 
-          <p className="text-zinc-500 text-sm leading-relaxed mb-6 h-12 overflow-hidden line-clamp-2">
+          <p className="text-[#2b1d58]/80 text-sm leading-[1.65] mb-6 min-h-[2.75rem] line-clamp-2 font-normal">
             {itemDescription}
           </p>
 
           <div className="w-full flex items-center justify-between mt-auto pt-6 border-t border-(--bg-main)/10">
-            <span className="text-(--bg-main) font-black text-2xl flex items-end gap-1 ">
+            <span className="text-(--bg-main) font-black text-lg flex items-end gap-1 ">
               <span className="flex items-center gap-1">
                 <span
                   style={{
@@ -136,12 +136,12 @@ export const MenuCardDefault = ({
                       locale === "ar" ? "rotateY(180deg)" : "rotateY(0deg)",
                   }}
                 >
-                  <IoPricetagOutline className="text-2xl text-gray-500 animate-bounce" />
+                  <IoPricetagOutline className="text-lg text-gray-500 animate-bounce" />
                 </span>
                 {item.price}
               </span>
 
-              <span className="text-xs sm:text-sm font-medium text-gray-500">
+              <span className="text-base sm:text-base font-medium text-gray-500">
                 {getCurrency()}
               </span>
             </span>
@@ -152,7 +152,7 @@ export const MenuCardDefault = ({
                 e.stopPropagation();
                 handleCardClick();
               }}
-              className="bg-(--bg-main) hover:bg-(--bg-main)/80 transition-all duration-300 text-white w-9 h-9 rounded-full flex items-center justify-center font-black text-sm shadow-lg shrink-0"
+              className="bg-(--bg-main) hover:bg-(--bg-main)/80 transition-all duration-300 text-white w-9 h-9 rounded-full flex items-center justify-center font-black text-base shadow-lg shrink-0"
               aria-label={locale === "ar" ? "التفاصيل" : "Details"}
             >
               <ArrowIcon className="text-lg sm:text-xl" />
@@ -171,18 +171,18 @@ export const MenuCardDefault = ({
                     onClick={() =>
                       setCardPickQty((q) => Math.max(1, q - 1))
                     }
-                    className="flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold text-(--bg-main) transition hover:bg-(--bg-main)/10"
+                    className="flex h-8 w-8 items-center justify-center rounded-xl text-base font-bold text-(--bg-main) transition hover:bg-(--bg-main)/10"
                     aria-label={locale === "ar" ? "تقليل" : "Decrease"}
                   >
                     −
                   </button>
-                  <span className="min-w-7 text-center text-sm font-black text-(--bg-main)">
+                  <span className="min-w-7 text-center text-base font-black text-(--bg-main)">
                     {cardPickQty}
                   </span>
                   <button
                     type="button"
                     onClick={() => setCardPickQty((q) => q + 1)}
-                    className="flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold text-(--bg-main) transition hover:bg-(--bg-main)/10"
+                    className="flex h-8 w-8 items-center justify-center rounded-xl text-base font-bold text-(--bg-main) transition hover:bg-(--bg-main)/10"
                     aria-label={locale === "ar" ? "زيادة" : "Increase"}
                   >
                     +
@@ -194,13 +194,13 @@ export const MenuCardDefault = ({
                     onAddToCart(cardPickQty);
                     setCardPickQty(1);
                   }}
-                  className="rounded-2xl bg-(--bg-main) px-4 py-2 text-xs font-black text-white shadow-md transition hover:opacity-90"
+                  className="rounded-2xl bg-(--bg-main) px-4 py-2 text-base font-black text-white shadow-md transition hover:opacity-90"
                 >
                   {locale === "ar" ? "أضف للسلة" : "Add to cart"}
                 </button>
               </div>
               {cartQuantity > 0 ? (
-                <p className="text-center text-xs font-medium text-(--bg-main)/80">
+                <p className="text-center text-base font-medium text-(--bg-main)/80">
                   {locale === "ar"
                     ? `في السلة: ${cartQuantity}`
                     : `In cart: ${cartQuantity}`}
@@ -237,7 +237,7 @@ export const MenuCardDefault = ({
             {/* Close Button */}
             <button
               onClick={handleClose}
-              className={`absolute top-6 z-30 w-12 h-12 rounded-full bg-(--bg-main)/90 backdrop-blur-sm flex items-center justify-center text-white hover:bg-(--bg-main) transition-all duration-300 shadow-lg ${
+              className={`absolute top-6 z-30 w-12 h-12 rounded-full bg-(--bg-main)/90 backdrop-blur-base flex items-center justify-center text-white hover:bg-(--bg-main) transition-all duration-300 shadow-lg ${
                 direction === "rtl" ? "left-6" : "right-6"
               }`}
             >
@@ -257,7 +257,7 @@ export const MenuCardDefault = ({
               {/* Category Badge */}
               {itemCategoryName && (
                 <div
-                  className={`absolute top-6 bg-(--bg-main)/90 backdrop-blur-md text-white text-xs font-black px-4 py-2 rounded-full shadow-sm tracking-widest uppercase border border-white/20 ${
+                  className={`absolute top-6 bg-(--bg-main)/90 backdrop-blur-md text-white text-base font-black px-4 py-2 rounded-full shadow-base tracking-widest uppercase border border-white/20 ${
                     direction === "rtl" ? "right-6" : "left-6"
                   }`}
                 >
@@ -271,29 +271,33 @@ export const MenuCardDefault = ({
                   direction === "rtl" ? "right-6" : "left-6"
                 }`}
               >
-                <span className="text-2xl font-black tracking-tighter">
+                <span className="text-xl font-black tracking-tighter">
                   {item.price} {getCurrency()}
                 </span>
               </div>
             </div>
 
             {/* Content Section */}
-            <div className="p-8 space-y-6">
+            <div className="px-6 pb-8 pt-2 sm:px-8 sm:pb-8">
               {/* Title */}
-              <div>
-                <h2 className="text-3xl font-black text-(--bg-main) mb-3 tracking-tight">
+              <div className="mb-4">
+                <h2 className="!text-xl sm:!text-2xl font-black text-(--bg-main) mb-2 tracking-tight text-balance wrap-break-word">
                   {itemName}
                 </h2>
-                <div className="w-12 h-1.5 bg-(--bg-main) rounded-full" />
+                <div className="w-10 h-1 bg-(--bg-main)/80 rounded-full" />
               </div>
 
               {/* Description */}
-              <p className="text-(--bg-main)/70 text-base leading-relaxed font-medium">
-                {itemDescription}
-              </p>
+              {itemDescription ? (
+                <div className="rounded-2xl bg-(--bg-main)/5 px-4 py-4 sm:px-5 sm:py-4 mb-6">
+                  <p className="text-[#2b1d58] text-sm sm:text-[15px] leading-[1.75] font-normal text-balance wrap-break-word">
+                    {itemDescription}
+                  </p>
+                </div>
+              ) : null}
 
               {isTableOrder && onAddToCart && (
-                <div className="flex items-center justify-between gap-4 rounded-2xl border border-(--bg-main)/20 p-4">
+                <div className="mb-4 flex items-center justify-between gap-4 rounded-2xl border border-(--bg-main)/20 p-4">
                   <button
                     type="button"
                     onClick={(e) => {
@@ -301,7 +305,7 @@ export const MenuCardDefault = ({
                       onAddToCart(selectedQuantity);
                       setSelectedQuantity(1);
                     }}
-                    className="rounded-xl bg-(--bg-main) px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                    className="rounded-xl bg-(--bg-main) px-4 py-2 text-base font-semibold text-white transition-opacity hover:opacity-90"
                   >
                     {locale === "ar" ? "أضف إلى السلة" : "Add to cart"}
                   </button>
@@ -318,7 +322,7 @@ export const MenuCardDefault = ({
                     >
                       -
                     </button>
-                    <span className="min-w-6 text-center text-sm font-semibold text-(--bg-main)">
+                    <span className="min-w-6 text-center text-base font-semibold text-(--bg-main)">
                       {selectedQuantity}
                     </span>
                     <button
@@ -336,7 +340,7 @@ export const MenuCardDefault = ({
                 </div>
               )}
               {isTableOrder && cartQuantity > 0 && (
-                <p className="text-sm text-(--bg-main)/70">
+                <p className="text-base text-(--bg-main)/70">
                   {locale === "ar"
                     ? `في السلة: ${cartQuantity}`
                     : `In cart: ${cartQuantity}`}
@@ -344,7 +348,7 @@ export const MenuCardDefault = ({
               )}
 
               {/* Divider */}
-              <div className="h-px bg-(--bg-main)/10" />
+              <div className="mt-2 h-px bg-(--bg-main)/10" />
 
               {/* Additional Info */}
               {item.originalPrice && item.discountPercent && (
@@ -356,7 +360,7 @@ export const MenuCardDefault = ({
                     <span className="text-lg text-(--bg-main)/50 line-through font-medium">
                       {item.originalPrice} {getCurrency()}
                     </span>
-                    <span className="text-sm font-black bg-(--bg-main) text-white px-3 py-1 rounded-full">
+                    <span className="text-base font-black bg-(--bg-main) text-white px-3 py-1 rounded-full">
                       -{item.discountPercent}%
                     </span>
                   </div>

@@ -2,6 +2,7 @@ import "@/app/[locale]/globals.css";
 import { NextIntlClientProvider } from "next-intl";
 import RenderInProvider from "@/components/Global/RenderInProvider";
 import ProgressBar from "@/components/Global/ProgressBar";
+import { MENU_GOOGLE_FONTS_URL } from "@/lib/menuTemplateFont";
 import "react-phone-number-input/style.css";
 import "react-datepicker/dist/react-datepicker.css";
 import { ToastContainer } from "react-toastify";
@@ -45,6 +46,13 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link rel="stylesheet" href={MENU_GOOGLE_FONTS_URL} />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body suppressHydrationWarning>

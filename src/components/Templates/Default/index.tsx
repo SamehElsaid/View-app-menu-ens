@@ -16,6 +16,7 @@ function Default() {
 
   return (
     <CategoryNavProvider>
+      <div className="menu-template font-body min-h-screen">
       <style jsx global>
         {globalStyles}
       </style>
@@ -23,8 +24,8 @@ function Default() {
         logo={menuInfo?.logo || null}
         menuName={menuInfo?.name || null}
       />
-      <HeroSection />
-      <AdVBanner />
+      <HeroSection compact />
+      <AdVBanner compact />
       <Suspense fallback={null}>
         <MenuSection currency={menuInfo?.currency || "AED"} />
       </Suspense>
@@ -33,6 +34,7 @@ function Default() {
         menuInfo={menuInfo || null}
       />
       {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
+      </div>
     </CategoryNavProvider>
   );
 }
