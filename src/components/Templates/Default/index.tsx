@@ -33,7 +33,7 @@ function Default() {
           workingHours={menuInfo?.workingHours || null}
           menuInfo={menuInfo || null}
         />
-        {/* {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />} */}
+        {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
       </div>
     </CategoryNavProvider>
   );

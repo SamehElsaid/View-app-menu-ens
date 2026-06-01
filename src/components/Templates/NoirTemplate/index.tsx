@@ -61,9 +61,10 @@ function NoirTemplate() {
           </Suspense>
         </section>
         <Footer />
-        {/* {menuInfo &&
-          (!menuInfo.ownerPlanType ||
-            menuInfo.ownerPlanType === "free") && <ENSFixedBanner />} */}
+        {menuInfo &&
+          (!menuInfo.ownerPlanType || menuInfo.ownerPlanType === "free") && (
+            <ENSFixedBanner />
+          )}
       </main>
     </NoirThemeProvider>
   );

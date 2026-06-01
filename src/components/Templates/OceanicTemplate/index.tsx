@@ -6,6 +6,9 @@ import HeroO from "./HeroO";
 import Bubbles from "./Bubbles";
 import { useLocale } from "next-intl";
 import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
+import { ENSFixedBanner } from "../components/ENSFixedBanner";
+import { SET_MENU_INFO } from "@/store/authMenu/authMenu";
+import { useAppSelector } from "@/store/hooks";
 
 export default function OceanicTemplate() {
   const locale = useLocale();
@@ -25,6 +28,8 @@ export default function OceanicTemplate() {
         </div>
       </section>
       <FooterO />
+      {useAppSelector((state) => state.menu.menuInfo)?.ownerPlanType ===
+        "free" && <ENSFixedBanner />}
     </main>
   );
 }

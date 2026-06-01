@@ -219,7 +219,7 @@ function SkyTemplate() {
         socialWhatsapp={menuInfo?.socialWhatsapp || ""}
         workingHours={menuInfo?.workingHours || undefined}
       />
-      {/* {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />} */}
+      {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
     </main>
   );
 }
