@@ -108,7 +108,7 @@ export const Footer: React.FC<NeonFooterProps> = ({
   return (
     <footer
       id="contact"
-      className="relative  bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-300 py-16 overflow-hidden border-t-2 "
+      className="relative  bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-300 py-6 overflow-hidden border-t-2 "
       style={{
         borderColor: `${primaryColor}20`,
       }}
@@ -265,25 +265,35 @@ export const Footer: React.FC<NeonFooterProps> = ({
         </div>
 
         <div className="border-t border-slate-700 pt-8">
-          <div className="flex flex-col items-center gap-6">
-            <p className="text-slate-500 text-base md:text-base flex items-center gap-2 font-bold">
-              © {currentYear}{" "}
+          <div
+            dir={isArabic ? "rtl" : "ltr"}
+            className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-start"
+          >
+            <p className="text-base text-slate-500 text-balance wrap-break-word">
+              {isArabic ? (
+                <>
+                  جميع الحقوق محفوظة.{" "}
+                  <span dir="ltr">© {currentYear} {menuName}</span>
+                </>
+              ) : (
+                <>© {currentYear} {menuName}. All rights reserved.</>
+              )}
+            </p>
+
+            <p
+              dir="ltr"
+              className="flex items-center justify-center gap-1.5 text-base text-slate-500"
+            >
+              <span>Powered by</span>
               <a
-                href="https://www.facebook.com/ENSEGYPTEG"
-                className="transition-colors hover:underline"
-                style={{ color: primaryColor }}
+                href="https://www.ensmenu.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.opacity = "0.8";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.opacity = "1";
-                }}
+                className="font-semibold transition-colors hover:underline"
+                style={{ color: primaryColor }}
               >
-                ENS
+                ENSMenu
               </a>
-              . {locale === "ar" ? "جميع الحقوق محفوظة" : "All rights reserved"}
             </p>
           </div>
         </div>

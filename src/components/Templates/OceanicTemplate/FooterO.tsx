@@ -307,39 +307,31 @@ const Footer = () => {
         <div className="mt-12 pt-6 relative">
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-400/25 to-transparent" />
 
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div
+            dir={isAr ? "rtl" : "ltr"}
+            className="flex flex-col md:flex-row items-center justify-between gap-4"
+          >
             <p
-              dir={isAr ? "rtl" : "ltr"}
-              className="text-white/35 text-base font-body tracking-wide text-center md:text-start"
+              dir="ltr"
+              className="text-white/35 text-base font-body tracking-wide text-center md:text-start text-balance"
             >
-              {isAr ? (
-                <>
-                  {"جميع الحقوق محفوظة © "}
-                  {year} {displayName}
-                </>
-              ) : (
-                <>
-                  © {year} {displayName}. All rights reserved.
-                </>
-              )}
+              © {year} {displayName}. {t("rights")}
             </p>
 
             <div
-              dir={isAr ? "rtl" : "ltr"}
-              className={`flex items-center gap-2 text-[10px] tracking-[0.3em] text-white/25 ${
+              dir="ltr"
+              className={`flex items-center gap-2 text-base tracking-[0.3em] text-white/25 ${
                 isAr ? "font-body" : "uppercase"
               }`}
             >
-              <span>
-                {isAr ? "تصميم وتطوير بواسطة" : "Designed & Developed by"}
-              </span>
+              <span>{t("designedBy")}</span>
               <a
-                href="https://www.facebook.com/ENSEGYPTEG"
+                href="https://www.ensmenu.com/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-cyan-400/70 hover:text-cyan-300 transition-colors font-bold uppercase"
               >
-                ENS
+                ENSMenu
               </a>
             </div>
           </div>

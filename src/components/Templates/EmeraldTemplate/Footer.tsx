@@ -78,28 +78,25 @@ export default function Footer() {
           </span>
         </div>
 
-        <p className="font-sans text-base text-stone-400 !mb-0">
-          {locale === "ar"
-            ? `© ${year} ${displayName}. جميع الحقوق محفوظة.`
-            : `© ${year} ${displayName}. All rights reserved.`}
+        <p className="font-sans text-base text-stone-400 !mb-0 text-balance wrap-break-word" dir="ltr">
+          <span>© {year} {displayName} . </span>
+          <span>{locale === "ar" ? "جميع الحقوق محفوظة." : "All rights reserved."}</span>
         </p>
 
         <p
-          dir={locale === "ar" ? "rtl" : "ltr"}
-          className="font-sans text-base text-stone-400 inline-flex flex-wrap items-center justify-center gap-1"
+          dir="ltr"
+          className="font-sans text-lg text-stone-400 inline-flex flex-wrap items-center justify-center gap-1"
         >
-          <span>
-            {locale === "ar" ? "تصميم وتطوير" : "Designed & Developed by"}
-          </span>
+          <span>Powered by </span>
           <a
-            href="https://www.facebook.com/ENSEGYPTEG"
+            href="https://www.ensmenu.com/"
             target="_blank"
             rel="noopener noreferrer"
             dir="ltr"
             className="font-medium hover:underline transition-colors shrink-0"
             style={{ color: primary }}
           >
-            ENS
+            ENSMenu
           </a>
         </p>
       </div>
