@@ -168,8 +168,7 @@ function SkyTemplate() {
                 <MenuCategoryButton
                   category={{
                     ...category,
-                    image:
-                      category.image === null ? undefined : category.image,
+                    image: category.image === null ? undefined : category.image,
                   }}
                   isActive={category.id === activeCategory}
                   onClick={() => setActiveCategory(category.id as number)}
@@ -220,7 +219,7 @@ function SkyTemplate() {
         socialWhatsapp={menuInfo?.socialWhatsapp || ""}
         workingHours={menuInfo?.workingHours || undefined}
       />
-      {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
+      {/* {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />} */}
     </main>
   );
 }

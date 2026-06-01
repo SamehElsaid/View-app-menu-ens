@@ -50,7 +50,7 @@ function EmeraldTemplate() {
         </section>
 
         <Footer />
-        {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
+        {/* {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />} */}
       </main>
     </EmeraldThemeProvider>
   );

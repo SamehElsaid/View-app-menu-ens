@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
-import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
 import LoadImage from "@/components/ImageLoad";
@@ -125,7 +124,6 @@ function EmeraldMenuCard({
   const cardHoverShadow = `0 16px 48px ${hexToRgba(primary, 0.14)}, 0 4px 12px rgba(0,0,0,0.06)`;
   const iconShadow = `0 4px 20px ${hexToRgba(primary, 0.4)}`;
   const imageBg = hexToRgba(primary, 0.06);
-  const imageSrc = resolveMenuItemImageSrc(dish.image);
 
   return (
     <article
@@ -154,7 +152,7 @@ function EmeraldMenuCard({
         style={{ backgroundColor: imageBg }}
       >
         <LoadImage
-          src={imageSrc}
+          src={dish.image ?? ""}
           alt={locale === "ar" ? dish.nameAr : dish.nameEn}
           fill
           className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.06]"
@@ -356,7 +354,7 @@ function EmeraldDishModal({
           style={{ backgroundColor: imageBg }}
         >
           <LoadImage
-            src={resolveMenuItemImageSrc(dish.image)}
+            src={dish.image ?? ""}
             alt={locale === "ar" ? dish.nameAr : dish.nameEn}
             fill
             className="object-cover"

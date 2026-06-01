@@ -52,7 +52,7 @@ function NeonTemplate() {
         phone={menu?.menuInfo?.phone || ""}
         workingHours={menu?.menuInfo?.workingHours || undefined}
       />
-      {menu?.menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
+      {/* {menu?.menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />} */}
     </main>
   );
 }

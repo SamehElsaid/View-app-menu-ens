@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import { useSearchParams } from "next/navigation";
 import { FiX } from "react-icons/fi";
 import LoadImage from "@/components/ImageLoad";
-import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { arabCurrencies, type Currency } from "@/constants/currencies";
 import { useLocale } from "next-intl";
 import type { MenuItem } from "@/types/menu";
@@ -198,7 +197,7 @@ const MenuItem = ({
 
         <div className="relative aspect-[16/10] w-full overflow-hidden rounded-t-2xl bg-[#2a2520] ring-1 ring-inset ring-white/5">
           <LoadImage
-            src={resolveMenuItemImageSrc(image)}
+            src={image ?? ""}
             alt={locale === "ar" ? displayNameAr : name}
             className="h-full w-full object-cover object-center"
             disableLazy={true}
@@ -310,7 +309,7 @@ const MenuItem = ({
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="relative size-[4.5rem] shrink-0 overflow-hidden rounded-xl bg-[#2a2520] ring-1 ring-inset ring-white/[0.06] sm:h-[5.25rem] sm:w-[5.25rem] md:h-[5.75rem] md:w-[5.75rem]">
             <LoadImage
-              src={resolveMenuItemImageSrc(image)}
+              src={image ?? ""}
               alt={locale === "ar" ? displayNameAr : name}
               className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
               disableLazy={false}

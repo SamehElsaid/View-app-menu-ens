@@ -14,6 +14,7 @@ import RequestStaffButton from "@/components/Global/RequestStaffButton";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import LoadImage from "@/components/ImageLoad";
+import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 
 export default function Page() {
   const menu = useAppSelector((state) => state.menu);
@@ -74,7 +75,7 @@ export default function Page() {
           </div>
         </div>
       ) : showTemplates ? (
-        <>
+        <MenuLogoFallbackProvider logo={menu.menuInfo?.logo ?? null}>
           {menu.theme === "default" && <Default />}
           {menu.theme === "sky" && <SkyTemplate />}
           {menu.theme === "neon" && <NeonTemplate />}
@@ -88,7 +89,7 @@ export default function Page() {
             </Suspense>
           ) : null}
           <OrderChatbotGate />
-        </>
+        </MenuLogoFallbackProvider>
       ) : (
         <div className="flex min-h-screen items-center justify-center px-4">
           <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 text-center shadow-md space-y-3">

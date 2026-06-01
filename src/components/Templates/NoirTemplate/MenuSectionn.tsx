@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
-import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 import LoadImage from "@/components/ImageLoad";
 import {
@@ -141,7 +140,7 @@ function NoirMenuCard({
           className={`absolute inset-0 origin-bottom transition-transform duration-450 will-change-transform group-hover:scale-[1.05] ${NOIR_EASE_TW_CLASS}`}
         >
           <LoadImage
-            src={resolveMenuItemImageSrc(item.image)}
+            src={item.image ?? ""}
             alt={name}
             fill
             className="object-cover sm:saturate-[0.72] sm:brightness-[0.9]"
@@ -298,7 +297,7 @@ function NoirDetailModal({
       >
         <div className="relative h-[280px] overflow-hidden">
           <LoadImage
-            src={resolveMenuItemImageSrc(item.image)}
+            src={item.image ?? ""}
             alt={name}
             fill
             className="object-cover sm:saturate-[0.72] sm:brightness-[0.9]"

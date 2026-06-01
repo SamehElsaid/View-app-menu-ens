@@ -13,7 +13,6 @@ import {
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
-import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import LoadImage from "@/components/ImageLoad";
 
 interface ProductModalProps {
@@ -118,7 +117,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
             {/* Header Image Section */}
             <div className=" relative w-full aspect-4/3 md:aspect-16/10 overflow-hidden bg-linear-to-br from-[#002433] via-[#002b3a] to-[#003544]">
               <LoadImage
-                src={resolveMenuItemImageSrc(item.image)}
+                src={item.image ?? ""}
                 alt={displayName}
                 className="object-cover w-full h-full"
                 disableLazy={true}
