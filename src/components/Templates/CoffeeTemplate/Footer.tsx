@@ -138,7 +138,7 @@ const Footer = ({
 
   return (
     <footer className="bg-[#221D1A] border-t border-[#3B332E]" id="contact">
-      <div className="container mx-auto px-6 py-16">
+      <div className="container mx-auto px-6 py-6">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand */}
           <div className="md:col-span-1 lg:col-span-2">
@@ -240,19 +240,37 @@ const Footer = ({
           )}
         </div>
 
-        <div className="border-t border-[#3B332E] mt-12 pt-8 text-center">
-          <p className="text-[#B6AA99] text-base">
-            © {currentYear}{" "}
-            <a
-              href="https://www.facebook.com/ENSEGYPTEG"
-              className="transition-colors hover:underline text-[#F2B705]"
-              target="_blank"
-              rel="noopener noreferrer"
+        <div className="border-t border-[#3B332E] mt-8 pt-8">
+          <div
+            dir={isArabic ? "rtl" : "ltr"}
+            className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-start"
+          >
+            <p className="text-[#B6AA99] text-base text-balance wrap-break-word">
+              {isArabic ? (
+                <>
+                  جميع الحقوق محفوظة.{" "}
+                  <span dir="ltr">© {currentYear} {menuName}</span>
+                </>
+              ) : (
+                <>© {currentYear} {menuName}. All rights reserved.</>
+              )}
+            </p>
+
+            <p
+              dir="ltr"
+              className="flex items-center justify-center gap-1.5 text-base text-[#B6AA99]"
             >
-              ENS
-            </a>
-            . {locale === "ar" ? "جميع الحقوق محفوظة" : "All rights reserved"}
-          </p>
+              <span>Powered by</span>
+              <a
+                href="https://www.ensmenu.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-[#F2B705] hover:underline transition-colors"
+              >
+                ENSMenu
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </footer>

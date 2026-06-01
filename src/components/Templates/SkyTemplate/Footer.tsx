@@ -113,7 +113,7 @@ export default function Footer({
   ].filter((link) => link.url && link.url.trim() !== "");
 
   return (
-    <footer className="py-16 bg-linear-to-b from-(--bg-main)/10 to-white border-t border-(--border-main)/10">
+    <footer className="py-6 bg-linear-to-b from-(--bg-main)/10 to-white border-t border-(--border-main)/10">
       <div className="container mx-auto px-6">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand & Description */}
@@ -217,20 +217,20 @@ export default function Footer({
         </div>
 
         {/* Bottom Copyright */}
-        <div className="border-t border-sky-100 mt-12 pt-8">
+        <div className="border-t border-sky-100 mt-6 pt-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-            <p className="text-gray-600 text-base" dir="ltr">
-              © {currentYear} {menuT("ourMenu")}. {t("rights")}
+            <p className="text-gray-600 text-base text-balance wrap-break-word" dir="ltr">
+              © {currentYear} {menuName} . {locale === "ar" ? "جميع الحقوق محفوظة." : "All rights reserved."}
             </p>
-            <p className="flex items-center justify-center gap-1 text-base text-gray-600">
-              <span>{t("designedBy")}</span>
+            <p className="flex items-center justify-center gap-1 text-base text-gray-600 text-balance wrap-break-word" dir="ltr">
+              <span>Powered by </span>
               <Link
-                href="https://www.facebook.com/ENSEGYPTEG"
+                href="https://www.ensmenu.com/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-semibold text-sky-600 hover:text-sky-700 hover:underline transition"
               >
-                ENS
+                ENSMenu
               </Link>
             </p>
           </div>

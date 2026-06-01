@@ -38,7 +38,7 @@ export default function HeroSection({
               compact ? "text-base md:text-base" : "text-xl"
             }`}
           >
-            {menuDescription || t("enjoyFood")}
+            {menuDescription || " "}
           </p>
         </div>
       </div>

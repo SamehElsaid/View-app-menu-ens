@@ -224,14 +224,14 @@ export default function Footer() {
             dir="ltr"
             className="flex items-center gap-1 text-base text-text-muted"
           >
-            {locale === "ar" ? "تصميم وتطوير" : "Designed & Developed by"}{" "}
+            Powered by 
             <a
-              href="https://www.facebook.com/ENSEGYPTEG"
+              href="https://www.ensmenu.com/"
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-lavender transition-colors hover:underline"
             >
-              ENS
+              ENSMenu
             </a>
           </p>
         </div>
