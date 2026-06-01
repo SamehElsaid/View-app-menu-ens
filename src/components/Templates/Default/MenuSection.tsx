@@ -18,6 +18,7 @@ import { Icon } from "../components/Icon";
 import { useCategoryNav } from "./CategoryNavContext";
 import { getCategoryIconName, type MenuCategoryLike } from "./categoryIconMap";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import { buildCategorySections } from "@/lib/menuCategoryOrder";
 
 const NAV_OFFSET_PX = 80;
 
@@ -39,10 +40,7 @@ export default function MenuSection({ currency }: { currency: string }) {
 
   const menuItems = useMemo(() => storeMenuItems ?? [], [storeMenuItems]);
 
-  const categories = useMemo(
-    () => [...(storeCategories ?? [])],
-    [storeCategories],
-  );
+  const categories = storeCategories ?? [];
 
   useEffect(() => {
     if (categories.length === 0) return;
@@ -82,17 +80,10 @@ export default function MenuSection({ currency }: { currency: string }) {
     setCart(readSkyCartFromCookie());
   };
 
-  // Group items by category
-  const allCategoriesArray = useMemo(() => {
-    const map = new Map<number, { categoryId: number; items: MenuItem[] }>();
-    menuItems.forEach((item: MenuItem) => {
-      if (!map.has(item.categoryId)) {
-        map.set(item.categoryId, { categoryId: item.categoryId, items: [] });
-      }
-      map.get(item.categoryId)!.items.push(item);
-    });
-    return Array.from(map.values());
-  }, [menuItems]);
+  const allCategoriesArray = useMemo(
+    () => buildCategorySections(categories, menuItems),
+    [categories, menuItems],
+  );
 
   return (
     <div

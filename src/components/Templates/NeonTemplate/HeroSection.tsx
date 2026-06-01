@@ -19,6 +19,11 @@ import {
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import {
+  sortCategories,
+  sortMenuItems,
+  sortMenuItemsForDisplay,
+} from "@/lib/menuCategoryOrder";
 
 function NeonMenuItemCard({
   item,
@@ -236,7 +241,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const heroSubtitle =
     locale === "ar"
       ? customizationsData.heroSubtitleAr?.trim() || menuInfo?.description || ""
-      : customizationsData.heroSubtitleEn?.trim() || menuInfo?.description || "";
+      : customizationsData.heroSubtitleEn?.trim() ||
+        menuInfo?.description ||
+        "";
 
   // Build categories from menuData with "all" option
   const categories = useMemo(() => {
@@ -246,10 +253,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       icon: "🍽️",
     };
 
-    const dbCategories = menuCategories
-      .filter((cat) => cat.isActive !== false)
-      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
-      .map((cat) => ({
+    const dbCategories = sortCategories(
+      menuCategories.filter((cat) => cat.isActive !== false),
+    ).map((cat) => ({
         id: cat.id.toString(),
         name: locale === "ar" ? cat.nameAr || cat.name : cat.nameEn || cat.name,
         icon: "🍽️",
@@ -261,12 +267,14 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   // Filter items based on selected category
   const filteredItems = useMemo(() => {
     if (selectedCategory === "all") {
-      return menuItems;
+      return sortMenuItemsForDisplay(menuItems, menuCategories);
     }
-    return menuItems.filter(
-      (item) => item.categoryId?.toString() === selectedCategory,
+    return sortMenuItems(
+      menuItems.filter(
+        (item) => item.categoryId?.toString() === selectedCategory,
+      ),
     );
-  }, [menuItems, selectedCategory]);
+  }, [menuItems, menuCategories, selectedCategory]);
 
   return (
     <section
@@ -293,10 +301,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               className="text-base font-semibold"
               style={{ color: primaryColor }}
             >
-            {heroTitle}
-                    </span>
+              {heroTitle}
+            </span>
           </div>
-         
+
           {heroSubtitle ? (
             <p className="w-full max-w-2xl mx-auto text-lg md:text-lg text-slate-600 dark:text-slate-400 mb-12 text-balance wrap-break-word">
               {heroSubtitle}
@@ -307,7 +315,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         {/* Categories Filter */}
         <div className="mb-16 -mx-4 px-4 md:mx-0 md:px-0">
           <div
-            className="flex flex-nowrap md:flex-wrap items-center gap-3 md:gap-4 md:justify-center overflow-x-auto pb-2 md:pb-0 snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch]"
+            className="flex flex-nowrap md:flex-wrap items-center gap-3 md:gap-4 md:justify-center pb-2 md:pb-0 snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch]"
             role="tablist"
             aria-label={locale === "ar" ? "فئات القائمة" : "Menu categories"}
           >

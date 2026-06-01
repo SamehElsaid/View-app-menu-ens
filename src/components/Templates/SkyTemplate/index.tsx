@@ -13,6 +13,7 @@ import Footer from "./Footer";
 import MenuCard from "./MenuCard";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
 import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
+import { buildCategorySections } from "@/lib/menuCategoryOrder";
 import {
   isValidSkyCartItemId,
   readSkyCartFromCookie,
@@ -37,27 +38,12 @@ function SkyTemplate() {
 
   const menuItems = useMemo(() => storeMenuItems ?? [], [storeMenuItems]);
 
-  const editedCategories = useMemo(
-    () => [...(storeCategories ?? [])],
-    [storeCategories],
+  const editedCategories = storeCategories ?? [];
+
+  const allCategoriesArray = useMemo(
+    () => buildCategorySections(editedCategories, menuItems),
+    [editedCategories, menuItems],
   );
-
-  const allCategoriesArray = useMemo(() => {
-    const itemsByCategory = new Map<
-      number,
-      { categoryId: number; items: MenuItem[] }
-    >();
-
-    menuItems.forEach((item) => {
-      const { categoryId } = item;
-      if (!itemsByCategory.has(categoryId)) {
-        itemsByCategory.set(categoryId, { categoryId, items: [] });
-      }
-      itemsByCategory.get(categoryId)!.items.push(item);
-    });
-
-    return Array.from(itemsByCategory.values());
-  }, [menuItems]);
 
   useEffect(() => {
     writeSkyCartToCookie(cart);
