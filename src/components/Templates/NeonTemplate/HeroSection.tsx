@@ -231,14 +231,12 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const secondaryColor = customizationsData.secondaryColor || "#06b6d4";
   const heroTitle =
     locale === "ar"
-      ? customizationsData.heroTitleAr || "استكشف قائمتنا"
-      : customizationsData.heroTitleEn || "Explore Our Menu";
+      ? customizationsData.heroTitleAr?.trim() || menuInfo?.name || ""
+      : customizationsData.heroTitleEn?.trim() || menuInfo?.name || "";
   const heroSubtitle =
     locale === "ar"
-      ? customizationsData.heroSubtitleAr ||
-        "اختر من مجموعة متنوعة من الأطباق اللذيذة"
-      : customizationsData.heroSubtitleEn ||
-        "Choose from a variety of delicious dishes";
+      ? customizationsData.heroSubtitleAr?.trim() || menuInfo?.description || ""
+      : customizationsData.heroSubtitleEn?.trim() || menuInfo?.description || "";
 
   // Build categories from menuData with "all" option
   const categories = useMemo(() => {
@@ -295,15 +293,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               className="text-base font-semibold"
               style={{ color: primaryColor }}
             >
-              {locale === "ar" ? "قائمة الطعام" : "Menu Items"}
-            </span>
-          </div>
-          <h2 className="w-full !text-2xl md:!text-3xl lg:!text-4xl font-black text-slate-900 dark:text-white mb-6 text-balance wrap-break-word">
             {heroTitle}
-          </h2>
-          <p className="w-full max-w-2xl mx-auto text-base md:text-base text-slate-600 dark:text-slate-400 mb-12 text-balance wrap-break-word">
-            {heroSubtitle}
-          </p>
+                    </span>
+          </div>
+         
+          {heroSubtitle ? (
+            <p className="w-full max-w-2xl mx-auto text-lg md:text-lg text-slate-600 dark:text-slate-400 mb-12 text-balance wrap-break-word">
+              {heroSubtitle}
+            </p>
+          ) : null}
         </div>
 
         {/* Categories Filter */}
@@ -313,46 +311,41 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             role="tablist"
             aria-label={locale === "ar" ? "فئات القائمة" : "Menu categories"}
           >
-            {categories.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                role="tab"
-                aria-selected={selectedCategory === category.id}
-                onClick={() => onCategoryChange(category.id)}
-                className={`group shrink-0 snap-start flex items-center gap-2 md:gap-3 px-4 md:px-6 py-2.5 md:py-3 rounded-2xl font-semibold text-sm md:text-base transition-all duration-300 ${
-                  selectedCategory === category.id
-                    ? "text-white shadow-lg scale-105"
-                    : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-2 border-slate-200 dark:border-slate-700 hover:scale-105"
-                }`}
-                style={
-                  selectedCategory === category.id
-                    ? {
-                        background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
-                        boxShadow: `0 10px 15px -3px ${primaryColor}50`,
-                      }
-                    : {
-                        borderColor:
-                          selectedCategory !== category.id
-                            ? undefined
-                            : `${primaryColor}40`,
-                      }
-                }
-                onMouseEnter={(e) => {
-                  if (selectedCategory !== category.id) {
-                    e.currentTarget.style.borderColor = `${primaryColor}60`;
+            {categories.map((category) => {
+              const isActive = selectedCategory === category.id;
+
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => onCategoryChange(category.id)}
+                  className={[
+                    "shrink-0 snap-start flex items-center gap-2 rounded-2xl border-2 px-4 py-2.5 text-sm font-semibold transition-all duration-200 md:gap-3 md:px-6 md:py-3 md:text-base",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--neon-primary)]",
+                    isActive
+                      ? "scale-105 border-transparent text-white shadow-lg active:scale-[0.98]"
+                      : "border-slate-200 bg-white text-slate-700 hover:scale-105 hover:border-[var(--neon-primary)] hover:bg-[color-mix(in_srgb,var(--neon-primary)_10%,white)] hover:text-[var(--neon-primary)] active:scale-[0.98] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-[color-mix(in_srgb,var(--neon-primary)_18%,#1e293b)]",
+                  ].join(" ")}
+                  style={
+                    {
+                      "--neon-primary": primaryColor,
+                      "--neon-secondary": secondaryColor,
+                      ...(isActive
+                        ? {
+                            background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
+                            boxShadow: `0 10px 15px -3px ${primaryColor}50`,
+                          }
+                        : {}),
+                    } as React.CSSProperties
                   }
-                }}
-                onMouseLeave={(e) => {
-                  if (selectedCategory !== category.id) {
-                    e.currentTarget.style.borderColor = "";
-                  }
-                }}
-              >
-                <span className="text-xl md:text-2xl">{category.icon}</span>
-                <span className="whitespace-nowrap">{category.name}</span>
-              </button>
-            ))}
+                >
+                  <span className="text-xl md:text-2xl">{category.icon}</span>
+                  <span className="whitespace-nowrap">{category.name}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
