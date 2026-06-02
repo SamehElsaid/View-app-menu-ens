@@ -15,6 +15,7 @@ import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import LoadImage from "@/components/ImageLoad";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
+import LinkTo from "@/components/Global/LinkTo";
 
 export default function Page() {
   const menu = useAppSelector((state) => state.menu);
@@ -94,13 +95,21 @@ export default function Page() {
         <div className="flex min-h-screen items-center justify-center px-4">
           <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 text-center shadow-md space-y-3">
             <h1 className="text-lg font-bold text-zinc-800">
-              {locale === "ar" ? "تعذّر تحميل المنيو" : "Menu could not load"}
+              {locale === "ar"
+                ? "هاذا المنيو غير موجود"
+                : "This menu is not found"}
             </h1>
             <p className="text-sm text-zinc-600 leading-relaxed">
               {locale === "ar"
-                ? "تأكد أن سيرفر الـ API يعمل وأن إعدادات NEXT_PUBLIC_SUB_DOMAIN صحيحة في ملف .env"
-                : "Ensure the API server is running and NEXT_PUBLIC_SUB_DOMAIN is set in .env"}
+                ? " يمكنك حجز من خلال تواصلنا من خلال الرابط التالي"
+                : "You can book through our contact link below"}
             </p>
+            <LinkTo
+              href="https://ensmenu.com/"
+              className="text-sm text-zinc-600 leading-relaxed"
+            >
+              {locale === "ar" ? "ُENSMenu" : "ENSMenu"}
+            </LinkTo>
           </div>
           <OrderChatbotGate />
         </div>
