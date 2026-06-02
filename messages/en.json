@@ -47,9 +47,14 @@
     "LBP": "LBP",
     "DZD": "DZD"
   },
+  "ensBanner": {
+    "message": "🚀 Want a free digital menu like this? Click here!",
+    "cta": "EnsMenu",
+    "dismiss": "Dismiss banner"
+  },
   "footer": {
     "rights": "All rights reserved.",
-    "designedBy": "Designed by",
+    "designedBy": "Powered by",
     "followUs": "Follow Us",
     "workingHours": "Working Hours",
     "closed": "Closed",

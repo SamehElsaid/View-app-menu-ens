@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 
 import { useLocale } from "next-intl";
-import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import type { MenuItemOProps } from "@/types/types";
 import LoadImage from "@/components/ImageLoad";
 
@@ -48,7 +47,7 @@ const MenuItemO = ({
         <div className="relative w-full min-h-40 aspect-4/3 overflow-hidden bg-linear-to-br from-[#002433] via-[#002b3a] to-[#003544]">
           <div className="absolute inset-0 z-0 origin-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.035] motion-reduce:transition-none motion-reduce:group-hover:scale-100">
             <LoadImage
-              src={resolveMenuItemImageSrc(item.image)}
+              src={item.image ?? ""}
               alt={nameLabel || displayName || "Menu Item"}
               fill
               className="object-cover"
@@ -86,7 +85,7 @@ const MenuItemO = ({
           {/* Always-visible expand button */}
           <div className="absolute top-3 end-3 z-20">
             <motion.div
-              className="bg-cyan-500/90 text-white p-2.5 rounded-full shadow-[0_4px_14px_rgba(6,182,212,0.45)] ring-1 ring-white/30 backdrop-blur-sm"
+              className="bg-cyan-500/90 text-white p-2.5 rounded-full shadow-[0_4px_14px_rgba(6,182,212,0.45)] ring-1 ring-white/30 backdrop-blur-base"
               whileHover={{
                 scale: 1.06,
                 transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
@@ -113,11 +112,11 @@ const MenuItemO = ({
 
         <div className="p-7 sm:p-8 text-center md:text-start">
           <div className="flex flex-col gap-2">
-            <h3 className="text-base font-bold text-white transition-colors duration-500 ease-out group-hover:text-cyan-400 font-display text-balance wrap-break-word leading-snug">
+            <h4 className="text-base font-bold text-white transition-colors duration-500 ease-out group-hover:text-cyan-400 font-body text-balance wrap-break-word leading-snug">
               {nameLabel || displayName}
-            </h3>
+            </h4>
 
-            <p className="text-cyan-100/60 text-sm line-clamp-1 leading-relaxed font-arabic transition-colors duration-500 ease-out group-hover:text-cyan-100/90 min-h-5">
+            <p className="text-cyan-100/60 text-base line-clamp-1 leading-relaxed font-body transition-colors duration-500 ease-out group-hover:text-cyan-100/90 min-h-5">
               {displayDesc}
             </p>
           </div>
@@ -125,11 +124,11 @@ const MenuItemO = ({
           <div className="mt-4 flex flex-col items-center gap-2">
             <div className="flex items-baseline justify-center gap-2">
               {hasDiscount && (
-                <span className="text-white/40 line-through text-sm font-medium">
+                <span className="text-white/40 line-through text-base font-medium">
                   {item.originalPrice}
                 </span>
               )}
-              <span className="text-cyan-400 font-extrabold text-2xl leading-none font-display">
+              <span className="text-cyan-400 font-extrabold text-xl leading-none font-body">
                 {item.price}
               </span>
               <span className="text-cyan-500/70 text-[11px] font-bold uppercase tracking-widest">
@@ -146,22 +145,22 @@ const MenuItemO = ({
               role="presentation"
             >
               <div className="flex flex-wrap items-center justify-center gap-2 md:justify-between">
-                <div className="flex items-center gap-1 rounded-2xl border border-white/15 bg-white/5 px-1 py-1 backdrop-blur-sm">
+                <div className="flex items-center gap-1 rounded-2xl border border-white/15 bg-white/5 px-1 py-1 backdrop-blur-base">
                   <button
                     type="button"
                     onClick={() => setCardPickQty((q) => Math.max(1, q - 1))}
-                    className="flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold text-cyan-100 transition hover:bg-white/10"
+                    className="flex h-8 w-8 items-center justify-center rounded-xl text-base font-bold text-cyan-100 transition hover:bg-white/10"
                     aria-label={isAr ? "تقليل" : "Decrease"}
                   >
                     −
                   </button>
-                  <span className="min-w-7 text-center text-sm font-black text-white">
+                  <span className="min-w-7 text-center text-base font-black text-white">
                     {cardPickQty}
                   </span>
                   <button
                     type="button"
                     onClick={() => setCardPickQty((q) => q + 1)}
-                    className="flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold text-cyan-100 transition hover:bg-white/10"
+                    className="flex h-8 w-8 items-center justify-center rounded-xl text-base font-bold text-cyan-100 transition hover:bg-white/10"
                     aria-label={isAr ? "زيادة" : "Increase"}
                   >
                     +
@@ -173,13 +172,13 @@ const MenuItemO = ({
                     onAddToCart(item, cardPickQty);
                     setCardPickQty(1);
                   }}
-                  className="rounded-2xl bg-cyan-600 px-4 py-2 text-xs font-black text-white shadow-md transition hover:bg-cyan-500"
+                  className="rounded-2xl bg-cyan-600 px-4 py-2 text-base font-black text-white shadow-md transition hover:bg-cyan-500"
                 >
                   {isAr ? "أضف للسلة" : "Add to cart"}
                 </button>
               </div>
               {cartQuantity > 0 ? (
-                <p className="text-center text-xs text-cyan-200/70">
+                <p className="text-center text-base text-cyan-200/70">
                   {isAr
                     ? `في السلة: ${cartQuantity}`
                     : `In cart: ${cartQuantity}`}
@@ -189,7 +188,7 @@ const MenuItemO = ({
           ) : null}
 
           <div className="mt-5 pt-4 border-t border-white/5 flex items-center justify-between opacity-60 transition-opacity duration-500 ease-out group-hover:opacity-100">
-            <span className="text-xs font-bold text-cyan-500 uppercase tracking-widest">
+            <span className="text-base font-bold text-cyan-500 uppercase tracking-widest">
               {isAr ? "عرض التفاصيل" : "View Details"}
             </span>
             <div className="h-1 w-12 bg-cyan-900 rounded-full overflow-hidden">

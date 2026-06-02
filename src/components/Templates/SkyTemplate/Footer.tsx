@@ -113,7 +113,7 @@ export default function Footer({
   ].filter((link) => link.url && link.url.trim() !== "");
 
   return (
-    <footer className="py-16 bg-linear-to-b from-(--bg-main)/10 to-white border-t border-(--border-main)/10">
+    <footer className="py-6 bg-linear-to-b from-(--bg-main)/10 to-white border-t border-(--border-main)/10">
       <div className="container mx-auto px-6">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           {/* Brand & Description */}
@@ -130,12 +130,12 @@ export default function Footer({
                   />
                 </div>
               )}
-              <span className="font-heading text-2xl font-bold text-sky-900 group-hover:text-sky-600 transition-colors">
+              <span className="font-body text-2xl font-bold text-sky-900 group-hover:text-sky-600 transition-colors">
                 {menuName || (locale === "ar" ? "القائمة" : "Menu")}
               </span>
             </Link>
             {footerDescription && (
-              <p className="text-gray-600 text-sm leading-relaxed mb-4 max-w-md">
+              <p className="w-full max-w-md text-gray-600 text-base leading-relaxed mb-4 text-balance wrap-break-word">
                 {footerDescription}
               </p>
             )}
@@ -147,7 +147,7 @@ export default function Footer({
                   <div className="flex items-start gap-2">
                     <IoLocationOutline className="text-sky-600 text-[20px]! mt-0.5" />
                     <p
-                      className="text-gray-600 text-sm"
+                      className="text-gray-600 text-base"
                       dir={isArabic ? "rtl" : "ltr"}
                     >
                       {address}
@@ -159,7 +159,7 @@ export default function Footer({
                     <IoCallOutline className="text-sky-600 text-[20px]!" />
                     <Link
                       href={`tel:${phone}`}
-                      className="text-gray-600 text-sm hover:text-sky-600 transition-colors"
+                      className="text-gray-600 text-base hover:text-sky-600 transition-colors"
                       dir="ltr"
                     >
                       {phone}
@@ -173,14 +173,14 @@ export default function Footer({
           {/* Working Hours */}
           {displayWorkingHours.length > 0 && (
             <div>
-              <h4 className="font-heading text-lg font-semibold text-sky-900 mb-4">
+              <h4 className="font-body text-lg font-semibold text-sky-900 mb-4">
                 {isArabic ? "مواعيد العمل" : "Working Hours"}
               </h4>
               <div className="space-y-2">
                 {displayWorkingHours.map(
                   (item, index) =>
                     item && (
-                      <div key={index} className="text-gray-600 text-sm">
+                      <div key={index} className="text-gray-600 text-base">
                         <span className="font-medium text-sky-900">
                           {item.day}:
                         </span>{" "}
@@ -195,7 +195,7 @@ export default function Footer({
           {/* Social Media */}
           {socialLinks.length > 0 && (
             <div>
-              <h4 className="font-heading text-lg font-semibold text-sky-900 mb-4">
+              <h4 className="font-body text-lg font-semibold text-sky-900 mb-4">
                 {isArabic ? "تابعنا" : "Follow Us"}
               </h4>
               <div className="flex gap-3">
@@ -205,7 +205,7 @@ export default function Footer({
                     href={link.url || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center hover:bg-sky-600 hover:text-white transition-all duration-300 text-sky-600 shadow-sm hover:shadow-md hover:scale-110"
+                    className="w-10 h-10 rounded-full bg-sky-100 flex items-center justify-center hover:bg-sky-600 hover:text-white transition-all duration-300 text-sky-600 shadow-base hover:shadow-md hover:scale-110"
                     aria-label={link.platform}
                   >
                     {link.icon}
@@ -217,20 +217,20 @@ export default function Footer({
         </div>
 
         {/* Bottom Copyright */}
-        <div className="border-t border-sky-100 mt-12 pt-8">
+        <div className="border-t border-sky-100 mt-6 pt-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-            <p className="text-gray-600 text-sm" dir="ltr">
-              © {currentYear} {menuT("ourMenu")}. {t("rights")}
+            <p className="text-gray-600 text-base text-balance wrap-break-word" dir="ltr">
+              © {currentYear} {menuName} . {locale === "ar" ? "جميع الحقوق محفوظة." : "All rights reserved."}
             </p>
-            <p className="flex items-center justify-center gap-1 text-sm text-gray-600">
-              <span>{t("designedBy")}</span>
+            <p className="flex items-center justify-center gap-1 text-base text-gray-600 text-balance wrap-break-word" dir="ltr">
+              <span>Powered by </span>
               <Link
-                href="https://www.facebook.com/ENSEGYPTEG"
+                href="https://www.ensmenu.com/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="font-semibold text-sky-600 hover:text-sky-700 hover:underline transition"
               >
-                ENS
+                ENSMenu
               </Link>
             </p>
           </div>

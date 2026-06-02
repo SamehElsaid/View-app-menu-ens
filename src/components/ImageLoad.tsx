@@ -1,4 +1,7 @@
+"use client";
+
 import { LazyLoadImage } from "react-lazy-load-image-component";
+import { useMenuLogoFallback } from "@/context/menuLogoFallbackContext";
 import {
   DEFAULT_MENU_ITEM_IMAGE_SRC,
   resolveMenuItemImageSrc,
@@ -12,6 +15,7 @@ function LoadImage({
   height,
   fill = false,
   disableLazy = false,
+  useMenuLogoFallback: useLogoFallback = true,
   ...props
 }: {
   src: string;
@@ -21,10 +25,15 @@ function LoadImage({
   height?: number;
   fill?: boolean;
   disableLazy?: boolean;
+  /** When true (default), empty item images use the menu logo from MenuLogoFallbackProvider. */
+  useMenuLogoFallback?: boolean;
   [key: string]: unknown;
 }): React.ReactNode {
-  // function to resize image using canvas and return Blob URL
-  const normalizedSrc = resolveMenuItemImageSrc(src);
+  const menuLogo = useMenuLogoFallback();
+  const normalizedSrc = resolveMenuItemImageSrc(
+    src,
+    useLogoFallback ? menuLogo : undefined,
+  );
   const resizeUrl =
     height && width
       ? `/api/resize?url=${encodeURIComponent(

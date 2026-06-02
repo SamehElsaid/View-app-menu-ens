@@ -16,23 +16,25 @@ function Default() {
 
   return (
     <CategoryNavProvider>
-      <style jsx global>
-        {globalStyles}
-      </style>
-      <NavBar
-        logo={menuInfo?.logo || null}
-        menuName={menuInfo?.name || null}
-      />
-      <HeroSection />
-      <AdVBanner />
-      <Suspense fallback={null}>
-        <MenuSection currency={menuInfo?.currency || "AED"} />
-      </Suspense>
-      <Footer
-        workingHours={menuInfo?.workingHours || null}
-        menuInfo={menuInfo || null}
-      />
-      {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
+      <div className="menu-template font-body min-h-screen">
+        <style jsx global>
+          {globalStyles}
+        </style>
+        <NavBar
+          logo={menuInfo?.logo || null}
+          menuName={menuInfo?.name || null}
+        />
+        <HeroSection compact />
+        <AdVBanner compact />
+        <Suspense fallback={null}>
+          <MenuSection currency={menuInfo?.currency || "AED"} />
+        </Suspense>
+        <Footer
+          workingHours={menuInfo?.workingHours || null}
+          menuInfo={menuInfo || null}
+        />
+        {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
+      </div>
     </CategoryNavProvider>
   );
 }

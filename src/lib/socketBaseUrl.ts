@@ -12,6 +12,7 @@ const API_HOST_BY_SITE_HOST: Record<string, string> = {
   "www.ensmenu.com": "ensapi.ensbot.net",
   "ensmenu.ens.eg": "api.ensmenu.ens.eg",
   "www.ensmenu.ens.eg": "api.ensmenu.ens.eg",
+  
 };
 
 function remapToApiOrigin(originWithoutApi: string): string {

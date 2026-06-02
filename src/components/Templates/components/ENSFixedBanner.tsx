@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { FaGlobe, FaTimes } from "react-icons/fa";
-import { useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 
 const ENS_WEBSITE_URL = "https://ensmenu.com";
 
@@ -11,7 +11,7 @@ const ENS_WEBSITE_URL = "https://ensmenu.com";
 // ============================
 
 export const ENSFixedBanner: React.FC = () => {
-  const locale = useLocale();
+  const t = useTranslations("ensBanner");
   const [isVisible, setIsVisible] = useState(true);
 
   if (!isVisible) return null;
@@ -26,29 +26,27 @@ export const ENSFixedBanner: React.FC = () => {
       shadow-lg shadow-purple-500/20
     "
     >
-      <div className="container mx-auto flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-            <FaGlobe className="text-sm" aria-hidden />
-            <span className="text-xs font-bold">ENS</span>
+      <div className="container mx-auto flex min-w-0 items-center justify-between gap-2 sm:gap-4">
+        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto pe-3 sm:gap-3 sm:pe-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="hidden shrink-0 items-center gap-2 rounded-full bg-white/20 px-3 py-1 backdrop-blur-base sm:flex">
+            <FaGlobe className="text-base" aria-hidden />
+            <span className="text-base font-bold">ENS</span>
           </div>
-          <p className="text-xs sm:text-sm font-medium">
-            {locale === "ar"
-              ? "🚀 هل تريد منيو إلكتروني مثل هذا مجانا ؟ اضغط هنا !"
-              : "🚀 Want a free digital menu like this? Click here!"}
+          <p className="shrink-0 whitespace-nowrap text-xs font-medium sm:text-base">
+            {t("message")}
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <a
             href={ENS_WEBSITE_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="
-              inline-flex items-center gap-1.5
+              inline-flex items-center gap-1
               bg-white text-purple-700
-              text-xs sm:text-sm font-bold
-              px-3 sm:px-4 py-1.5 rounded-full
+              text-xs sm:text-base font-bold
+              px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full
               transition-all duration-300
               hover:bg-white/90
               hover:scale-105
@@ -56,7 +54,7 @@ export const ENSFixedBanner: React.FC = () => {
             "
           >
             <FaGlobe className="size-4 shrink-0" aria-hidden />
-            ensmenu.com
+            {t("cta")}
           </a>
           <button
             type="button"
@@ -66,7 +64,7 @@ export const ENSFixedBanner: React.FC = () => {
               hover:bg-white/20 active:bg-white/30
               transition-colors
             "
-            aria-label={locale === "ar" ? "إغلاق الشريط" : "Dismiss banner"}
+            aria-label={t("dismiss")}
           >
             <FaTimes className="size-4 sm:size-5" aria-hidden />
           </button>

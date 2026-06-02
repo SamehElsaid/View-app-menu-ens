@@ -1,18 +1,9 @@
 import placeholder from "@/components/img/30690.png";
 
-/** Bundled default used when a menu item has no image URL. */
+/** Bundled default used when a menu item has no image URL and no menu logo fallback. */
 export const DEFAULT_MENU_ITEM_IMAGE_SRC = placeholder.src;
 
-/**
- * Resolves a menu item image URL: empty/whitespace → default placeholder,
- * absolute/data URLs unchanged, relative paths joined to the API host (same as ImageLoad).
- */
-export function resolveMenuItemImageSrc(
-  src: string | undefined | null,
-): string {
-  const trimmed = src?.trim();
-  if (!trimmed) return DEFAULT_MENU_ITEM_IMAGE_SRC;
-
+function resolveAssetUrl(trimmed: string): string {
   if (
     trimmed.startsWith("http://") ||
     trimmed.startsWith("https://") ||
@@ -36,4 +27,24 @@ export function resolveMenuItemImageSrc(
 
   const normalizedPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
   return `${baseHost}${normalizedPath}`;
+}
+
+/**
+ * Resolves a menu item image URL: empty/whitespace → menu logo (if provided) or default placeholder,
+ * absolute/data URLs unchanged, relative paths joined to the API host (same as ImageLoad).
+ */
+export function resolveMenuItemImageSrc(
+  src: string | undefined | null,
+  logoFallback?: string | null,
+): string {
+  const trimmed = src?.trim();
+  if (!trimmed) {
+    const logoTrimmed = logoFallback?.trim();
+    if (logoTrimmed) {
+      return resolveAssetUrl(logoTrimmed);
+    }
+    return DEFAULT_MENU_ITEM_IMAGE_SRC;
+  }
+
+  return resolveAssetUrl(trimmed);
 }

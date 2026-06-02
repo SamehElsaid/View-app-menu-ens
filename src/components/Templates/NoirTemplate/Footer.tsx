@@ -110,7 +110,7 @@ export default function Footer() {
                 ) : null}
                 {footerDescription ? (
                   <p
-                    className="max-w-2xl font-body text-sm leading-relaxed text-text-secondary"
+                    className="w-full max-w-2xl font-body text-base leading-relaxed text-text-secondary text-balance wrap-break-word"
                     dir={locale === "ar" ? "rtl" : "ltr"}
                   >
                     {footerDescription}
@@ -128,7 +128,7 @@ export default function Footer() {
                     </h3>
                     {address ? (
                       <p
-                        className="text-sm leading-relaxed text-text-secondary"
+                        className="text-base leading-relaxed text-text-secondary"
                         dir={locale === "ar" ? "rtl" : "ltr"}
                       >
                         {address}
@@ -137,7 +137,7 @@ export default function Footer() {
                     {phone ? (
                       <a
                         href={`tel:${phone.replace(/\s/g, "")}`}
-                        className="inline-block font-body text-sm text-lavender transition-colors hover:text-cyan"
+                        className="inline-block font-body text-base text-lavender transition-colors hover:text-cyan"
                         dir="ltr"
                       >
                         {phone}
@@ -151,7 +151,7 @@ export default function Footer() {
                     <h3 className="mb-3 font-body text-[0.65rem] font-semibold uppercase tracking-[0.25em] text-cyan">
                       {t("workingHours")}
                     </h3>
-                    <ul className="space-y-1.5 text-sm text-text-secondary">
+                    <ul className="space-y-1.5 text-base text-text-secondary">
                       {DAY_KEYS.map((day) => {
                         const d = workingHours[day];
                         const hasHours = d && !d.closed && d.open && d.close;
@@ -210,11 +210,11 @@ export default function Footer() {
         )}
 
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <span className="font-logo text-base tracking-[0.3em] text-text-secondary">
+          <span className="font-body text-base tracking-[0.3em] text-text-secondary">
             {displayName}
           </span>
 
-          <p className="text-center text-sm text-text-muted">
+          <p className="text-center text-base text-text-muted">
             {locale === "ar"
               ? `© ${year} ${displayName}. جميع الحقوق محفوظة.`
               : `© ${year} ${displayName}. All rights reserved.`}
@@ -222,16 +222,16 @@ export default function Footer() {
 
           <p
             dir="ltr"
-            className="flex items-center gap-1 text-sm text-text-muted"
+            className="flex items-center gap-1 text-base text-text-muted"
           >
-            {locale === "ar" ? "تصميم وتطوير" : "Designed & Developed by"}{" "}
+            Powered by 
             <a
-              href="https://www.facebook.com/ENSEGYPTEG"
+              href="https://www.ensmenu.com/"
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-lavender transition-colors hover:underline"
             >
-              ENS
+              ENSMenu
             </a>
           </p>
         </div>

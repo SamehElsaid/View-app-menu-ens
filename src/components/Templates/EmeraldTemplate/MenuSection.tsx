@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
-import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
 import LoadImage from "@/components/ImageLoad";
@@ -16,6 +15,7 @@ import {
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import { useAppSelector } from "@/store/hooks";
 
 function CategoryTabs({
   categories,
@@ -53,7 +53,7 @@ function CategoryTabs({
             onClick={() => onChange(cat.id.toString())}
             className={`
             relative shrink-0 flex items-center gap-2 px-5 py-2.5
-            rounded-full text-sm font-semibold font-sans tracking-wide
+            rounded-full text-base font-semibold font-sans tracking-wide
             transition-[background-color,color,box-shadow] duration-300
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400/50 focus-visible:ring-offset-2
             ${isActive ? "text-white" : "text-stone-500 bg-white"}
@@ -124,7 +124,6 @@ function EmeraldMenuCard({
   const cardHoverShadow = `0 16px 48px ${hexToRgba(primary, 0.14)}, 0 4px 12px rgba(0,0,0,0.06)`;
   const iconShadow = `0 4px 20px ${hexToRgba(primary, 0.4)}`;
   const imageBg = hexToRgba(primary, 0.06);
-  const imageSrc = resolveMenuItemImageSrc(dish.image);
 
   return (
     <article
@@ -153,7 +152,7 @@ function EmeraldMenuCard({
         style={{ backgroundColor: imageBg }}
       >
         <LoadImage
-          src={imageSrc}
+          src={dish.image ?? ""}
           alt={locale === "ar" ? dish.nameAr : dish.nameEn}
           fill
           className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.06]"
@@ -165,9 +164,9 @@ function EmeraldMenuCard({
             {badgeText}
           </span>
         )}
-        <div className="absolute bottom-3 end-3 bg-white/95 backdrop-blur-sm rounded-full px-3 py-1 shadow-sm">
+        <div className="absolute bottom-3 end-3 bg-white/95 backdrop-blur-base rounded-full px-3 py-1 shadow-base">
           <span
-            className="font-sans font-700 text-sm"
+            className="font-sans font-700 text-base"
             style={{ color: primary }}
           >
             {currencyLabel} {dish.price}
@@ -176,10 +175,10 @@ function EmeraldMenuCard({
       </div>
 
       <div className="p-5">
-        <h3 className="font-serif font-700 text-stone-900 text-lg mb-2 transition-colors duration-200 group-hover:text-[var(--em-p)]">
+        <h5 className="font-body font-700 text-stone-900 text-lg mb-2 transition-colors duration-200 group-hover:text-[var(--em-p)]">
           {locale === "ar" ? dish.nameAr : dish.nameEn}
-        </h3>
-        <p className="font-sans text-stone-500 text-sm leading-relaxed line-clamp-2">
+        </h5>
+        <p className="font-sans text-stone-500 text-base leading-relaxed line-clamp-2">
           {locale === "ar" ? dish.descriptionAr : dish.descriptionEn}
         </p>
 
@@ -213,7 +212,7 @@ function EmeraldMenuCard({
                 >
                   −
                 </button>
-                <span className="min-w-7 text-center text-sm font-semibold text-stone-800">
+                <span className="min-w-7 text-center text-base font-semibold text-stone-800">
                   {cardPickQty}
                 </span>
                 <button
@@ -231,7 +230,7 @@ function EmeraldMenuCard({
                   onAddToCart(dish, cardPickQty);
                   setCardPickQty(1);
                 }}
-                className="rounded-full px-3 py-1.5 text-xs font-semibold text-white"
+                className="rounded-full px-3 py-1.5 text-base font-semibold text-white"
                 style={{
                   background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
                 }}
@@ -240,7 +239,7 @@ function EmeraldMenuCard({
               </button>
             </div>
             {cartQuantity > 0 ? (
-              <p className="text-center text-xs text-stone-500">
+              <p className="text-center text-base text-stone-500">
                 {locale === "ar"
                   ? `في السلة: ${cartQuantity}`
                   : `In cart: ${cartQuantity}`}
@@ -251,7 +250,7 @@ function EmeraldMenuCard({
 
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-stone-50">
           <span
-            className="font-sans text-xs font-600 tracking-wide uppercase"
+            className="font-sans text-base font-600 tracking-wide uppercase"
             style={{ color: secondary }}
           >
             {locale === "ar" ? "عرض التفاصيل" : "View Details"}
@@ -337,7 +336,7 @@ function EmeraldDishModal({
   return (
     <>
       <div
-        className="fixed inset-0 z-50 backdrop-blur-sm animate-fade-in motion-reduce:animate-none"
+        className="fixed inset-0 z-50 backdrop-blur-base animate-fade-in motion-reduce:animate-none"
         style={{ backgroundColor: backdrop }}
         onClick={onClose}
         aria-hidden="true"
@@ -355,7 +354,7 @@ function EmeraldDishModal({
           style={{ backgroundColor: imageBg }}
         >
           <LoadImage
-            src={resolveMenuItemImageSrc(dish.image)}
+            src={dish.image ?? ""}
             alt={locale === "ar" ? dish.nameAr : dish.nameEn}
             fill
             className="object-cover"
@@ -399,7 +398,7 @@ function EmeraldDishModal({
               {dish.price}
             </span>
             <span
-              className="font-sans font-600 text-sm opacity-70"
+              className="font-sans font-600 text-base opacity-70"
               style={{ color: primary }}
             >
               {currencyLabel}
@@ -408,11 +407,11 @@ function EmeraldDishModal({
         </div>
 
         <div className="flex-1 overflow-y-auto md:overflow-y-visible px-6 py-5 md:px-7 md:py-6">
-          <h2 className="font-serif italic text-stone-900 text-xl md:text-2xl font-700 mb-3 text-balance">
+          <h4 className="font-body  text-stone-900 text-xl md:text-2xl font-700 mb-3 text-balance">
             {locale === "ar" ? dish.nameAr : dish.nameEn}
-          </h2>
+          </h4>
 
-          <p className="font-sans text-stone-500 text-sm leading-[1.7] mb-5">
+          <p className="font-sans w-full text-stone-500 text-base leading-[1.7] mb-5 text-balance wrap-break-word">
             {locale === "ar" ? dish.descriptionAr : dish.descriptionEn}
           </p>
 
@@ -427,7 +426,7 @@ function EmeraldDishModal({
                 {dish.allergens.map((a: string) => (
                   <span
                     key={a}
-                    className="font-sans text-sm font-500 text-amber-700 bg-amber-50 px-3 py-1.5 rounded-full"
+                    className="font-sans text-base font-500 text-amber-700 bg-amber-50 px-3 py-1.5 rounded-full"
                   >
                     {a}
                   </span>
@@ -445,7 +444,7 @@ function EmeraldDishModal({
                     upsertSkyCartQuantityFromMenuItem(dish, selectedQty);
                     setSelectedQty(1);
                   }}
-                  className="rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  className="rounded-xl px-4 py-2.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
                   style={{
                     background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
                   }}
@@ -461,7 +460,7 @@ function EmeraldDishModal({
                   >
                     −
                   </button>
-                  <span className="min-w-8 text-center text-sm font-semibold text-stone-800">
+                  <span className="min-w-8 text-center text-base font-semibold text-stone-800">
                     {selectedQty}
                   </span>
                   <button
@@ -475,7 +474,7 @@ function EmeraldDishModal({
                 </div>
               </div>
               {inCartQty > 0 ? (
-                <p className="text-center text-sm text-stone-500">
+                <p className="text-center text-base text-stone-500">
                   {locale === "ar"
                     ? `في السلة: ${inCartQty}`
                     : `In cart: ${inCartQty}`}
@@ -488,7 +487,7 @@ function EmeraldDishModal({
         <div className="px-6 py-4 md:px-7 md:py-5 border-t border-stone-100">
           <button
             onClick={onClose}
-            className="w-full py-3.5 rounded-2xl border border-stone-200 font-sans font-600 text-stone-600 hover:bg-stone-50 hover:border-stone-300 transition-all text-sm"
+            className="w-full py-3.5 rounded-2xl border border-stone-200 font-sans font-600 text-stone-600 hover:bg-stone-50 hover:border-stone-300 transition-all text-base"
           >
             {locale === "ar" ? "العودة إلى القائمة" : "Back to Menu"}
           </button>
@@ -511,6 +510,9 @@ export default function MenuSection({
   const [activeCategory, setActiveCategory] = useState(0);
   const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const locale = useLocale();
+  const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const siteName = menuInfo?.name?.trim();
+  const displayName = siteName || (locale === "ar" ? "زُمُرُّد" : "Emerald");
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
   const isTableOrder =
@@ -538,17 +540,17 @@ export default function MenuSection({
     <>
       <div className="mb-10">
         <p
-          className="font-sans text-xs font-600 tracking-[0.18em] uppercase mb-3"
+          className="font-sans text-lg font-600 tracking-[0.18em] uppercase mb-3"
           style={{ color: secondary }}
         >
-          {locale === "ar" ? "القائمة" : "Menu"}
+         {displayName}
         </p>
-        <h2
+        <h4
           id="menu-heading"
-          className="font-serif italic text-stone-900 text-[clamp(2rem,4vw,3rem)] tracking-tight"
+          className="font-body  text-stone-900 text-xl tracking-tight"
         >
           {locale === "ar" ? "القائمة" : "Menu"}
-        </h2>
+        </h4>
       </div>
 
       <div className="mb-8 md:mb-12">
@@ -561,7 +563,7 @@ export default function MenuSection({
 
       <p
         key={`${activeCategory}-count`}
-        className="font-sans text-sm text-stone-400 mb-8 font-500 animate-fade-in motion-reduce:animate-none"
+        className="font-sans text-base text-stone-400 mb-8 font-500 animate-fade-in motion-reduce:animate-none"
       >
         {filteredItems.length}{" "}
         {filteredItems.length === 1

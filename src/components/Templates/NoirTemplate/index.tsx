@@ -13,6 +13,7 @@ import {
   NOIR_DEFAULT_SECONDARY,
 } from "./NoirThemeContext";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
+import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
 
 function NoirTemplate() {
   const locale = useLocale();
@@ -29,8 +30,7 @@ function NoirTemplate() {
     menuCustomizations?.secondaryColor?.trim() || NOIR_DEFAULT_SECONDARY;
 
   const mainStyle: CSSProperties = {
-    fontFamily:
-      locale === "ar" ? '"Tajawal", sans-serif' : '"DM Sans", sans-serif',
+    fontFamily: menuTemplateFontFamily(locale),
     // Tailwind @theme noir tokens (text-violet, text-cyan, text-lavender, …)
     ["--color-violet" as string]: primary,
     ["--color-cyan" as string]: secondary,
@@ -42,7 +42,7 @@ function NoirTemplate() {
     <NoirThemeProvider primary={primary} secondary={secondary}>
       <main
         id="top"
-        className="bg-[#141422] text-text-primary min-h-screen"
+        className="menu-template font-body bg-[#141422] text-text-primary min-h-screen"
         style={mainStyle}
       >
         <NavBar />
@@ -62,8 +62,9 @@ function NoirTemplate() {
         </section>
         <Footer />
         {menuInfo &&
-          (!menuInfo.ownerPlanType ||
-            menuInfo.ownerPlanType === "free") && <ENSFixedBanner />}
+          (!menuInfo.ownerPlanType || menuInfo.ownerPlanType === "free") && (
+            <ENSFixedBanner />
+          )}
       </main>
     </NoirThemeProvider>
   );

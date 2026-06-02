@@ -47,9 +47,14 @@
     "LBP": "ليرة لبنانية",
     "DZD": "دينار جزائري"
   },
+  "ensBanner": {
+    "message": "🚀  تريد منيو إلكتروني مثل هذا مجاناً؟ اضغط هنا!",
+    "cta": "EnsMenu",
+    "dismiss": "إغلاق الشريط"
+  },
   "footer": {
     "rights": "جميع الحقوق محفوظة.",
-    "designedBy": "تصميم",
+    "designedBy": "Powered by",
     "followUs": "تابعنا",
     "workingHours": "ساعات العمل",
     "closed": "مغلق",

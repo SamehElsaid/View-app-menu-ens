@@ -89,7 +89,7 @@ export default function Navbar() {
             </div>
           )}
           <span
-            className="font-serif italic text-xl font-700 tracking-tight"
+            className="font-body  text-xl font-700 tracking-tight"
             style={{ color: primary }}
           >
             {displayName}

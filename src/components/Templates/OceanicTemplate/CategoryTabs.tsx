@@ -47,7 +47,7 @@ const CategoryTabs = ({ categories, activeCategory, onCategoryChange, layoutIdPr
       <div className="pointer-events-none absolute inset-y-0 left-0 w-6 md:w-8 bg-gradient-to-r from-white via-white/70 to-transparent z-10" />
       <div className="pointer-events-none absolute inset-y-0 right-0 w-6 md:w-8 bg-gradient-to-l from-white via-white/70 to-transparent z-10" />
 
-      <div className="oceanic-tabs-scroll w-full overflow-x-auto pb-3 md:pb-4 snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch]">
+      <div className="oceanic-tabs-scroll w-full overflow-x-auto pb-3 md:pb-4 snap-x snap-mandatory scroll-baseooth [-webkit-overflow-scrolling:touch]">
         <div className="flex gap-3 md:gap-3 justify-start md:justify-center min-w-max px-5 md:px-6 py-1">
           {tabs.map((category, index) => {
             const isActive = activeCategory === category.id.toString();
@@ -61,15 +61,10 @@ const CategoryTabs = ({ categories, activeCategory, onCategoryChange, layoutIdPr
               <motion.button
                 key={category.id}
                 onClick={() => handleSelect(category.id.toString())}
-                className={`
-                  relative group whitespace-nowrap snap-start shrink-0
-                  min-h-[44px] md:min-h-[48px]
-                  px-6 md:px-7 py-3 md:py-3.5 rounded-full
-                  text-[15px] md:text-[16px] font-semibold leading-tight
-                  transition-[transform,box-shadow,background-color,border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
+                className={`relative group whitespace-nowrap snap-start shrink-0 min-h-[44px] md:min-h-[48px] px-6 md:px-7 py-3 md:py-3.5 rounded-full text-[13px] md:text-[14px] font-semibold leading-tight transition-[transform,box-shadow,background-color,border-color] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
                   ${isActive
                     ? 'bg-gradient-to-br from-cyan-700 via-cyan-600 to-sky-700 text-white shadow-[0_8px_22px_-6px_rgba(6,95,120,0.55)] ring-1 ring-white/30'
-                    : 'bg-cyan-50 text-cyan-900 border border-cyan-200 hover:border-cyan-400 hover:bg-cyan-100 shadow-sm hover:shadow-md'
+                    : 'bg-cyan-50 text-cyan-900 border border-cyan-200 hover:border-cyan-400 hover:bg-cyan-100 shadow-base hover:shadow-md'
                   }
                 `}
                 initial={{ opacity: 0, y: 12 }}

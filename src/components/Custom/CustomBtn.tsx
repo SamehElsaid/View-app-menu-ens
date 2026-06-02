@@ -12,7 +12,7 @@ export default function CustomBtn({ text, type = "button", loading = false, disa
     <button
       type={type}
       disabled={disabled ?? loading}
-      className={`flex w-full items-center justify-center gap-2 rounded-lg bg-accent-purple px-4 py-3 font-semibold text-white shadow-sm transition hover:bg-accent-purple/90 focus:outline-none focus:ring-2 focus:ring-accent-purple/50 disabled:opacity-60 disabled:pointer-events-none ${className}`}
+      className={`flex w-full items-center justify-center gap-2 rounded-lg bg-accent-purple px-4 py-3 font-semibold text-white shadow-base transition hover:bg-accent-purple/90 focus:outline-none focus:ring-2 focus:ring-accent-purple/50 disabled:opacity-60 disabled:pointer-events-none ${className}`}
       {...props}
     >
       {loading ? (

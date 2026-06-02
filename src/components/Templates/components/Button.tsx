@@ -22,7 +22,7 @@ const BUTTON_VARIANTS = {
 } as const;
 
 const BUTTON_SIZES = {
-  sm: "px-3 py-1.5 text-[var(--text-sm)]",
+  sm: "px-3 py-1.5 text-[var(--text-base)]",
   default: "px-4 py-2 text-[var(--text-base)]",
   lg: "px-5 py-2.5 md:px-6 md:py-3 text-[var(--text-base)] md:text-[var(--text-lg)]",
   xl: "px-6 py-3 md:px-8 md:py-4 text-[var(--text-lg)] md:text-[var(--text-xl)]",

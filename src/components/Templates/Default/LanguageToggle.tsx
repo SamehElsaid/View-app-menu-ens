@@ -34,7 +34,7 @@ export const LanguageToggle: React.FC = () => {
     >
       <span className="flex items-center gap-2">
         <FiGlobe className="text-lg transition-transform duration-300 group-hover:rotate-180" />
-        <span className="text-sm font-semibold tracking-wide">
+        <span className="text-base font-semibold tracking-wide">
           {locale === "ar" ? "EN" : "عربي"}
         </span>
       </span>

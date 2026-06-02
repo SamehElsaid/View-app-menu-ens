@@ -12,6 +12,10 @@ import {
 } from "@/store/authMenu/authMenu";
 import { useAppDispatch } from "@/store/hooks";
 import Loader from "@/components/Global/Loader";
+import {
+  sortCategories,
+  sortMenuItemsForDisplay,
+} from "@/lib/menuCategoryOrder";
 
 type Props = {
   menu: MenuItem[] | null;
@@ -31,11 +35,16 @@ export default function UseDispatchMenu({
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
+    const sortedCategories = categories ? sortCategories(categories) : null;
     if (menu) {
-      dispatch(SET_ACTIVE_MENU(menu));
+      dispatch(
+        SET_ACTIVE_MENU(
+          sortMenuItemsForDisplay(menu, sortedCategories ?? undefined),
+        ),
+      );
     }
-    if (categories) {
-      dispatch(SET_CATEGORIES(categories));
+    if (sortedCategories) {
+      dispatch(SET_CATEGORIES(sortedCategories));
     }
     if (menuInfo) {
       dispatch(SET_MENU_INFO(menuInfo));

@@ -25,12 +25,17 @@ export default function Footer({
   menuInfo: MenuInfo | null;
 }) {
   const locale = useLocale();
+  const isAr = locale === "ar";
   const t = useTranslations("footer");
   const menuT = useTranslations("menu");
 
   const currentYear = new Date().getFullYear();
+  const menuName = menuInfo?.name?.trim() || menuT("ourMenu");
 
-  // Check if there are any working hours set
+  const footerDescription = isAr
+    ? menuInfo?.footerDescriptionAr?.trim()
+    : menuInfo?.footerDescriptionEn?.trim();
+
   const hasWorkingHours = useMemo(() => {
     if (!workingHours) return false;
     return DAY_KEYS.some((day) => {
@@ -70,124 +75,135 @@ export default function Footer({
   return (
     <footer
       id="footer"
-      className="scroll-mt-28 py-16 bg-white border-t border-purple-50 text-center mt-20"
+      className="scroll-mt-20 mt-16 border-t border-purple-50 bg-white py-12 sm:py-16"
     >
-      <div className="flex items-center justify-center gap-2 text-purple-600 mb-8">
-        <div className="text-2xl font-black tracking-tighter flex items-center gap-2 justify-center">
-          {menuInfo?.footerLogo ? (
-            <LoadImage
-              src={menuInfo?.footerLogo || ""}
-              alt={menuInfo?.name || ""}
-              disableLazy={true}
-              fill
-              className="relative w-10 h-10 rounded-full object-contain transition-transform duration-300 group-hover:scale-110"
-            />
-          ) : (
-            <>
-              <Icon
-                name="restaurant-2-line"
-                className="relative text-(--text-3xl) transition-transform duration-300 group-hover:scale-110"
+      <div className="mx-auto w-full max-w-4xl px-4 sm:px-6">
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-4 flex items-center justify-center gap-2 text-purple-600">
+            {menuInfo?.footerLogo ? (
+              <LoadImage
+                src={menuInfo.footerLogo}
+                alt={menuInfo?.name || ""}
+                disableLazy
+                fill
+                className="relative h-10 w-10 rounded-full object-contain"
               />
-              <span className="text-2xl font-black tracking-tighter">
-                {menuInfo?.name || ""}
-              </span>
-            </>
-          )}
-        </div>
-      </div>
-
-      {menuInfo?.footerDescriptionAr && (
-        <p className="mb-8 text-zinc-500 font-medium max-w-xl mx-auto px-4">
-          {locale === "ar"
-            ? menuInfo?.footerDescriptionAr
-            : menuInfo?.footerDescriptionEn || ""}
-        </p>
-      )}
-
-      {/* Working Hours */}
-      {hasWorkingHours && workingHours && (
-        <div className="mt-8 mb-8">
-          <h4 className="text-lg font-bold mb-4 flex items-center justify-center gap-2">
-            <Icon name="time-line" className="text-xl" />
-            {t("workingHours")}
-          </h4>
-          <div className="inline-grid grid-cols-2 gap-x-8 gap-y-2 text-sm text-start">
-            {DAY_KEYS.map((day) => {
-              const d = workingHours[day];
-              const hasHours = d && !d.closed && d.open && d.close;
-              const isClosed = d?.closed;
-
-              if (!hasHours && !isClosed) return null;
-
-              return (
-                <div key={day} className="contents">
-                  <span className="font-semibold text-zinc-700">
-                    {t(`days.${day}`)}
-                  </span>
-                  {isClosed ? (
-                    <span className="text-red-400 font-medium">
-                      {t("closed")}
-                    </span>
-                  ) : (
-                    <span className="text-zinc-500">
-                      {d!.open} - {d!.close}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
+            ) : (
+              <>
+                <Icon
+                  name="restaurant-2-line"
+                  className="text-(--text-3xl)"
+                />
+                <span className="text-lg font-black tracking-tighter md:text-xl">
+                  {menuInfo?.name || ""}
+                </span>
+              </>
+            )}
           </div>
-        </div>
-      )}
 
-      {socialLinks.length > 0 && (
-        <div className="mt-8">
-          <h4 className="text-lg font-bold mb-4">{t("followUs")}</h4>
-          <div className="flex justify-center gap-8">
-            {socialLinks.map((social) => (
+          {footerDescription ? (
+            <p
+              dir={isAr ? "rtl" : "ltr"}
+              className="mb-8 max-w-2xl text-balance wrap-break-word text-base font-medium text-zinc-500"
+            >
+              {footerDescription}
+            </p>
+          ) : null}
+
+          {hasWorkingHours && workingHours ? (
+            <div className="mb-8 w-full">
+              <h4 className="mb-4 flex items-center justify-center gap-2 !text-base font-bold">
+                <Icon name="time-line" className="text-xl" />
+                {t("workingHours")}
+              </h4>
+              <div
+                dir={isAr ? "rtl" : "ltr"}
+                className="mx-auto inline-grid grid-cols-2 gap-x-8 gap-y-2 text-start text-base"
+              >
+                {DAY_KEYS.map((day) => {
+                  const d = workingHours[day];
+                  const hasHours = d && !d.closed && d.open && d.close;
+                  const isClosed = d?.closed;
+
+                  if (!hasHours && !isClosed) return null;
+
+                  return (
+                    <div key={day} className="contents">
+                      <span className="font-semibold text-zinc-700">
+                        {t(`days.${day}`)}
+                      </span>
+                      {isClosed ? (
+                        <span className="font-medium text-red-400">
+                          {t("closed")}
+                        </span>
+                      ) : (
+                        <span dir="ltr" className="text-zinc-500">
+                          {d!.open} - {d!.close}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {socialLinks.length > 0 ? (
+            <div className="mb-4 w-full">
+              <h4 className="mb-4 !text-base font-bold">{t("followUs")}</h4>
+              <div className="flex flex-wrap items-center justify-center gap-6">
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.platform}
+                    href={social.href || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative flex items-center gap-2 font-bold text-zinc-400 transition-colors hover:text-purple-600"
+                    aria-label={social.platform}
+                  >
+                    <Icon name={social.icon} className="text-xl" />
+                    <span className="capitalize">{social.platform}</span>
+                    <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-purple-600 transition-all group-hover:w-full" />
+                  </a>
+                ))}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className=" border-t border-purple-50 pt-4">
+          <div
+            dir={isAr ? "rtl" : "ltr"}
+            className="flex flex-col items-center justify-between text-center sm:flex-row sm:text-start"
+          >
+            <p className="text-balance wrap-break-word text-base font-medium text-zinc-400">
+              {isAr ? (
+                <>
+                  {t("rights")}{" "}
+                  <span dir="ltr">© {currentYear} {menuName}</span>
+                </>
+              ) : (
+                <>© {currentYear} {menuName}. {t("rights")}</>
+              )}
+            </p>
+
+            <p
+              dir="ltr"
+              className="flex items-center justify-center gap-1.5 text-base text-(--text-muted)"
+            >
+              <span>{t("designedBy")}</span>
               <a
-                key={social.platform}
-                href={social.href || "#"}
+                href="https://www.ensmenu.com/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-zinc-400 font-bold hover:text-purple-600 transition-colors relative group"
+                className="font-semibold text-(--bg-main) transition-colors hover:underline"
               >
-                <Icon name={social.icon} className="text-xl" />
-                {social.platform}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-purple-600 transition-all group-hover:w-full" />
+                ENSMenu
               </a>
-            ))}
+            </p>
           </div>
         </div>
-      )}
-
-      <p className="mt-8 text-zinc-400 font-medium">
-        © {currentYear} {menuT("ourMenu")}. {t("rights")}
-      </p>
-
-      <p
-        className="
-        flex items-center justify-center
-        gap-1 mt-2
-        text-xs sm:text-sm
-        text-(--text-muted)
-      "
-      >
-        <span>{t("designedBy")}</span>
-        <a
-          href="https://www.facebook.com/ENSEGYPTEG"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="
-            font-semibold
-            text-(--bg-main)
-            hover:underline
-            transition
-          "
-        >
-          ENS
-        </a>
-      </p>
+      </div>
     </footer>
   );
 }

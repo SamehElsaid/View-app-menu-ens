@@ -60,7 +60,7 @@ export default function NavBar() {
             </svg>
           </div>
         )}
-        <span className="font-logo text-lg tracking-[0.15em] text-lavender sm:text-xl sm:tracking-[0.2em]">
+        <span className="font-body text-2xl tracking-[0.15em] text-lavender sm:text-2xl sm:tracking-[0.2em]">
           {displayName}
         </span>
       </a>
@@ -69,7 +69,7 @@ export default function NavBar() {
         <li>
           <a
             href="#menu"
-            className="relative text-[0.65rem] uppercase tracking-[0.12em] text-text-secondary no-underline transition-colors duration-300 before:absolute before:-bottom-1 before:left-0 before:h-px before:w-0 before:bg-lavender before:transition-[width] before:duration-300 hover:before:w-full sm:text-xs sm:tracking-[0.15em]"
+            className="relative text-[15px] uppercase tracking-[0.12em] text-text-secondary no-underline transition-colors duration-300 before:absolute before:-bottom-1 before:left-0 before:h-px before:w-0 before:bg-lavender before:transition-[width] before:duration-300 hover:before:w-full sm:text-[15px] sm:tracking-[0.15em]"
           >
             {locale === "ar" ? "القائمة" : "Menu"}
           </a>

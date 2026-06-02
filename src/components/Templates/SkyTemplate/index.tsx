@@ -12,6 +12,8 @@ import { MenuItem } from "@/types/menu";
 import Footer from "./Footer";
 import MenuCard from "./MenuCard";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
+import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
+import { buildCategorySections } from "@/lib/menuCategoryOrder";
 import {
   isValidSkyCartItemId,
   readSkyCartFromCookie,
@@ -36,27 +38,12 @@ function SkyTemplate() {
 
   const menuItems = useMemo(() => storeMenuItems ?? [], [storeMenuItems]);
 
-  const editedCategories = useMemo(
-    () => [...(storeCategories ?? [])],
-    [storeCategories],
+  const editedCategories = storeCategories ?? [];
+
+  const allCategoriesArray = useMemo(
+    () => buildCategorySections(editedCategories, menuItems),
+    [editedCategories, menuItems],
   );
-
-  const allCategoriesArray = useMemo(() => {
-    const itemsByCategory = new Map<
-      number,
-      { categoryId: number; items: MenuItem[] }
-    >();
-
-    menuItems.forEach((item) => {
-      const { categoryId } = item;
-      if (!itemsByCategory.has(categoryId)) {
-        itemsByCategory.set(categoryId, { categoryId, items: [] });
-      }
-      itemsByCategory.get(categoryId)!.items.push(item);
-    });
-
-    return Array.from(itemsByCategory.values());
-  }, [menuItems]);
 
   useEffect(() => {
     writeSkyCartToCookie(cart);
@@ -134,7 +121,10 @@ function SkyTemplate() {
   const subtitle = customizationsHeroSubtitle || menuInfo?.description;
 
   return (
-    <main className="min-h-screen  bg-white text---text-main)">
+    <main
+      className="menu-template font-body min-h-screen  bg-white text---text-main)"
+      style={{ fontFamily: menuTemplateFontFamily(locale) }}
+    >
       <style jsx global>
         {globalStyle}
       </style>
@@ -164,8 +154,7 @@ function SkyTemplate() {
                 <MenuCategoryButton
                   category={{
                     ...category,
-                    image:
-                      category.image === null ? undefined : category.image,
+                    image: category.image === null ? undefined : category.image,
                   }}
                   isActive={category.id === activeCategory}
                   onClick={() => setActiveCategory(category.id as number)}
