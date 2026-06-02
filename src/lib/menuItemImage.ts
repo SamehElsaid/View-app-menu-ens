@@ -4,11 +4,18 @@ import placeholder from "@/components/img/30690.png";
 export const DEFAULT_MENU_ITEM_IMAGE_SRC = placeholder.src;
 
 function resolveAssetUrl(trimmed: string): string {
-  if (
-    trimmed.startsWith("http://") ||
-    trimmed.startsWith("https://") ||
-    trimmed.startsWith("data:")
-  ) {
+  const baseApi = process.env.NEXT_PUBLIC_BASE_URL;
+  const baseHost = baseApi?.replace(/\/api\/?$/, "") ?? "";
+
+  if (trimmed.startsWith("data:")) {
+    return trimmed;
+  }
+
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    const uploadsIndex = trimmed.indexOf("/uploads/");
+    if (uploadsIndex !== -1 && baseHost) {
+      return `${baseHost}${trimmed.slice(uploadsIndex)}`;
+    }
     return trimmed;
   }
 
@@ -17,10 +24,8 @@ function resolveAssetUrl(trimmed: string): string {
     return trimmed;
   }
 
-  const baseApi = process.env.NEXT_PUBLIC_BASE_URL;
-  if (!baseApi) return trimmed;
+  if (!baseHost) return trimmed;
 
-  const baseHost = baseApi.replace(/\/api\/?$/, "");
   if (trimmed.startsWith(baseHost)) {
     return trimmed;
   }
