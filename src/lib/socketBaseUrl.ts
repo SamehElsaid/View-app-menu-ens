@@ -1,15 +1,15 @@
 /**
  * Socket.IO runs on the same Node process as the REST API (no `/api` path).
  *
- * Prefer `NEXT_PUBLIC_SOCKET_URL` in production (e.g. https://api.ensmenu.com).
+ * Prefer `NEXT_PUBLIC_SOCKET_URL` in production (e.g. https://ensapi.ensbot.net).
  *
  * If `NEXT_PUBLIC_BASE_URL` points at the marketing domain (ensmenu.com) instead
  * of the API subdomain, we remap known apex hosts to `api.*` so WebSocket hits
  * the backend that actually serves Socket.IO.
  */
 const API_HOST_BY_SITE_HOST: Record<string, string> = {
-  "ensmenu.com": "api.ensmenu.com",
-  "www.ensmenu.com": "api.ensmenu.com",
+  "ensmenu.com": "ensapi.ensbot.net",
+  "www.ensmenu.com": "ensapi.ensbot.net",
   "ensmenu.ens.eg": "api.ensmenu.ens.eg",
   "www.ensmenu.ens.eg": "api.ensmenu.ens.eg",
 };
