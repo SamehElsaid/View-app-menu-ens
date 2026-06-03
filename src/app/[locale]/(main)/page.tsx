@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense } from "react";
 import { useAppSelector } from "@/store/hooks";
 import Default from "@/components/Templates/Default";
 import SkyTemplate from "@/components/Templates/SkyTemplate";
@@ -21,31 +21,6 @@ export default function Page() {
   const menu = useAppSelector((state) => state.menu);
   const locale = useLocale();
   const tableCartAllowed = useTableCartAllowed();
-
-  useEffect(() => {
-    // #region agent log
-    fetch("http://127.0.0.1:7773/ingest/063f37bd-1e27-42ea-99bc-275a715baf43", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Debug-Session-Id": "2f5282",
-      },
-      body: JSON.stringify({
-        sessionId: "2f5282",
-        hypothesisId: "H3-H4",
-        location: "page.tsx:client",
-        message: "redux menu state",
-        data: {
-          theme: menu.theme,
-          hasMenuInfo: Boolean(menu.menuInfo),
-          menuActive: menu.menuInfo?.isActive,
-          itemCount: menu.menu?.length ?? 0,
-        },
-        timestamp: Date.now(),
-      }),
-    }).catch(() => {});
-    // #endregion
-  }, [menu.theme, menu.menuInfo, menu.menu]);
 
   const showTemplates =
     menu.menuInfo?.isActive !== false && Boolean(menu.theme);

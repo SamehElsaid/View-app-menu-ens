@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "api.ensmenu.com",
+        hostname: "ensapi.ensbot.net",
       },
       {
         protocol: "http",
