@@ -6,6 +6,7 @@ import { Icon } from "./Icon";
 
 import { WorkingHours, MenuInfo } from "@/types/menu";
 import LoadImage from "@/components/ImageLoad";
+import { useEnsmenuBrandingTracking } from "@/hooks/useEnsmenuBrandingTracking";
 
 const DAY_KEYS: (keyof WorkingHours)[] = [
   "sunday",
@@ -28,6 +29,7 @@ export default function Footer({
   const isAr = locale === "ar";
   const t = useTranslations("footer");
   const menuT = useTranslations("menu");
+  const { onBrandingPointerDown } = useEnsmenuBrandingTracking();
 
   const currentYear = new Date().getFullYear();
   const menuName = menuInfo?.name?.trim() || menuT("ourMenu");
@@ -196,6 +198,7 @@ export default function Footer({
                 href="https://www.ensmenu.com/"
                 target="_blank"
                 rel="noopener noreferrer"
+                onPointerDown={onBrandingPointerDown}
                 className="font-semibold text-(--bg-main) transition-colors hover:underline"
               >
                 ENSMenu

@@ -1,7 +1,10 @@
+"use client";
+
 import { useLocale } from "next-intl";
 import Link from "next/link";
 import { IoLocationOutline, IoCallOutline } from "react-icons/io5";
 import LoadImage from "@/components/ImageLoad";
+import { useEnsmenuBrandingTracking } from "@/hooks/useEnsmenuBrandingTracking";
 
 interface FooterProps {
   menuName?: string;
@@ -44,6 +47,7 @@ const Footer = ({
 }: FooterProps) => {
   const locale = useLocale();
   const isArabic = locale === "ar";
+  const { onBrandingPointerDown } = useEnsmenuBrandingTracking();
   const currentYear = new Date().getFullYear();
 
   // استخراج بيانات الفوتر
@@ -265,6 +269,7 @@ const Footer = ({
                 href="https://www.ensmenu.com/"
                 target="_blank"
                 rel="noopener noreferrer"
+                onPointerDown={onBrandingPointerDown}
                 className="font-semibold text-[#F2B705] hover:underline transition-colors"
               >
                 ENSMenu
