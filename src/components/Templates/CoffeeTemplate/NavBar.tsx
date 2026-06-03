@@ -154,7 +154,7 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
                   />
                 </svg>
                 <span className="text-base font-medium">
-                  {locale === "ar" ? "EN" : "عربي"}
+                  {locale === "ar" ? "EN" : "AR"}
                 </span>
               </button>
             </div>
