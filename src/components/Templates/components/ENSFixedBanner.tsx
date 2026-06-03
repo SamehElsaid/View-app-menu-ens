@@ -49,7 +49,7 @@ export const ENSFixedBanner: React.FC = () => {
           </div>
           <p className="shrink-0 me-1  whitespace-nowrap text-xs font-medium sm:text-base">
             {t("message")}
-            <a href={ENS_WEBSITE_URL+"/auth/register "} target="_blank" rel="noopener noreferrer" className="text-white hover:underline underline">
+            <a onPointerDown={onCtaPointerDown} href={ENS_WEBSITE_URL+"/auth/register "} target="_blank" rel="noopener noreferrer" className="text-white hover:underline underline">
               {t("ctaLink")}
             </a>
           </p>
