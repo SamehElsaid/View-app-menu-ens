@@ -14,7 +14,7 @@ import { useSearchParams } from "next/navigation";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
-import LoadImage from "@/components/ImageLoad";
+import MaintenanceView from "@/components/Global/MaintenanceView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import LinkTo from "@/components/Global/LinkTo";
 import { axiosGet } from "@/shared/axiosCall";
@@ -70,28 +70,10 @@ export default function Page() {
   return (
     <main className="menu-template font-body">
       {menu.menuInfo?.isActive === false ? (
-        <div className="flex min-h-screen items-center justify-center px-4">
-          <div className="w-full max-w-md rounded-xl border bg-white p-6 text-center shadow-md space-y-4">
-            {menu.menuInfo.logo && (
-              <div className="mb-2 flex justify-center">
-                <LoadImage
-                  src={menu.menuInfo.logo}
-                  alt={menu.menuInfo.name}
-                  width={80}
-                  height={80}
-                  className="h-20 w-20 rounded-full object-cover"
-                  disableLazy
-                />
-              </div>
-            )}
-            <h1 className="text-xl font-bold">{menu.menuInfo.name}</h1>
-            <p className="text-base text-gray-700">
-              {locale === "ar"
-                ? "الموقع تحت الصيانة"
-                : "Site under maintenance"}
-            </p>
-          </div>
-        </div>
+        <MaintenanceView
+          name={menu.menuInfo.name ?? ""}
+          logo={menu.menuInfo.logo}
+        />
       ) : showTemplates ? (
         <MenuLogoFallbackProvider logo={menu.menuInfo?.logo ?? null}>
           {menu.theme === "default" && <Default />}
