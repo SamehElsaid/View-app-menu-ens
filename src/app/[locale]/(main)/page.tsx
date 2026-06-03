@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
 import Default from "@/components/Templates/Default";
 import SkyTemplate from "@/components/Templates/SkyTemplate";
@@ -10,20 +10,62 @@ import EmeraldTemplate from "@/components/Templates/EmeraldTemplate";
 import NoirTemplate from "@/components/Templates/NoirTemplate";
 import OceanicTemplate from "@/components/Templates/OceanicTemplate";
 import { useLocale } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import LoadImage from "@/components/ImageLoad";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import LinkTo from "@/components/Global/LinkTo";
+import { axiosGet } from "@/shared/axiosCall";
+
+const menuViewRequests = new Map<string, Promise<boolean>>();
 
 export default function Page() {
   const menu = useAppSelector((state) => state.menu);
   const locale = useLocale();
+  const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
 
   const showTemplates =
     menu.menuInfo?.isActive !== false && Boolean(menu.theme);
+
+  useEffect(() => {
+    const slug = menu.menuInfo?.slug;
+
+    if (!slug) return;
+
+    const searchParamsString = searchParams.toString();
+    const isQrView = searchParams.get("src") === "qr";
+    const trackingKey = `${slug}:${searchParamsString}`;
+
+    const trackMenuView = async () => {
+      let request = menuViewRequests.get(trackingKey);
+
+      if (!request) {
+        request = axiosGet(
+          `/public/menu/${slug}/view`,
+          locale,
+          undefined,
+          isQrView ? { qr: true } : undefined,
+          true,
+        )
+          .then((response) => response.status)
+          .catch(() => false);
+
+        menuViewRequests.set(trackingKey, request);
+      }
+
+      const tracked = await request;
+
+      if (!tracked) {
+        menuViewRequests.delete(trackingKey);
+        return;
+      }
+    };
+
+    void trackMenuView();
+  }, [locale, menu.menuInfo?.slug, searchParams]);
 
   return (
     <main className="menu-template font-body">

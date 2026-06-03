@@ -17,6 +17,10 @@ export const metadata: Metadata = {
   title: "ENSmenu",
   description:
     "ENSmenu is a platform for creating digital menus for restaurants and cafes",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    shortcut: "/favicon.svg",
+  },
 };
 
 // Script to prevent flash of wrong theme
