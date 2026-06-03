@@ -255,13 +255,13 @@ function TracksFeed({
             <p className="music-feed__desc text-brand-tomato/70 transition-colors duration-300">
               {activeDescription}
             </p>
-            <div className="mt-1 text-center">
+            <div className="mt-1 text-center sm:text-start">
               {hasDiscount && discountPercent ? (
                 <span className="mb-1 inline-flex rounded-full bg-brand-coral px-2.5 py-0.5 text-[10px] font-bold uppercase text-white">
                   {isAr ? `${discountPercent}% خصم` : `${discountPercent}% off`}
                 </span>
               ) : null}
-              <div className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-0.5">
+              <div className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-0.5 sm:justify-start">
                 {hasDiscount && currentItem.originalPrice ? (
                   <span className="text-sm font-semibold tabular-nums text-brand-tomato/45 line-through">
                     {currencyLabel} {currentItem.originalPrice}

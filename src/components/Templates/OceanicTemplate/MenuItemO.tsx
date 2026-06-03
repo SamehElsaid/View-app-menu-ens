@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 
 import { useLocale } from "next-intl";
-import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import type { MenuItemOProps } from "@/types/types";
 import LoadImage from "@/components/ImageLoad";
 
@@ -48,7 +47,7 @@ const MenuItemO = ({
         <div className="relative w-full min-h-40 aspect-4/3 overflow-hidden bg-linear-to-br from-[#002433] via-[#002b3a] to-[#003544]">
           <div className="absolute inset-0 z-0 origin-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.035] motion-reduce:transition-none motion-reduce:group-hover:scale-100">
             <LoadImage
-              src={resolveMenuItemImageSrc(item.image)}
+              src={item.image ?? ""}
               alt={nameLabel || displayName || "Menu Item"}
               fill
               className="object-cover"

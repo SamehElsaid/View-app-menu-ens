@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { FooterProps } from "@/types/menu";
 
 import ImageLoad from "@/components/ImageLoad";
+import { useEnsmenuBrandingTracking } from "@/hooks/useEnsmenuBrandingTracking";
 
 export default function Footer({
   menuName,
@@ -24,6 +25,7 @@ export default function Footer({
   const isArabic = locale === "ar";
   const t = useTranslations("footer");
   const menuT = useTranslations("menu");
+  const { onBrandingPointerDown } = useEnsmenuBrandingTracking();
   const currentYear = new Date().getFullYear();
 
   // استخراج بيانات الفوتر
@@ -228,6 +230,7 @@ export default function Footer({
                 href="https://www.ensmenu.com/"
                 target="_blank"
                 rel="noopener noreferrer"
+                onPointerDown={onBrandingPointerDown}
                 className="font-semibold text-sky-600 hover:text-sky-700 hover:underline transition"
               >
                 ENSMenu

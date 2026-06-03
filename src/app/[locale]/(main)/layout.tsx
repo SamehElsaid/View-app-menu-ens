@@ -1,10 +1,12 @@
 import Header from "@/components/Global/Header";
 import UseDispatchMenu from "@/hooks/UseDispatchMenu";
-import { axiosGet } from "@/shared/axiosCall";
+import { resolveMenuSlug } from "@/lib/menuSlug";
+import { serverGet } from "@/shared/serverApi";
 import { MenuItem, MenuInfo, MenuCustomizations, Category } from "@/types/menu";
 import { Ad } from "@/types/Ad";
 import { headers } from "next/headers";
 import { Metadata } from "next";
+import { cache } from "react";
 
 type MenuResponse = {
   menu: MenuInfo;
@@ -14,26 +16,69 @@ type MenuResponse = {
   categories: Category[];
 };
 
-const getMenu = async (locale: string) => {
+type MenuCacheEntry = {
+  expiresAt: number;
+  promise: Promise<MenuResponse | null>;
+};
+
+const MENU_BOOTSTRAP_CACHE_TTL_MS = 15_000;
+const menuRequests = new Map<string, MenuCacheEntry>();
+
+async function fetchMenu(slug: string, locale: string) {
   const headersList = await headers();
-  const host = headersList.get("host") || "";
+  const forwardQuery = headersList.get("x-menu-forward-query") ?? "";
+  const menuApiPath = forwardQuery
+    ? `/public/menu/${slug}?${forwardQuery}`
+    : `/public/menu/${slug}`;
 
-  // memos.ensmenu.com
-  const subdomain = host.split(".")[0];
-
-  const slug = process.env.NEXT_PUBLIC_Dev
-    ? process.env.NEXT_PUBLIC_SUB_DOMAIN
-    : subdomain;
-
-  const response = await axiosGet<{ data: MenuResponse }>(
-    `/public/menu/${slug}`,
+  const response = await serverGet<{ data: MenuResponse }>(
+    menuApiPath,
     locale,
   );
 
-  if (response.status) {
-    return response?.data?.data;
+  return response.status ? response?.data?.data ?? null : null;
+}
+
+const getMenuBySlug = cache((slug: string, locale: string) => {
+  const cacheKey = `${locale}:${slug}`;
+  const cached = menuRequests.get(cacheKey);
+  const now = Date.now();
+
+  if (cached && cached.expiresAt > now) {
+    return cached.promise;
   }
-  return null;
+
+  const promise = fetchMenu(slug, locale)
+    .then((data) => {
+      if (!data) {
+        menuRequests.delete(cacheKey);
+      } else {
+        const current = menuRequests.get(cacheKey);
+        if (current?.promise === promise) {
+          current.expiresAt = Date.now() + MENU_BOOTSTRAP_CACHE_TTL_MS;
+        }
+      }
+      return data;
+    })
+    .catch(() => {
+      menuRequests.delete(cacheKey);
+      return null;
+    });
+
+  menuRequests.set(cacheKey, {
+    expiresAt: Number.POSITIVE_INFINITY,
+    promise,
+  });
+
+  return promise;
+});
+
+const getMenu = async (locale: string) => {
+  const headersList = await headers();
+  const host = headersList.get("host") || "";
+  const { slug } = resolveMenuSlug(host);
+
+  return getMenuBySlug(slug, locale);
 };
 
 const defaultMetadata: Record<string, { title: string; description: string }> =
@@ -49,6 +94,42 @@ const defaultMetadata: Record<string, { title: string; description: string }> =
     },
   };
 
+const DEFAULT_ICON_URL = "/favicon.svg";
+
+function resolveMenuIconUrl(logo: string | null | undefined): string {
+  const trimmed = logo?.trim();
+
+  if (!trimmed) {
+    return DEFAULT_ICON_URL;
+  }
+
+  if (trimmed.startsWith("data:")) {
+    return trimmed;
+  }
+
+  const baseApi = process.env.NEXT_PUBLIC_BASE_URL;
+  const baseHost = baseApi?.replace(/\/api\/?$/, "") ?? "";
+
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    const uploadsIndex = trimmed.indexOf("/uploads/");
+    if (uploadsIndex !== -1 && baseHost) {
+      return `${baseHost}${trimmed.slice(uploadsIndex)}`;
+    }
+    return trimmed;
+  }
+
+  if (!baseHost) {
+    return trimmed;
+  }
+
+  if (trimmed.startsWith(baseHost)) {
+    return trimmed;
+  }
+
+  const normalizedPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return `${baseHost}${normalizedPath}`;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -58,22 +139,26 @@ export async function generateMetadata({
   const lang = locale === "ar" ? "ar" : "en";
   const defaults = defaultMetadata[lang] ?? defaultMetadata.ar;
   const data = await getMenu(locale);
-  const title = data?.menu?.name ?? defaults.title;
-  const description = data?.menu?.description ?? defaults.description;
+  const iconUrl = resolveMenuIconUrl(data?.menu?.logo);
 
   return {
-    title,
-    description,
+    title: defaults.title,
+    description: defaults.description,
+    icons: {
+      icon: [{ url: iconUrl }],
+      shortcut: iconUrl,
+      apple: iconUrl,
+    },
     openGraph: {
-      title,
-      description,
+      title: defaults.title,
+      description: defaults.description,
       locale: lang === "ar" ? "ar_SA" : "en_US",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description,
+      title: defaults.title,
+      description: defaults.description,
     },
     alternates: {
       languages: {

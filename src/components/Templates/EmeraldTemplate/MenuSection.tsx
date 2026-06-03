@@ -5,18 +5,18 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
-import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
 import LoadImage from "@/components/ImageLoad";
 import {
-  SKY_CART_UPDATED_EVENT,
+  subscribeSkyCartUpdated,
   readSkyCartFromCookie,
   upsertSkyCartQuantityFromMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { useAppSelector } from "@/store/hooks";
+import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
 function CategoryTabs({
   categories,
@@ -125,7 +125,6 @@ function EmeraldMenuCard({
   const cardHoverShadow = `0 16px 48px ${hexToRgba(primary, 0.14)}, 0 4px 12px rgba(0,0,0,0.06)`;
   const iconShadow = `0 4px 20px ${hexToRgba(primary, 0.4)}`;
   const imageBg = hexToRgba(primary, 0.06);
-  const imageSrc = resolveMenuItemImageSrc(dish.image);
 
   return (
     <article
@@ -154,7 +153,7 @@ function EmeraldMenuCard({
         style={{ backgroundColor: imageBg }}
       >
         <LoadImage
-          src={imageSrc}
+          src={dish.image ?? ""}
           alt={locale === "ar" ? dish.nameAr : dish.nameEn}
           fill
           className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.25,0.46,0.45,0.94)] group-hover:scale-[1.06]"
@@ -325,8 +324,7 @@ function EmeraldDishModal({
       setInCartQty(c[dish.id]?.quantity ?? 0);
     };
     sync();
-    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return subscribeSkyCartUpdated(sync);
   }, [dish]);
 
   const backdrop = hexToRgba(primary, 0.45);
@@ -357,7 +355,7 @@ function EmeraldDishModal({
           style={{ backgroundColor: imageBg }}
         >
           <LoadImage
-            src={resolveMenuItemImageSrc(dish.image)}
+            src={dish.image ?? ""}
             alt={locale === "ar" ? dish.nameAr : dish.nameEn}
             fill
             className="object-cover"
@@ -510,6 +508,7 @@ export default function MenuSection({
   currency: string;
 }) {
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
+  const { openItem } = useTrackMenuItemClick();
   const [activeCategory, setActiveCategory] = useState(0);
   const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const locale = useLocale();
@@ -526,8 +525,7 @@ export default function MenuSection({
   useEffect(() => {
     const sync = () => setCartById(readSkyCartFromCookie());
     sync();
-    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return subscribeSkyCartUpdated(sync);
   }, []);
 
   const handleAddToCartCard = (dish: MenuItem, quantity: number) => {
@@ -599,7 +597,7 @@ export default function MenuSection({
             key={dish.id}
             dish={dish}
             index={i}
-            onClick={setSelectedDish}
+            onClick={(dish) => openItem(dish, setSelectedDish)}
             currencyLabel={currencyLabel}
             isTableOrder={isTableOrder}
             cartQuantity={cartById[dish.id]?.quantity ?? 0}

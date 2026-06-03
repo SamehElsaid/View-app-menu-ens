@@ -11,12 +11,13 @@ import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import type { MenuItem } from "@/types/menu";
 import {
-  SKY_CART_UPDATED_EVENT,
   readSkyCartFromCookie,
+  subscribeSkyCartUpdated,
   upsertSkyCartQuantityFromMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
 const EMPTY_MENU: MenuItem[] = [];
 
@@ -31,6 +32,7 @@ const MenuSectionO = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSticky, setIsSticky] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const { openItem } = useTrackMenuItemClick();
   const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const topSentinelRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
@@ -81,8 +83,7 @@ const MenuSectionO = () => {
   useEffect(() => {
     const sync = () => setCartById(readSkyCartFromCookie());
     sync();
-    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return subscribeSkyCartUpdated(sync);
   }, []);
 
   const handleAddToCart = (item: MenuItem, quantity: number) => {
@@ -200,7 +201,7 @@ const MenuSectionO = () => {
                     item={item}
                     index={index}
                     currency={currency}
-                    onClick={setSelectedItem}
+                    onClick={(item) => openItem(item, setSelectedItem)}
                     isTableOrder={isTableOrder}
                     cartQuantity={cartById[item.id]?.quantity ?? 0}
                     onAddToCart={handleAddToCart}

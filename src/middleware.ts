@@ -24,8 +24,15 @@ export default function middleware(request: NextRequest) {
     }
   }
 
-
-  return createMiddleware(routing)(request);
+  const intlResponse = createMiddleware(routing)(request);
+  const forwardQuery = request.nextUrl.searchParams.toString();
+  if (forwardQuery) {
+    intlResponse.headers.set("x-menu-forward-query", forwardQuery);
+  }
+  if (request.nextUrl.searchParams.get("src") === "qr") {
+    intlResponse.headers.set("x-menu-entry-src", "qr");
+  }
+  return intlResponse;
 }
 
 export const config = {

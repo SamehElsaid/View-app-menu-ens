@@ -13,10 +13,11 @@ import Footer from "./Footer";
 import MenuCard from "./MenuCard";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
 import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
+import { buildCategorySections } from "@/lib/menuCategoryOrder";
 import {
-  SKY_CART_UPDATED_EVENT,
   isValidSkyCartItemId,
   readSkyCartFromCookie,
+  subscribeSkyCartUpdated,
   writeSkyCartToCookie,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
@@ -37,40 +38,20 @@ function SkyTemplate() {
 
   const menuItems = useMemo(() => storeMenuItems ?? [], [storeMenuItems]);
 
-  const editedCategories = useMemo(
-    () => [...(storeCategories ?? [])],
-    [storeCategories],
+  const editedCategories = storeCategories ?? [];
+
+  const allCategoriesArray = useMemo(
+    () => buildCategorySections(editedCategories, menuItems),
+    [editedCategories, menuItems],
   );
-
-  const allCategoriesArray = useMemo(() => {
-    const itemsByCategory = new Map<
-      number,
-      { categoryId: number; items: MenuItem[] }
-    >();
-
-    menuItems.forEach((item) => {
-      const { categoryId } = item;
-      if (!itemsByCategory.has(categoryId)) {
-        itemsByCategory.set(categoryId, { categoryId, items: [] });
-      }
-      itemsByCategory.get(categoryId)!.items.push(item);
-    });
-
-    return Array.from(itemsByCategory.values());
-  }, [menuItems]);
 
   useEffect(() => {
     writeSkyCartToCookie(cart);
   }, [cart]);
 
   useEffect(() => {
-    const handleCartUpdated = () => {
-      setCart(readSkyCartFromCookie());
-    };
-
-    window.addEventListener(SKY_CART_UPDATED_EVENT, handleCartUpdated);
-    return () =>
-      window.removeEventListener(SKY_CART_UPDATED_EVENT, handleCartUpdated);
+    const sync = () => setCart(readSkyCartFromCookie());
+    return subscribeSkyCartUpdated(sync);
   }, []);
 
   const updateCartQuantity = (item: MenuItem, nextQuantity: number) => {
@@ -173,8 +154,7 @@ function SkyTemplate() {
                 <MenuCategoryButton
                   category={{
                     ...category,
-                    image:
-                      category.image === null ? undefined : category.image,
+                    image: category.image === null ? undefined : category.image,
                   }}
                   isActive={category.id === activeCategory}
                   onClick={() => setActiveCategory(category.id as number)}

@@ -1624,6 +1624,35 @@ body.music-theme {
   height: min(68vw, 240px);
 }
 
+@media (min-width: 640px) {
+  .music-feed__hero--preview {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(5rem, 12vw, 8rem);
+    padding: 12px 8px 20px;
+    text-align: start;
+  }
+
+  .music-feed__hero--preview .music-feed__vinyl-toggle {
+    flex-shrink: 0;
+    width: auto;
+    margin-inline: 0;
+  }
+
+  .music-feed__hero--preview .music-feed__meta {
+    margin-top: 0;
+    max-width: min(28rem, 100%);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .music-feed__hero--preview .music-vinyl-tile--lg {
+    width: min(220px, 26vw);
+    height: min(220px, 26vw);
+  }
+}
+
 .music-feed__thumb {
   position: relative;
   flex-shrink: 0;

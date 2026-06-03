@@ -8,8 +8,8 @@ import { MenuItem } from "@/types/menu";
 import { arabCurrencies, Currency } from "@/constants/currencies";
 import { useLocale } from "next-intl";
 import { Icon } from "../components/Icon";
-import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import LoadImage from "@/components/ImageLoad";
+import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
 interface MenuCardProps {
   item: MenuItem;
@@ -34,6 +34,7 @@ export const MenuCardDefault = ({
   cartQuantity = 0,
   onAddToCart,
 }: MenuCardProps) => {
+  const { trackItem } = useTrackMenuItemClick();
   const locale = useLocale();
   const direction = locale === "ar" ? "rtl" : "ltr";
   const [isClosing, setIsClosing] = useState(false);
@@ -78,6 +79,7 @@ export const MenuCardDefault = ({
   }, [isModalOpen]);
 
   const handleCardClick = () => {
+    trackItem(item.id);
     setIsModalOpen(item.id);
     setIsClosing(false);
     onClick();
@@ -107,7 +109,7 @@ export const MenuCardDefault = ({
           {/* Circular image */}
           <div className="w-full h-full overflow-hidden  relative z-20 bg-white">
             <LoadImage
-              src={resolveMenuItemImageSrc(item.image)}
+              src={item.image ?? ""}
               alt={item.name}
               fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
@@ -247,7 +249,7 @@ export const MenuCardDefault = ({
             {/* Image Section */}
             <div className="relative h-80 sm:h-96 overflow-hidden">
               <LoadImage
-                src={resolveMenuItemImageSrc(item.image)}
+                src={item.image ?? ""}
                 alt={itemName}
                 fill
                 className="object-cover"

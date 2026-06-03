@@ -9,13 +9,14 @@ import { Category, MenuItem } from "@/types/menu";
 import Footer from "./Footer";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
 import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
+import { sortCategories, sortMenuItems } from "@/lib/menuCategoryOrder";
 
 function CoffeeTemplate() {
   const locale = useLocale();
   const menu = useAppSelector((state) => state.menu);
 
   const categoriesWithItems = useMemo(() => {
-    const categories = menu?.categories || [];
+    const categories = sortCategories(menu?.categories || []);
     const menuItems = menu?.menu || [];
 
     return categories.map((category: Category) => {
@@ -25,11 +26,12 @@ function CoffeeTemplate() {
           item.categoryId === category.id ||
           item.categoryName === category.name,
       );
+      const resolvedItems =
+        itemsFromCategory.length > 0 ? itemsFromCategory : fallbackItems;
 
       return {
         ...category,
-        menuItems:
-          itemsFromCategory.length > 0 ? itemsFromCategory : fallbackItems,
+        menuItems: sortMenuItems(resolvedItems),
       };
     });
   }, [menu?.categories, menu?.menu]);

@@ -563,13 +563,15 @@ export default function Menu({
             className="grid min-w-0 items-start gap-6 sm:gap-8 lg:grid-cols-2 lg:items-center lg:gap-16"
           >
             <div className={isAr ? "lg:order-2" : "lg:order-1"}>
-              <div className="relative mx-auto aspect-[4/3] w-full max-w-md border border-[#eeeeee] bg-white sm:aspect-[4/5] sm:max-w-none lg:max-h-[min(65vh,560px)]">
+              <div className="relative mx-auto aspect-[4/3] w-full max-w-md overflow-hidden rounded-2xl bg-[#fafafa] shadow-[0_16px_48px_-20px_rgba(17,17,17,0.18)] ring-1 ring-black/[0.04] sm:aspect-[4/5] sm:max-w-none sm:rounded-3xl lg:max-h-[min(65vh,560px)]">
                 {current ? (
                   <LoadImage
                     src={resolveMenuItemImageSrc(current.image)}
                     alt={name}
                     fill
-                    className="object-cover"
+                    width={960}
+                    height={1200}
+                    className="object-cover object-center"
                     disableLazy
                   />
                 ) : null}

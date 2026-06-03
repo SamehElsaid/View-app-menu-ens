@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
-import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 import LoadImage from "@/components/ImageLoad";
 import {
@@ -14,12 +13,13 @@ import {
   NOIR_EASE_TW_CLASS,
 } from "./NoirThemeContext";
 import {
-  SKY_CART_UPDATED_EVENT,
+  subscribeSkyCartUpdated,
   readSkyCartFromCookie,
   upsertSkyCartQuantityFromMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
 function categoryTabLabel(cat: Category, locale: "ar" | "en"): string {
   const ar = cat.nameAr?.trim();
@@ -141,7 +141,7 @@ function NoirMenuCard({
           className={`absolute inset-0 origin-bottom transition-transform duration-450 will-change-transform group-hover:scale-[1.05] ${NOIR_EASE_TW_CLASS}`}
         >
           <LoadImage
-            src={resolveMenuItemImageSrc(item.image)}
+            src={item.image ?? ""}
             alt={name}
             fill
             className="object-cover sm:saturate-[0.72] sm:brightness-[0.9]"
@@ -278,8 +278,7 @@ function NoirDetailModal({
       setInCartQty(c[item.id]?.quantity ?? 0);
     };
     sync();
-    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return subscribeSkyCartUpdated(sync);
   }, [item.id]);
 
   return (
@@ -299,7 +298,7 @@ function NoirDetailModal({
       >
         <div className="relative h-[280px] overflow-hidden">
           <LoadImage
-            src={resolveMenuItemImageSrc(item.image)}
+            src={item.image ?? ""}
             alt={name}
             fill
             className="object-cover sm:saturate-[0.72] sm:brightness-[0.9]"
@@ -419,6 +418,7 @@ export default function MenuSectionn({
   currency: string;
 }) {
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
+  const { openItem } = useTrackMenuItemClick();
   const [activeCategory, setActiveCategory] = useState(0);
   const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const locale = useLocale();
@@ -431,8 +431,7 @@ export default function MenuSectionn({
   useEffect(() => {
     const sync = () => setCartById(readSkyCartFromCookie());
     sync();
-    window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
-    return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
+    return subscribeSkyCartUpdated(sync);
   }, []);
 
   const handleAddToCartCard = (item: MenuItem, quantity: number) => {
@@ -472,7 +471,7 @@ export default function MenuSectionn({
             key={item.id}
             item={item}
             idx={idx}
-            onOpen={setSelectedDish}
+            onOpen={(item) => openItem(item, setSelectedDish)}
             currencyLabel={currencyLabel}
             isTableOrder={isTableOrder}
             cartQuantity={cartById[item.id]?.quantity ?? 0}

@@ -2,11 +2,12 @@ import { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const nextConfig: NextConfig = {
+  reactStrictMode: false,
   images: {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "api.ensmenu.com",
+        hostname: "ensapi.ensbot.net",
       },
       {
         protocol: "http",

@@ -1,18 +1,33 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FaGlobe, FaTimes } from "react-icons/fa";
 import { useTranslations } from "next-intl";
+import { useAppSelector } from "@/store/hooks";
+import { isFreeMenuPlan } from "@/lib/menuPlan";
+import { trackFreeBannerEvent } from "@/lib/trackFreeBannerEvent";
 
 const ENS_WEBSITE_URL = "https://ensmenu.com";
-
-// ============================
-// Fixed Bottom Banner Component
-// ============================
 
 export const ENSFixedBanner: React.FC = () => {
   const t = useTranslations("ensBanner");
   const [isVisible, setIsVisible] = useState(true);
+  const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const slug = menuInfo?.slug?.trim() ?? "";
+  const isFree = isFreeMenuPlan(menuInfo?.ownerPlanType);
+  const impressionSent = useRef(false);
+
+  useEffect(() => {
+    if (!isVisible || !isFree || !slug || impressionSent.current) return;
+    impressionSent.current = true;
+    trackFreeBannerEvent(slug, "impression");
+  }, [isVisible, isFree, slug]);
+
+  const onCtaPointerDown = useCallback(() => {
+    if (isFree && slug) {
+      trackFreeBannerEvent(slug, "click");
+    }
+  }, [isFree, slug]);
 
   if (!isVisible) return null;
 
@@ -32,16 +47,20 @@ export const ENSFixedBanner: React.FC = () => {
             <FaGlobe className="text-base" aria-hidden />
             <span className="text-base font-bold">ENS</span>
           </div>
-          <p className="shrink-0 whitespace-nowrap text-xs font-medium sm:text-base">
+          <p className="shrink-0 me-1  whitespace-nowrap text-xs font-medium sm:text-base">
             {t("message")}
+            <a onPointerDown={onCtaPointerDown} href={ENS_WEBSITE_URL+"/auth/register "} target="_blank" rel="noopener noreferrer" className="text-white hover:underline underline">
+              {t("ctaLink")}
+            </a>
           </p>
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <a
-            href={ENS_WEBSITE_URL}
+            href={ENS_WEBSITE_URL+"/auth/register"}
             target="_blank"
             rel="noopener noreferrer"
+            onPointerDown={onCtaPointerDown}
             className="
               inline-flex items-center gap-1
               bg-white text-purple-700

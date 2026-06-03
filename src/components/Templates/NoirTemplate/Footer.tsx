@@ -8,6 +8,7 @@ import { FaXTwitter } from "react-icons/fa6";
 import { useAppSelector } from "@/store/hooks";
 import type { WorkingHours } from "@/types/menu";
 import LoadImage from "@/components/ImageLoad";
+import { useEnsmenuBrandingTracking } from "@/hooks/useEnsmenuBrandingTracking";
 
 const DAY_KEYS: (keyof WorkingHours)[] = [
   "sunday",
@@ -23,6 +24,7 @@ export default function Footer() {
   const locale = useLocale();
   const t = useTranslations("footer");
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const { onBrandingPointerDown } = useEnsmenuBrandingTracking();
 
   const displayName = menuInfo?.name?.trim() || "NØIR";
   const year = new Date().getFullYear();
@@ -229,6 +231,7 @@ export default function Footer() {
               href="https://www.ensmenu.com/"
               target="_blank"
               rel="noopener noreferrer"
+              onPointerDown={onBrandingPointerDown}
               className="font-medium text-lavender transition-colors hover:underline"
             >
               ENSMenu

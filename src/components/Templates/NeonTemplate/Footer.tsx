@@ -1,9 +1,12 @@
+"use client";
+
 import React from "react";
 import { useLocale } from "next-intl";
 import { FooterProps } from "@/types/menu";
 import { FaFacebookF, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import LoadImage from "@/components/ImageLoad";
+import { useEnsmenuBrandingTracking } from "@/hooks/useEnsmenuBrandingTracking";
 
 type NeonFooterProps = FooterProps & {
   primaryColor?: string;
@@ -30,6 +33,7 @@ export const Footer: React.FC<NeonFooterProps> = ({
   const locale = useLocale();
   const currentYear = new Date().getFullYear();
   const isArabic = locale === "ar";
+  const { onBrandingPointerDown } = useEnsmenuBrandingTracking();
 
   // استخراج بيانات الفوتر
   const footerDescription = isArabic
@@ -289,6 +293,7 @@ export const Footer: React.FC<NeonFooterProps> = ({
                 href="https://www.ensmenu.com/"
                 target="_blank"
                 rel="noopener noreferrer"
+                onPointerDown={onBrandingPointerDown}
                 className="font-semibold transition-colors hover:underline"
                 style={{ color: primaryColor }}
               >

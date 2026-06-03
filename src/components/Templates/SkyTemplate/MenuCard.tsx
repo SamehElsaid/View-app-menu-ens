@@ -6,6 +6,7 @@ import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import LoadImage from "@/components/ImageLoad";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
 interface MenuCardProps {
   item: MenuItem;
@@ -28,6 +29,7 @@ export default function MenuCard({
   decreaseLabel,
   onAddToCart,
 }: MenuCardProps) {
+  const { trackItem } = useTrackMenuItemClick();
   const locale = useLocale();
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
@@ -75,6 +77,7 @@ export default function MenuCard({
   }, [isModalOpen]);
 
   const handleCardClick = () => {
+    trackItem(item.id);
     setIsModalOpen(true);
     setIsClosing(false);
     onClick();
