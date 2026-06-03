@@ -15,7 +15,6 @@ import { useSearchParams } from "next/navigation";
 import {
   FiCheck,
   FiChevronDown,
-  FiMessageCircle,
   FiSend,
   FiX,
 } from "react-icons/fi";
@@ -112,6 +111,7 @@ type StaffCallPayload = {
 
 const NAME_STORAGE_KEY = "ensmenu_ai_order_customer_name";
 const BETA_NOTICE_SESSION_KEY = "ensmenu_ai_order_beta_notice_v4";
+const AI_AVATAR_SRC = "/images/AiAvatar.png";
 
 /** Per menu + mode so free/paid menus and discovery/order do not share n8n session. */
 function buildChatSessionStorageKey(
@@ -1681,10 +1681,17 @@ export default function OrderChatbot({
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-4 py-3 text-white shadow-[0_16px_30px_rgba(139,92,246,0.35)] hover:opacity-95 transition"
+          className="group flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-white p-1 shadow-[0_8px_24px_rgba(139,92,246,0.25)] ring-2 ring-violet-200 transition hover:scale-105 hover:opacity-95"
+          aria-label={labels.button}
         >
-          <FiMessageCircle className="h-5 w-5" />
-          <span className="text-sm font-semibold">{labels.button}</span>
+          <img
+            src={AI_AVATAR_SRC}
+            alt=""
+            width={56}
+            height={56}
+            className="h-full w-full rounded-full object-cover"
+            aria-hidden="true"
+          />
         </button>
       )}
     </div>
