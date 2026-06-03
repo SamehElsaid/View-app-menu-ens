@@ -4,10 +4,12 @@ import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
 import LoadImage from "@/components/ImageLoad";
+import { useEnsmenuBrandingTracking } from "@/hooks/useEnsmenuBrandingTracking";
 
 export default function Footer() {
   const locale = useLocale() as "ar" | "en";
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const { onBrandingPointerDown } = useEnsmenuBrandingTracking();
   const { primary, secondary } = useEmeraldTheme();
 
   const siteName = menuInfo?.name?.trim();
@@ -93,6 +95,7 @@ export default function Footer() {
             target="_blank"
             rel="noopener noreferrer"
             dir="ltr"
+            onPointerDown={onBrandingPointerDown}
             className="font-medium hover:underline transition-colors shrink-0"
             style={{ color: primary }}
           >

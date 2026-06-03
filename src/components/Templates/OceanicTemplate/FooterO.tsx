@@ -10,6 +10,7 @@ import { useAppSelector } from "@/store/hooks";
 import type { WorkingHours } from "@/types/menu";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import LoadImage from "@/components/ImageLoad";
+import { useEnsmenuBrandingTracking } from "@/hooks/useEnsmenuBrandingTracking";
 
 const DAY_KEYS: (keyof WorkingHours)[] = [
   "sunday",
@@ -26,6 +27,7 @@ const Footer = () => {
   const isAr = locale === "ar";
   const t = useTranslations("footer");
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const { onBrandingPointerDown } = useEnsmenuBrandingTracking();
 
   const displayName = menuInfo?.name?.trim() || "Oceanic";
   const year = new Date().getFullYear();
@@ -329,6 +331,7 @@ const Footer = () => {
                 href="https://www.ensmenu.com/"
                 target="_blank"
                 rel="noopener noreferrer"
+                onPointerDown={onBrandingPointerDown}
                 className="text-cyan-400/70 hover:text-cyan-300 transition-colors font-bold uppercase"
               >
                 ENSMenu

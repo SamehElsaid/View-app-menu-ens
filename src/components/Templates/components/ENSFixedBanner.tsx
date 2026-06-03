@@ -1,18 +1,33 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { FaGlobe, FaTimes } from "react-icons/fa";
 import { useTranslations } from "next-intl";
+import { useAppSelector } from "@/store/hooks";
+import { isFreeMenuPlan } from "@/lib/menuPlan";
+import { trackFreeBannerEvent } from "@/lib/trackFreeBannerEvent";
 
 const ENS_WEBSITE_URL = "https://ensmenu.com";
-
-// ============================
-// Fixed Bottom Banner Component
-// ============================
 
 export const ENSFixedBanner: React.FC = () => {
   const t = useTranslations("ensBanner");
   const [isVisible, setIsVisible] = useState(true);
+  const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const slug = menuInfo?.slug?.trim() ?? "";
+  const isFree = isFreeMenuPlan(menuInfo?.ownerPlanType);
+  const impressionSent = useRef(false);
+
+  useEffect(() => {
+    if (!isVisible || !isFree || !slug || impressionSent.current) return;
+    impressionSent.current = true;
+    trackFreeBannerEvent(slug, "impression");
+  }, [isVisible, isFree, slug]);
+
+  const onCtaPointerDown = useCallback(() => {
+    if (isFree && slug) {
+      trackFreeBannerEvent(slug, "click");
+    }
+  }, [isFree, slug]);
 
   if (!isVisible) return null;
 
@@ -45,6 +60,7 @@ export const ENSFixedBanner: React.FC = () => {
             href={ENS_WEBSITE_URL+"/auth/register"}
             target="_blank"
             rel="noopener noreferrer"
+            onPointerDown={onCtaPointerDown}
             className="
               inline-flex items-center gap-1
               bg-white text-purple-700
