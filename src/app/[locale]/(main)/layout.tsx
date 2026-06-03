@@ -25,8 +25,14 @@ const MENU_BOOTSTRAP_CACHE_TTL_MS = 15_000;
 const menuRequests = new Map<string, MenuCacheEntry>();
 
 async function fetchMenu(slug: string, locale: string) {
+  const headersList = await headers();
+  const forwardQuery = headersList.get("x-menu-forward-query") ?? "";
+  const menuApiPath = forwardQuery
+    ? `/public/menu/${slug}?${forwardQuery}`
+    : `/public/menu/${slug}`;
+
   const response = await serverGet<{ data: MenuResponse }>(
-    `/public/menu/${slug}`,
+    menuApiPath,
     locale,
   );
 
