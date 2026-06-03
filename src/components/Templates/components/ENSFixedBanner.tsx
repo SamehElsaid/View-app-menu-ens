@@ -32,14 +32,17 @@ export const ENSFixedBanner: React.FC = () => {
             <FaGlobe className="text-base" aria-hidden />
             <span className="text-base font-bold">ENS</span>
           </div>
-          <p className="shrink-0 whitespace-nowrap text-xs font-medium sm:text-base">
+          <p className="shrink-0 me-1  whitespace-nowrap text-xs font-medium sm:text-base">
             {t("message")}
+            <a href={ENS_WEBSITE_URL+"/auth/register "} target="_blank" rel="noopener noreferrer" className="text-white hover:underline underline">
+              {t("ctaLink")}
+            </a>
           </p>
         </div>
 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <a
-            href={ENS_WEBSITE_URL}
+            href={ENS_WEBSITE_URL+"/auth/register"}
             target="_blank"
             rel="noopener noreferrer"
             className="

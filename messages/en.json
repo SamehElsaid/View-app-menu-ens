@@ -48,8 +48,9 @@
     "DZD": "DZD"
   },
   "ensBanner": {
-    "message": "🚀 Want a free digital menu like this? Click here!",
-    "cta": "EnsMenu",
+    "message": "Want a free digital menu like this? ",
+    "ctaLink": "Click here🚀",
+    "cta": "ENSMenu",
     "dismiss": "Dismiss banner"
   },
   "footer": {
