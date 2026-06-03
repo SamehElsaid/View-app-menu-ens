@@ -20,8 +20,13 @@ const getMenu = async (locale: string) => {
   const host = headersList.get("host") || "";
   const { slug, devMode, configuredSlug, hostname } = resolveMenuSlug(host);
 
+  const forwardQuery = headersList.get("x-menu-forward-query");
+  const menuApiPath = forwardQuery
+    ? `/public/menu/${slug}?${forwardQuery}`
+    : `/public/menu/${slug}`;
+
   const response = await serverGet<{ data: MenuResponse }>(
-    `/public/menu/${slug}`,
+    menuApiPath,
     locale,
   );
 

@@ -19,6 +19,7 @@ import {
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import {
   sortCategories,
   sortMenuItems,
@@ -208,6 +209,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const isTableOrder =
     Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
   const [, setSelectedFoodItem] = useState<MenuItem | null>(null);
+  const { openItem } = useTrackMenuItemClick();
 
   const menuInfo =
     menuData?.menuInfo ??
@@ -403,7 +405,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   itemName={itemName}
                   itemDescription={itemDescription ?? ""}
                   categoryName={categoryName}
-                  onOpen={setSelectedFoodItem}
+                  onOpen={(item) => openItem(item, setSelectedFoodItem)}
                 />
               );
             })

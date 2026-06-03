@@ -5,6 +5,7 @@ import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import type { Ad } from "@/types/Ad";
 import LoadImage from "@/components/ImageLoad";
+import { trackAdClick } from "@/lib/trackAdClick";
 
 const PromoBanner = () => {
   const locale = useLocale();
@@ -15,16 +16,10 @@ const PromoBanner = () => {
     .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
 
   const handleAdClick = (ad: Ad) => {
-    if (!ad.linkUrl) return;
-
-    const apiBase = process.env.NEXT_PUBLIC_BASE_URL;
-    if (apiBase) {
-      fetch(`${apiBase}/admin/ads/${ad.id}/click`, { method: "POST" }).catch(
-        () => undefined,
-      );
+    trackAdClick(ad.id);
+    if (ad.linkUrl) {
+      window.open(ad.linkUrl, "_blank", "noopener,noreferrer");
     }
-
-    window.open(ad.linkUrl, "_blank", "noopener,noreferrer");
   };
 
   if (bannerAds.length === 0) {

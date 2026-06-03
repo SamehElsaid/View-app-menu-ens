@@ -16,6 +16,7 @@ import {
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { useAppSelector } from "@/store/hooks";
+import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
 function CategoryTabs({
   categories,
@@ -507,6 +508,7 @@ export default function MenuSection({
   currency: string;
 }) {
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
+  const { openItem } = useTrackMenuItemClick();
   const [activeCategory, setActiveCategory] = useState(0);
   const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const locale = useLocale();
@@ -595,7 +597,7 @@ export default function MenuSection({
             key={dish.id}
             dish={dish}
             index={i}
-            onClick={setSelectedDish}
+            onClick={(dish) => openItem(dish, setSelectedDish)}
             currencyLabel={currencyLabel}
             isTableOrder={isTableOrder}
             cartQuantity={cartById[dish.id]?.quantity ?? 0}

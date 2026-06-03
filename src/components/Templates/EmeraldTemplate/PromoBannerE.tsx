@@ -9,6 +9,7 @@ import { useAppSelector } from "@/store/hooks";
 import type { Ad } from "@/types/Ad";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
 import LoadImage from "@/components/ImageLoad";
+import { trackAdClick } from "@/lib/trackAdClick";
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -24,13 +25,11 @@ export default function PromoBannerE() {
 
   if (sortedAds.length === 0) return null;
 
-  const handleAdClick = async (ad: Ad) => {
-    if (!ad.linkUrl) return;
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      fetch(`${apiUrl}/admin/ads/${ad.id}/click`, { method: "POST" });
-    } catch {}
-    window.open(ad.linkUrl, "_blank", "noopener,noreferrer");
+  const handleAdClick = (ad: Ad) => {
+    trackAdClick(ad.id);
+    if (ad.linkUrl) {
+      window.open(ad.linkUrl, "_blank", "noopener,noreferrer");
+    }
   };
 
   /* Dark base + brand tint so title stays readable on any photo */

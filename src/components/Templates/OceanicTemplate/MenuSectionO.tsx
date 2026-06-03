@@ -17,6 +17,7 @@ import {
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
 const EMPTY_MENU: MenuItem[] = [];
 
@@ -31,6 +32,7 @@ const MenuSectionO = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSticky, setIsSticky] = useState(false);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const { openItem } = useTrackMenuItemClick();
   const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const topSentinelRef = useRef<HTMLDivElement>(null);
   const bottomSentinelRef = useRef<HTMLDivElement>(null);
@@ -199,7 +201,7 @@ const MenuSectionO = () => {
                     item={item}
                     index={index}
                     currency={currency}
-                    onClick={setSelectedItem}
+                    onClick={(item) => openItem(item, setSelectedItem)}
                     isTableOrder={isTableOrder}
                     cartQuantity={cartById[item.id]?.quantity ?? 0}
                     onAddToCart={handleAddToCart}

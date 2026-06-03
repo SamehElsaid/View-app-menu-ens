@@ -14,6 +14,7 @@ import {
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
 function currencyLabel(code: string, locale: string): string {
   if (locale === "ar") {
@@ -60,6 +61,7 @@ const MenuItem = ({
   const isTableOrder =
     Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
   const titleId = useId();
+  const { trackItem } = useTrackMenuItemClick();
   const [open, setOpen] = useState(false);
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
@@ -303,7 +305,10 @@ const MenuItem = ({
       >
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          if (id) trackItem(id);
+          setOpen(true);
+        }}
         className="group relative w-full p-3 text-start transition-all duration-300 hover:border-[#F2B705]/35 hover:shadow-[0_12px_40px_-8px_rgba(242,183,5,0.12)] focus:border-[#F2B705]/45 focus:outline-none focus:ring-2 focus:ring-[#F2B705]/25 sm:p-4"
       >
         <div className="flex items-center gap-3 sm:gap-4">

@@ -6,6 +6,7 @@ import type { Swiper as SwiperType } from "swiper";
 import { useAppSelector } from "@/store/hooks";
 import { Ad } from "@/types/Ad";
 import LoadImage from "@/components/ImageLoad";
+import { trackAdClick } from "@/lib/trackAdClick";
 import "swiper/css";
 import "swiper/css/pagination";
 
@@ -27,16 +28,9 @@ export default function AdVBanner({ compact = false }: { compact?: boolean }) {
     return null;
   }
 
-  const handleAdClick = async (ad: Ad) => {
+  const handleAdClick = (ad: Ad) => {
+    trackAdClick(ad.id);
     if (ad.linkUrl) {
-      try {
-        await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/ads/${ad.id}/click`,
-          { method: "POST" },
-        );
-      } catch (error) {
-        console.error("Error tracking ad click:", error);
-      }
       window.open(ad.linkUrl, "_blank", "noopener,noreferrer");
     }
   };
