@@ -14,7 +14,7 @@ import RequestStaffButton from "@/components/Global/RequestStaffButton";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import LoadImage from "@/components/ImageLoad";
 import MusicTemplate from "@/components/Templates/MusicTemplate";
-import Arcane from "@/components/Templates/Arcane";
+import ArcaneTemplate from "@/components/Templates/Arcane";
 
 export default function Page() {
   const menu = useAppSelector((state) => state.menu);
@@ -52,12 +52,11 @@ export default function Page() {
           {menu.theme === "sky" && <SkyTemplate />}
           {menu.theme === "neon" && <NeonTemplate />}
           {menu.theme === "coffee" && <CoffeeTemplate />}
-          {/* {menu.theme === "emerald" && <EmeraldTemplate />} */}
+          {menu.theme === "emerald" && <EmeraldTemplate />} 
           {menu.theme === "noir" && <NoirTemplate />}
-          {(menu.theme === "oceanic" || menu.theme === "arcane") && (
-                <Arcane />
-              )}
-          {menu.theme === "emerald" && <MusicTemplate />}
+          {menu.theme === "oceanic" && <OceanicTemplate />}
+          {menu.theme === "arcane" && <ArcaneTemplate />}
+          {menu.theme === "music" && <MusicTemplate />}
           {tableCartAllowed ? (
             <Suspense fallback={null}>
               <RequestStaffButton />
