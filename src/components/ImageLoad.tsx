@@ -7,6 +7,19 @@ import {
   resolveMenuItemImageSrc,
 } from "@/lib/menuItemImage";
 
+function buildResizeUrl(src: string, width?: number, height?: number): string {
+  if (!src.startsWith("http://") && !src.startsWith("https://")) {
+    return src;
+  }
+
+  const params = new URLSearchParams({ url: src });
+
+  if (width) params.set("width", String(width));
+  if (height) params.set("height", String(height));
+
+  return `/api/resize?${params.toString()}`;
+}
+
 function LoadImage({
   src,
   alt,
@@ -34,12 +47,7 @@ function LoadImage({
     src,
     useLogoFallback ? menuLogo : undefined,
   );
-  const resizeUrl =
-    height && width
-      ? `/api/resize?url=${encodeURIComponent(
-          normalizedSrc,
-        )}&width=${width}&height=${height}`
-      : normalizedSrc;
+  const resizeUrl = buildResizeUrl(normalizedSrc, width, height);
 
   return (
     <>
