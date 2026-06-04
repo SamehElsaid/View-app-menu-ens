@@ -9,6 +9,7 @@ import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
 import EmeraldTemplate from "@/components/Templates/EmeraldTemplate";
 import NoirTemplate from "@/components/Templates/NoirTemplate";
 import OceanicTemplate from "@/components/Templates/OceanicTemplate";
+import PharaonicTemplate from "@/components/Templates/PharaonicTemplate";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
@@ -83,6 +84,7 @@ export default function Page() {
           {menu.theme === "emerald" && <EmeraldTemplate />}
           {menu.theme === "noir" && <NoirTemplate />}
           {menu.theme === "oceanic" && <OceanicTemplate />}
+          {menu.theme === "pharaonic" && <PharaonicTemplate />}
           {tableCartAllowed ? (
             <Suspense fallback={null}>
               <RequestStaffButton />
