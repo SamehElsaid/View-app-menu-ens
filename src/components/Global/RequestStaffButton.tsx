@@ -36,6 +36,7 @@ const THEME_BG_MAIN_FALLBACK: Record<string, string> = {
   emerald: "#4c1121",
   noir: "#7c3aed",
   oceanic: "#0ea5e9",
+  pharaonic: "#C9A227",
 };
 
 type StaffCallPayload = {
@@ -129,58 +130,56 @@ export default function RequestStaffButton() {
   const accentMain = useMemo(() => {
     const custom = menuCustomizations?.primaryColor?.trim();
     if (custom) return custom;
-    return (
-      THEME_BG_MAIN_FALLBACK[themeKey] ?? THEME_BG_MAIN_FALLBACK.default
-    );
+    return THEME_BG_MAIN_FALLBACK[themeKey] ?? THEME_BG_MAIN_FALLBACK.default;
   }, [menuCustomizations?.primaryColor, themeKey]);
 
   const labels = useMemo(
     () =>
       isArabic
         ? {
-          cart: "السلة",
-          openCart: "فتح السلة",
-          close: "إغلاق",
-          step1: "الخطوة 1: المنتجات",
-          step2: "الخطوة 2: بيانات الطلب",
-          products: "المنتجات",
-          total: "الإجمالي",
-          empty: "السلة فارغة",
-          next: "التالي",
-          back: "رجوع",
-          name: "اسم العميل",
-          namePlaceholder: "اكتب اسمك",
-          confirm: "تأكيد الطلب",
-          success: "تم تأكيد الطلب بنجاح",
-          enterName: "يرجى إدخال الاسم",
-          orderFailed: "تعذر تأكيد الطلب، يرجى المحاولة مرة أخرى",
-          noValidItems:
-            "لا توجد منتجات صالحة في السلة. أضف منتجات من القائمة أو أعد تحميل الصفحة.",
-          increase: "زيادة",
-          decrease: "تقليل",
-        }
+            cart: "السلة",
+            openCart: "فتح السلة",
+            close: "إغلاق",
+            step1: "الخطوة 1: المنتجات",
+            step2: "الخطوة 2: بيانات الطلب",
+            products: "المنتجات",
+            total: "الإجمالي",
+            empty: "السلة فارغة",
+            next: "التالي",
+            back: "رجوع",
+            name: "اسم العميل",
+            namePlaceholder: "اكتب اسمك",
+            confirm: "تأكيد الطلب",
+            success: "تم تأكيد الطلب بنجاح",
+            enterName: "يرجى إدخال الاسم",
+            orderFailed: "تعذر تأكيد الطلب، يرجى المحاولة مرة أخرى",
+            noValidItems:
+              "لا توجد منتجات صالحة في السلة. أضف منتجات من القائمة أو أعد تحميل الصفحة.",
+            increase: "زيادة",
+            decrease: "تقليل",
+          }
         : {
-          cart: "Cart",
-          openCart: "Open cart",
-          close: "Close",
-          step1: "Step 1: Products",
-          step2: "Step 2: Order details",
-          products: "Products",
-          total: "Total",
-          empty: "Cart is empty",
-          next: "Next",
-          back: "Back",
-          name: "Customer name",
-          namePlaceholder: "Enter your name",
-          confirm: "Confirm order",
-          success: "Order confirmed successfully",
-          enterName: "Please enter your name",
-          orderFailed: "Could not confirm order, please try again",
-          noValidItems:
-            "No valid items in the cart. Add products from the menu or refresh the page.",
-          increase: "Increase",
-          decrease: "Decrease",
-        },
+            cart: "Cart",
+            openCart: "Open cart",
+            close: "Close",
+            step1: "Step 1: Products",
+            step2: "Step 2: Order details",
+            products: "Products",
+            total: "Total",
+            empty: "Cart is empty",
+            next: "Next",
+            back: "Back",
+            name: "Customer name",
+            namePlaceholder: "Enter your name",
+            confirm: "Confirm order",
+            success: "Order confirmed successfully",
+            enterName: "Please enter your name",
+            orderFailed: "Could not confirm order, please try again",
+            noValidItems:
+              "No valid items in the cart. Add products from the menu or refresh the page.",
+            increase: "Increase",
+            decrease: "Decrease",
+          },
     [isArabic],
   );
 
@@ -253,7 +252,10 @@ export default function RequestStaffButton() {
     }, 300);
   }, []);
 
-  useClosePopupWithPopstate({ setOpen: syncDrawerWithURL, mainQuery: "homeMenu" });
+  useClosePopupWithPopstate({
+    setOpen: syncDrawerWithURL,
+    mainQuery: "homeMenu",
+  });
 
   const openDrawer = () => {
     setStep(1);
@@ -275,7 +277,8 @@ export default function RequestStaffButton() {
   }, []);
 
   useEffect(() => {
-    const homeMenu = new URL(window.location.href).searchParams.get("homeMenu") === "true";
+    const homeMenu =
+      new URL(window.location.href).searchParams.get("homeMenu") === "true";
     if (homeMenu) {
       syncDrawerWithURL(true);
     }
@@ -385,19 +388,20 @@ export default function RequestStaffButton() {
       {isDrawerVisible ? (
         <>
           <div
-            className={`fixed h-dvh inset-0 z-99990 bg-black/40 transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"
-              }`}
+            className={`fixed h-dvh inset-0 z-99990 bg-black/40 transition-opacity duration-300 ${
+              open ? "opacity-100" : "opacity-0"
+            }`}
             onClick={closeDrawer}
             aria-hidden
           />
           <aside
-            className={`fixed top-0 z-99991 h-full w-full max-w-md bg-white shadow-2xl transition-transform duration-300 ${open
+            className={`fixed top-0 z-99991 h-full w-full max-w-md bg-white shadow-2xl transition-transform duration-300 ${
+              open
                 ? "translate-x-0"
                 : isArabic
                   ? "-translate-x-full"
                   : "translate-x-full"
-              } ${isArabic ? "left-0" : "right-0"
-              }`}
+            } ${isArabic ? "left-0" : "right-0"}`}
             dir={isArabic ? "rtl" : "ltr"}
             role="dialog"
             aria-modal="true"
@@ -460,7 +464,9 @@ export default function RequestStaffButton() {
                                 <div className="flex items-center gap-1">
                                   <button
                                     type="button"
-                                    onClick={() => updateItemQuantity(item.id, -1)}
+                                    onClick={() =>
+                                      updateItemQuantity(item.id, -1)
+                                    }
                                     className="h-7 w-7 rounded-md border border-(--bg-main)/20 text-(--bg-main) transition hover:bg-(--bg-main)/10"
                                     aria-label={labels.decrease}
                                   >
@@ -471,7 +477,9 @@ export default function RequestStaffButton() {
                                   </span>
                                   <button
                                     type="button"
-                                    onClick={() => updateItemQuantity(item.id, 1)}
+                                    onClick={() =>
+                                      updateItemQuantity(item.id, 1)
+                                    }
                                     className="h-7 w-7 rounded-md border border-(--bg-main)/20 text-(--bg-main) transition hover:bg-(--bg-main)/10"
                                     aria-label={labels.increase}
                                   >
@@ -495,7 +503,9 @@ export default function RequestStaffButton() {
                   </div>
                   <div className="border-t border-(--bg-main)/15 bg-white px-4 py-3">
                     <div className="mb-3 flex items-center justify-between text-base">
-                      <span className="font-medium text-zinc-600">{labels.total}</span>
+                      <span className="font-medium text-zinc-600">
+                        {labels.total}
+                      </span>
                       <strong className="text-base text-(--bg-main)">
                         {totalPrice.toFixed(2)} {getCurrency()}
                       </strong>

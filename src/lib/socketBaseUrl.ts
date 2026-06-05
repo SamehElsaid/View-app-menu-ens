@@ -12,7 +12,6 @@ const API_HOST_BY_SITE_HOST: Record<string, string> = {
   "www.ensmenu.com": "ensapi.ensbot.net",
   "ensmenu.ens.eg": "api.ensmenu.ens.eg",
   "www.ensmenu.ens.eg": "api.ensmenu.ens.eg",
-  
 };
 
 function remapToApiOrigin(originWithoutApi: string): string {
@@ -33,7 +32,9 @@ export function getSocketBaseUrl(): string {
   const explicit = process.env.NEXT_PUBLIC_SOCKET_URL?.trim();
   if (explicit) return explicit.replace(/\/$/, "");
 
-  const base = (process.env.NEXT_PUBLIC_BASE_URL || "").trim().replace(/\/$/, "");
+  const base = (process.env.NEXT_PUBLIC_BASE_URL || "")
+    .trim()
+    .replace(/\/$/, "");
   if (!base) return "";
 
   const withoutApi = base.replace(/\/api\/?$/i, "");

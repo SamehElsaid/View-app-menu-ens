@@ -31,12 +31,9 @@ async function fetchMenu(slug: string, locale: string) {
     ? `/public/menu/${slug}?${forwardQuery}`
     : `/public/menu/${slug}`;
 
-  const response = await serverGet<{ data: MenuResponse }>(
-    menuApiPath,
-    locale,
-  );
+  const response = await serverGet<{ data: MenuResponse }>(menuApiPath, locale);
 
-  return response.status ? response?.data?.data ?? null : null;
+  return response.status ? (response?.data?.data ?? null) : null;
 }
 
 const getMenuBySlug = cache((slug: string, locale: string) => {
