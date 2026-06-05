@@ -14,6 +14,12 @@
     "ourMenu": "Our Menu",
     "enjoyFood": "Enjoy the best food in a peaceful atmosphere and colors that inspire rejuvenation and relaxation."
   },
+  "menuNotFound": {
+    "title": "This menu is not found",
+    "description": "We could not find a menu at this link. Create your own digital menu on ENSMenu.",
+    "registerCta": "Register here",
+    "visitSite": "Visit ENSMenu"
+  },
   "staffCall": {
     "button": "Call staff",
     "tableLabel": "Table {table}",

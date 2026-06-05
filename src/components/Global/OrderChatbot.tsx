@@ -18,6 +18,7 @@ import {
   FiSend,
   FiX,
 } from "react-icons/fi";
+import { FaWhatsapp } from "react-icons/fa";
 import { useAppSelector } from "@/store/hooks";
 import { axiosPost } from "@/shared/axiosCall";
 import {
@@ -82,6 +83,13 @@ import {
   type AiOrderSuggestion,
 } from "@/types/aiOrder";
 import type { MenuItem } from "@/types/menu";
+import {
+  ALLOWED_CONTACT,
+  buildWhatsAppUrl,
+} from "@/lib/assistantConfig";
+
+/** TEMP: hide AI avatar FAB and link to WhatsApp support instead. */
+const TEMP_WHATSAPP_FAB = false;
 
 type UiMessage = {
   id: string;
@@ -126,6 +134,16 @@ function buildChatSessionStorageKey(
 
 const BETA_NOTICE_AR =
   "✨ المساعد الذكي في نسخة تجريبية (Beta) حاليًا وقد يخطئ أحيانًا في فهم بعض الطلبات.";
+
+const WELCOME_MESSAGE: UiMessage = {
+  id: "welcome",
+  role: "bot",
+  text: "أهلاً 👋\nأنا لينا ✨ مساعدة Ensmenu\n\nأقدر أساعدك في الأسعار، المنيو الرقمي، أو تبدأ بسرعة 🍽️",
+};
+
+const TEASER_INTERVAL_MS = 10_000;
+const TEASER_VISIBLE_MS = 7_000;
+const TEASER_INITIAL_DELAY_MS = 5_000;
 
 function hasSeenBetaNotice(): boolean {
   if (typeof window === "undefined") return false;
@@ -232,6 +250,7 @@ export default function OrderChatbot({
               sendOrder: "إرسال الطلب",
               customerNameRequired: "من فضلك اكتب اسمك قبل الإرسال",
               quickChipsAria: "اقتراحات سريعة",
+              contactWhatsApp: "تواصل عبر واتساب",
             }
           : {
               button: "Ask about the menu",
@@ -258,6 +277,7 @@ export default function OrderChatbot({
               sendOrder: "Send order",
               customerNameRequired: "Please enter your name before sending",
               quickChipsAria: "Quick suggestions",
+              contactWhatsApp: "Contact on WhatsApp",
             };
       }
       return isArabic
@@ -286,6 +306,7 @@ export default function OrderChatbot({
             sendOrder: "إرسال الطلب",
             customerNameRequired: "من فضلك اكتب اسمك قبل الإرسال",
             quickChipsAria: "اقتراحات سريعة",
+            contactWhatsApp: "تواصل عبر واتساب",
           }
         : {
             button: "Order with AI",
@@ -312,9 +333,32 @@ export default function OrderChatbot({
             sendOrder: "Send order",
             customerNameRequired: "Please enter your name before sending",
             quickChipsAria: "Quick suggestions",
+            contactWhatsApp: "Contact on WhatsApp",
           };
     },
     [isArabic, isBrowseOnly],
+  );
+
+  const teaserMessages = useMemo(
+    () =>
+      isArabic
+        ? [
+            WELCOME_MESSAGE.text,
+            "محتاج مساعدة في المنيو؟ اسألني 👋",
+            "جاهزة أساعدك تختار أو تطلب 🍽️",
+          ]
+        : [
+            "Hi 👋 I'm Lena ✨ — your Ensmenu assistant.\n\nI can help with pricing, digital menus, or getting started 🍽️",
+            "Need help with the menu? Ask me 👋",
+            "Ready to help you choose or order 🍽️",
+          ],
+    [isArabic],
+  );
+
+  const whatsappFabUrl = useMemo(
+    () =>
+      buildWhatsAppUrl(menuInfo?.socialWhatsapp) ?? ALLOWED_CONTACT.whatsappUrl,
+    [menuInfo?.socialWhatsapp],
   );
 
   const [open, setOpen] = useState(false);
@@ -341,11 +385,57 @@ export default function OrderChatbot({
   const [expandedSuggestionQtyKeys, setExpandedSuggestionQtyKeys] = useState<
     Set<string>
   >(() => new Set());
+  const [teaserVisible, setTeaserVisible] = useState(false);
+  const [teaserIndex, setTeaserIndex] = useState(0);
   const betaShownThisOpenRef = useRef(false);
   const messagesScrollRef = useRef<HTMLDivElement>(null);
   const orderSummaryPanelRef = useRef<HTMLDivElement>(null);
   const checkoutNameInputRef = useRef<HTMLInputElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
+
+  const visibleMessages = useMemo(() => {
+    if (messages.length > 0) return messages;
+    return open ? [WELCOME_MESSAGE] : [];
+  }, [messages, open]);
+
+  const handleOpenChat = useCallback(() => {
+    setTeaserVisible(false);
+    setOpen(true);
+    setMessages((prev) => (prev.length === 0 ? [WELCOME_MESSAGE] : prev));
+  }, []);
+
+  useEffect(() => {
+    if (open || TEMP_WHATSAPP_FAB) {
+      setTeaserVisible(false);
+      return;
+    }
+
+    if (document.visibilityState === "hidden") return;
+
+    let hideTimer: ReturnType<typeof setTimeout>;
+    let intervalId: ReturnType<typeof setInterval>;
+
+    const showTeaser = () => {
+      if (document.visibilityState === "hidden") return;
+      setTeaserVisible(true);
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(() => {
+        setTeaserVisible(false);
+        setTeaserIndex((i) => (i + 1) % teaserMessages.length);
+      }, TEASER_VISIBLE_MS);
+    };
+
+    const initialTimer = setTimeout(() => {
+      showTeaser();
+      intervalId = setInterval(showTeaser, TEASER_INTERVAL_MS);
+    }, TEASER_INITIAL_DELAY_MS);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearTimeout(hideTimer);
+      clearInterval(intervalId);
+    };
+  }, [open, teaserMessages.length]);
 
   const resizeChatInput = useCallback(() => {
     const el = chatInputRef.current;
@@ -377,7 +467,7 @@ export default function OrderChatbot({
     };
   }, [
     open,
-    messages,
+    visibleMessages,
     isSending,
     showBetaCard,
     showInlineCartEditor,
@@ -1192,7 +1282,7 @@ export default function OrderChatbot({
                 </p>
               </div>
             ) : null}
-            {messages.map((m) => (
+            {visibleMessages.map((m) => (
               <Fragment key={m.id}>
                 <div
                   className={`flex transition-all duration-200 ${m.role === "user" ? "justify-end" : "justify-start"}`}
@@ -1678,21 +1768,69 @@ export default function OrderChatbot({
           </div>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="group flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-white p-1 shadow-[0_8px_24px_rgba(139,92,246,0.25)] ring-2 ring-violet-200 transition hover:scale-105 hover:opacity-95"
-          aria-label={labels.button}
-        >
-          <img
-            src={AI_AVATAR_SRC}
-            alt=""
-            width={56}
-            height={56}
-            className="h-full w-full rounded-full object-cover"
-            aria-hidden="true"
-          />
-        </button>
+        <div dir="ltr" className="relative size-14 overflow-visible">
+          {teaserVisible && !TEMP_WHATSAPP_FAB ? (
+            <div
+              role="status"
+              dir={direction}
+              className={`pointer-events-auto absolute bottom-[calc(100%+0.75rem)] w-[min(260px,calc(100vw-5.5rem))] animate-in fade-in slide-in-from-bottom-2 duration-300 ${
+                isArabic ? "right-0" : "left-0"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={handleOpenChat}
+                className={`w-full rounded-2xl border border-zinc-200/90 bg-white px-3.5 py-3 text-start text-[13px] leading-snug font-medium whitespace-pre-line text-zinc-700 shadow-lg shadow-zinc-900/10 transition-colors hover:bg-violet-50/80 ${
+                  isArabic ? "rounded-br-sm" : "rounded-bl-sm"
+                }`}
+              >
+                {teaserMessages[teaserIndex]}
+              </button>
+              <button
+                type="button"
+                onClick={() => setTeaserVisible(false)}
+                aria-label={isArabic ? "إغلاق" : "Dismiss"}
+                className={`absolute -top-1.5 flex size-6 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-sm transition-colors hover:bg-zinc-50 ${
+                  isArabic ? "-left-1.5" : "-right-1.5"
+                }`}
+              >
+                <FiX size={12} />
+              </button>
+            </div>
+          ) : null}
+
+          {TEMP_WHATSAPP_FAB ? (
+            <a
+              href={whatsappFabUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={labels.contactWhatsApp}
+              className="relative flex size-14 items-center justify-center rounded-full border-2 border-white bg-[#25D366] text-white shadow-lg shadow-[#25D366]/35 ring-2 ring-[#25D366]/30 transition hover:scale-105 hover:bg-[#20BD5A] active:scale-95"
+            >
+              <FaWhatsapp className="text-[1.75rem]" aria-hidden />
+            </a>
+          ) : (
+            <button
+              type="button"
+              onClick={handleOpenChat}
+              className="relative size-14 overflow-hidden rounded-full border-2 border-white bg-white p-1 shadow-lg shadow-purple-500/30 ring-2 ring-violet-200 transition hover:scale-105 active:scale-95"
+              aria-label={labels.button}
+            >
+              <img
+                src={AI_AVATAR_SRC}
+                alt=""
+                width={56}
+                height={56}
+                className="size-full rounded-full object-cover object-center"
+                aria-hidden="true"
+              />
+              <span
+                aria-hidden
+                className="absolute -top-0.5 -right-0.5 size-3 rounded-full bg-violet-500/90 ring-2 ring-white"
+              />
+            </button>
+          )}
+        </div>
       )}
     </div>
   );
