@@ -2,7 +2,11 @@
 
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
-import { useArcaneTheme, hexToRgba, ARCANE_RED } from "./ArcaneThemeContext";
+import {
+  ARCANE_RED,
+  ARCANE_DEFAULT_SECONDARY,
+  hexToRgba,
+} from "./ArcaneThemeContext";
 import LoadImage from "@/components/ImageLoad";
 
 const FOOTER_WAVE_PATH =
@@ -29,11 +33,9 @@ export default function Footer() {
   const locale = useLocale() as "ar" | "en";
   const isAr = locale === "ar";
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
-  const { primary, secondary } = useArcaneTheme();
 
   const displayName = menuInfo?.name?.trim() || "Arcane";
   const year = new Date().getFullYear();
-  const gradEnd = secondary === "#FFFFFF" ? primary : secondary;
 
   return (
     <footer className="relative mt-6 overflow-x-clip sm:mt-8" aria-label="Footer">
@@ -41,13 +43,13 @@ export default function Footer() {
         <FooterWave />
       </div>
 
-      <div className="py-5 sm:py-6 md:py-8" style={{ backgroundColor: primary }}>
+      <div className="py-5 sm:py-6 md:py-8" style={{ backgroundColor: ARCANE_RED }}>
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-center sm:gap-5 sm:px-6 md:flex-row md:items-center md:justify-between md:gap-4 md:text-start">
           <div className="flex max-w-full items-center justify-center gap-2 md:justify-start">
             {menuInfo?.logo ? (
               <div
                 className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full ring-1 ring-white/25"
-                style={{ boxShadow: `0 4px 14px ${hexToRgba(primary, 0.4)}` }}
+                style={{ boxShadow: `0 4px 14px ${hexToRgba(ARCANE_RED, 0.4)}` }}
               >
                 <LoadImage
                   src={menuInfo.logo}
@@ -61,7 +63,7 @@ export default function Footer() {
               <div
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-black text-white"
                 style={{
-                  background: `linear-gradient(to bottom right, ${primary}, ${gradEnd})`,
+                  background: `linear-gradient(to bottom right, ${ARCANE_RED}, ${ARCANE_DEFAULT_SECONDARY})`,
                 }}
               >
                 {displayName.charAt(0)}

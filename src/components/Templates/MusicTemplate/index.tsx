@@ -22,6 +22,8 @@ import Navbar from "./Navbar";
 
 import Hero from "./Hero";
 
+import PromoBannerMusic from "./PromoBannerMusic";
+
 import Genres from "./Genres";
 
 import Tracks from "./Tracks";
@@ -107,7 +109,7 @@ function MusicTemplateContent() {
 
         <Hero />
 
-
+        <PromoBannerMusic />
 
         <div className="music-container music-container--body">
 

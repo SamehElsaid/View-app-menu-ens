@@ -9,6 +9,7 @@ import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
 import EmeraldTemplate from "@/components/Templates/EmeraldTemplate";
 import NoirTemplate from "@/components/Templates/NoirTemplate";
 import OceanicTemplate from "@/components/Templates/OceanicTemplate";
+import PharaonicTemplate from "@/components/Templates/PharaonicTemplate";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
@@ -17,8 +18,8 @@ import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import MusicTemplate from "@/components/Templates/MusicTemplate";
 import ArcaneTemplate from "@/components/Templates/Arcane";
 import MaintenanceView from "@/components/Global/MaintenanceView";
+import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
-import LinkTo from "@/components/Global/LinkTo";
 import { axiosGet } from "@/shared/axiosCall";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
@@ -86,7 +87,8 @@ export default function Page() {
           {menu.theme === "noir" && <NoirTemplate />}
           {menu.theme === "oceanic" && <OceanicTemplate />}
           {menu.theme === "arcane" && <ArcaneTemplate />}
-          {menu.theme === "music" && <MusicTemplate />}
+          {menu.theme === "pharaonic" && <MusicTemplate />}
+        {/*   {menu.theme === "pharaonic" && <PharaonicTemplate />} */}
           {tableCartAllowed ? (
             <Suspense fallback={null}>
               <RequestStaffButton />
@@ -95,27 +97,10 @@ export default function Page() {
           <OrderChatbotGate />
         </MenuLogoFallbackProvider>
       ) : (
-        <div className="flex min-h-screen items-center justify-center px-4">
-          <div className="w-full max-w-md rounded-xl border border-zinc-200 bg-white p-6 text-center shadow-md space-y-3">
-            <h1 className="text-lg font-bold text-zinc-800">
-              {locale === "ar"
-                ? "هاذا المنيو غير موجود"
-                : "This menu is not found"}
-            </h1>
-            <p className="text-sm text-zinc-600 leading-relaxed">
-              {locale === "ar"
-                ? " يمكنك حجز من خلال تواصلنا من خلال الرابط التالي"
-                : "You can book through our contact link below"}
-            </p>
-            <LinkTo
-              href="https://ensmenu.com/"
-              className="text-sm text-zinc-600 leading-relaxed"
-            >
-              {locale === "ar" ? "ُENSMenu" : "ENSMenu"}
-            </LinkTo>
-          </div>
+        <>
+          <MenuNotFoundView />
           <OrderChatbotGate />
-        </div>
+        </>
       )}
     </main>
   );

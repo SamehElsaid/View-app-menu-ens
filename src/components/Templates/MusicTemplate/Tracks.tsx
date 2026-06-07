@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, type CSSProperties } from "react";
+import { useEffect, useMemo, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
@@ -10,7 +11,6 @@ import { useMusic } from "./MusicContext";
 import {
   getProductMood,
   getProductTheme,
-  MOOD_GLOW_HEX,
   pickItemDescription,
   pickItemName,
   type MoodKey,
@@ -66,6 +66,7 @@ function VinylDisc({
   size = "lg",
   glowColor = "#4338CA66",
   mood = "peach",
+  className = "",
 }: {
   image: string;
   alt: string;
@@ -73,10 +74,11 @@ function VinylDisc({
   size?: "sm" | "lg";
   glowColor?: string;
   mood?: MoodKey;
+  className?: string;
 }) {
   return (
     <div
-      className={`music-vinyl-tile music-vinyl-tile--${size}${isActive ? " music-vinyl-tile--active" : ""}`}
+      className={`music-vinyl-tile music-vinyl-tile--${size}${isActive ? " music-vinyl-tile--active" : ""}${className ? ` ${className}` : ""}`}
       data-mood={mood}
       style={{ "--vinyl-glow": glowColor } as CSSProperties}
     >
@@ -90,15 +92,185 @@ function VinylDisc({
                 src={image}
                 alt={alt}
                 fill
-                sizes={size === "lg" ? "(max-width: 768px) 82vw, 300px" : "88px"}
+                sizes={
+                  size === "lg"
+                    ? "(max-width: 768px) 82vw, 300px"
+                    : "88px"
+                }
                 className="object-cover object-center"
-                disableLazy={size === "lg"}
+                disableLazy={size !== "sm"}
+                useMenuLogoFallback={false}
               />
             </span>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function ModalProductImage({
+  image,
+  alt,
+  mood,
+}: {
+  image: string;
+  alt: string;
+  mood: MoodKey;
+}) {
+  return (
+    <div
+      className="music-product-modal__image relative mx-auto w-full shrink-0 overflow-hidden rounded-xl border border-brand-sky/25 bg-brand-honeydew shadow-[0_10px_36px_-14px_var(--feed-glow,color-mix(in_srgb,var(--color-brand-coral)_35%,transparent))] aspect-[4/3] sm:aspect-[16/10] sm:max-h-[300px]"
+      data-product-mood={mood}
+    >
+      <LoadImage
+        src={image}
+        alt={alt}
+        fill
+        width={960}
+        height={600}
+        sizes="(max-width: 640px) 92vw, 640px"
+        className="object-cover object-center"
+        disableLazy
+        useMenuLogoFallback={false}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-linear-to-t from-brand-tomato/12 via-transparent to-brand-sky/5"
+        aria-hidden
+      />
+    </div>
+  );
+}
+
+function ProductDetailModal({
+  item,
+  allItems,
+  categories,
+  currencyLabel,
+  locale,
+  onClose,
+}: {
+  item: MenuItem;
+  allItems: MenuItem[];
+  categories: Category[];
+  currencyLabel: string;
+  locale: "ar" | "en";
+  onClose: () => void;
+}) {
+  const isAr = locale === "ar";
+  const activeName = pickItemName(item, locale);
+  const activeDescription = pickItemDescription(item, locale);
+  const categoryLabel = pickCategoryLabel(item, categories, locale);
+  const productMood = getProductMood(item, allItems);
+  const feedTheme = getProductTheme(productMood);
+  const { hasDiscount, discountPercent } = getItemDiscount(item);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <>
+      <div
+        className="music-product-modal__backdrop fixed inset-0 z-[100] animate-fade-in backdrop-blur-md motion-reduce:animate-none"
+        onClick={onClose}
+        aria-hidden
+      />
+      <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="music-product-modal-title"
+          className="music-product-modal pointer-events-auto w-full max-w-[480px] animate-scale-in motion-reduce:animate-none sm:max-w-[640px]"
+        >
+          <div
+            className="music-feed-card music-feed-card--browse music-product-modal__panel relative overflow-x-hidden overflow-y-auto rounded-2xl border border-brand-sky/20 bg-white p-4 pb-6 sm:p-6 sm:pb-6"
+            data-product-mood={productMood}
+            style={
+              {
+                "--feed-accent": feedTheme.accentColor,
+                "--feed-glow": feedTheme.glowColor,
+              } as CSSProperties
+            }
+          >
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label={isAr ? "إغلاق" : "Close"}
+              className="absolute end-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full border border-brand-sky/25 bg-white/95 text-brand-tomato shadow-sm transition-colors hover:border-brand-coral/40 hover:text-brand-coral"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                <path
+                  d="M3 3l8 8M11 3l-8 8"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+
+          <div
+            className="music-product-modal__hero flex flex-col items-center gap-3 pt-10 text-center sm:gap-4 sm:pt-11 sm:py-2"
+            aria-labelledby="music-product-modal-title"
+          >
+            <ModalProductImage
+              key={item.id}
+              image={item.image}
+              alt={activeName}
+              mood={productMood}
+            />
+
+            <div className="music-product-modal__meta music-feed__meta mt-0 w-full max-w-none">
+              <span
+                className={`music-feed__badge inline-block rounded-full bg-brand-sky/25 px-2.5 py-1 text-[0.6875rem] font-semibold tracking-[0.2em] text-brand-tomato transition-colors duration-500 ease-out${isAr ? "" : " uppercase"}`}
+              >
+                {categoryLabel}
+              </span>
+              <h3
+                id="music-product-modal-title"
+                className="music-feed__title music-product-modal__title text-brand-tomato transition-colors duration-300"
+              >
+                {activeName}
+              </h3>
+              <p className="music-feed__desc music-product-modal__desc text-brand-tomato/70 transition-colors duration-300">
+                {activeDescription}
+              </p>
+              <div className="mt-1 text-center">
+                {hasDiscount && discountPercent ? (
+                  <span className="mb-1 inline-flex rounded-full bg-brand-coral px-2.5 py-0.5 text-[10px] font-bold uppercase text-white">
+                    {isAr
+                      ? `${discountPercent}% \u062e\u0635\u0645`
+                      : `${discountPercent}% off`}
+                  </span>
+                ) : null}
+                <div className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-0.5">
+                  {hasDiscount && item.originalPrice ? (
+                    <span className="text-sm font-semibold tabular-nums text-brand-tomato/45 line-through">
+                      {currencyLabel} {item.originalPrice}
+                    </span>
+                  ) : null}
+                  <span className="music-feed__price text-brand-coral font-bold transition-colors duration-300">
+                    {currencyLabel} {item.price}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </>,
+    document.body,
   );
 }
 
@@ -124,13 +296,13 @@ function ProductMenuCard({
       type="button"
       onClick={onSelect}
       aria-current={isActive ? "true" : undefined}
-      className={`group flex h-full flex-col overflow-hidden rounded-2xl border bg-white text-start shadow-[0_8px_24px_-16px_rgba(67,56,202,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_32px_-14px_rgba(67,56,202,0.36)] ${
+      className={`group flex h-full flex-col overflow-hidden rounded-xl border bg-white text-start shadow-[0_6px_20px_-14px_rgba(67,56,202,0.24)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_-12px_rgba(67,56,202,0.32)] ${
         isActive
           ? "border-brand-coral ring-2 ring-brand-coral/35"
           : "border-brand-sky/20 hover:border-brand-coral/35"
       }`}
     >
-      <div className="relative aspect-[4/5] overflow-hidden bg-brand-sky/8">
+      <div className="relative aspect-[4/3] overflow-hidden bg-brand-sky/8">
         <LoadImage
           src={item.image}
           alt={name}
@@ -140,22 +312,22 @@ function ProductMenuCard({
         />
         <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-brand-tomato/20 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         {hasDiscount && discountPercent ? (
-          <span className="absolute start-2.5 top-2.5 rounded-full bg-brand-coral px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+          <span className="absolute start-2 top-2 rounded-full bg-brand-coral px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white shadow-sm">
             {isAr ? `${discountPercent}%` : `-${discountPercent}%`}
           </span>
         ) : null}
       </div>
-      <div className="flex flex-1 flex-col p-3.5 sm:p-4 text-start">
-        <h4 className="line-clamp-2 min-h-[2.5rem] text-sm font-bold leading-snug text-brand-tomato sm:min-h-[2.75rem] sm:text-[0.9375rem]">
+      <div className="flex flex-1 flex-col p-2 sm:p-2.5 text-start">
+        <h4 className="line-clamp-2 min-h-[1.625rem] text-[11px] font-bold leading-snug text-brand-tomato sm:min-h-[1.75rem] sm:text-xs">
           {name}
         </h4>
-        <div className="mt-auto flex flex-wrap items-baseline gap-x-2 gap-y-0.5 pt-3 justify-start">
+        <div className="mt-auto flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 pt-1.5 justify-start">
           {hasDiscount && item.originalPrice ? (
-            <span className="text-xs font-semibold tabular-nums text-brand-tomato/45 line-through">
+            <span className="text-[10px] font-semibold tabular-nums text-brand-tomato/45 line-through sm:text-[11px]">
               {currencyLabel} {item.originalPrice}
             </span>
           ) : null}
-          <span className="text-sm font-bold tabular-nums text-brand-coral sm:text-base">
+          <span className="text-[10px] font-bold tabular-nums text-brand-coral sm:text-xs">
             {currencyLabel} {item.price}
           </span>
         </div>
@@ -176,107 +348,17 @@ function TracksFeed({
   const getCurrencyLabel = useCurrencyLabel();
   const currencyLabel = getCurrencyLabel(currency);
   const storeCategories = useAppSelector((state) => state.menu.categories) ?? [];
-  const { activeItem, activateItem, setActiveItemForce } = useMusic();
-  const heroRef = useRef<HTMLDivElement>(null);
+  const { modalItem, openProductModal, closeProductModal } = useMusic();
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => item.available !== false);
   }, [items]);
 
-  const currentItem = activeItem ?? filteredItems[0] ?? null;
-
-  useEffect(() => {
-    if (!filteredItems.length) return;
-    const stillVisible = activeItem
-      ? filteredItems.some((item) => item.id === activeItem.id)
-      : false;
-    if (!stillVisible || !activeItem) {
-      setActiveItemForce(filteredItems[0]);
-    }
-  }, [filteredItems, activeItem, setActiveItemForce]);
-
-  const selectProduct = (item: MenuItem) => {
-    activateItem(item);
-    heroRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  if (!currentItem) return null;
-
-  const activeName = pickItemName(currentItem, locale);
-  const activeDescription = pickItemDescription(currentItem, locale);
-  const categoryLabel = pickCategoryLabel(currentItem, storeCategories, locale);
-  const productMood = getProductMood(currentItem, filteredItems);
-  const glowColor = MOOD_GLOW_HEX[productMood];
-  const feedTheme = getProductTheme(productMood);
-  const { hasDiscount, discountPercent } = getItemDiscount(currentItem);
+  if (!filteredItems.length) return null;
 
   return (
     <div id="menu" className="space-y-8 sm:space-y-10">
-      <div
-        className="music-feed music-feed-card music-feed-card--browse rounded-2xl border border-brand-sky/20 bg-white p-4 transition-[border-color,box-shadow,transform] duration-500 ease-out hover:-translate-y-0.5 music-card-grid sm:p-5"
-        data-product-mood={productMood}
-        style={
-          {
-            "--feed-accent": feedTheme.accentColor,
-            "--feed-glow": feedTheme.glowColor,
-          } as CSSProperties
-        }
-      >
-        <div
-          ref={heroRef}
-          id={`menu-product-${currentItem.id}`}
-          className="music-feed__hero music-feed__hero--preview scroll-mt-28"
-          aria-labelledby="music-feed-title"
-        >
-          <div className="music-feed__vinyl-toggle">
-            <VinylDisc
-              key={currentItem.id}
-              image={currentItem.image}
-              alt={activeName}
-              isActive
-              size="lg"
-              mood={productMood}
-              glowColor={`${glowColor}66`}
-            />
-          </div>
-
-          <div className="music-feed__meta">
-            <span
-              className={`music-feed__badge inline-block rounded-full bg-brand-sky/25 px-2.5 py-1 text-[0.6875rem] font-semibold tracking-[0.2em] text-brand-tomato transition-colors duration-500 ease-out${isAr ? "" : " uppercase"}`}
-            >
-              {categoryLabel}
-            </span>
-            <h3
-              id="music-feed-title"
-              className="music-feed__title text-brand-tomato transition-colors duration-300"
-            >
-              {activeName}
-            </h3>
-            <p className="music-feed__desc text-brand-tomato/70 transition-colors duration-300">
-              {activeDescription}
-            </p>
-            <div className="mt-1 text-center sm:text-start">
-              {hasDiscount && discountPercent ? (
-                <span className="mb-1 inline-flex rounded-full bg-brand-coral px-2.5 py-0.5 text-[10px] font-bold uppercase text-white">
-                  {isAr ? `${discountPercent}% خصم` : `${discountPercent}% off`}
-                </span>
-              ) : null}
-              <div className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-0.5 sm:justify-start">
-                {hasDiscount && currentItem.originalPrice ? (
-                  <span className="text-sm font-semibold tabular-nums text-brand-tomato/45 line-through">
-                    {currencyLabel} {currentItem.originalPrice}
-                  </span>
-                ) : null}
-                <span className="music-feed__price text-brand-coral font-bold transition-colors duration-300 ">
-                  {currencyLabel} {currentItem.price}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="music-tracks-grid">
+      <div className="music-tracks-grid px-2 sm:px-4 lg:px-6">
         <div className="mb-4 sm:mb-5 text-start">
           <p
             className={`text-[0.6875rem] font-semibold tracking-[0.24em] text-brand-tomato/50 ${isAr ? "" : "uppercase"}`}
@@ -287,19 +369,30 @@ function TracksFeed({
             {isAr ? "المزيد من القائمة" : "Browse menu"}
           </h4>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
+        <div className="mx-auto grid w-full max-w-4xl grid-cols-2 gap-2 sm:max-w-5xl sm:grid-cols-3 sm:gap-2.5 lg:gap-3">
           {filteredItems.map((item) => (
             <ProductMenuCard
               key={item.id}
               item={item}
-              isActive={item.id === currentItem.id}
+              isActive={item.id === modalItem?.id}
               locale={locale}
               currencyLabel={currencyLabel}
-              onSelect={() => selectProduct(item)}
+              onSelect={() => openProductModal(item)}
             />
           ))}
         </div>
       </div>
+
+      {modalItem ? (
+        <ProductDetailModal
+          item={modalItem}
+          allItems={filteredItems}
+          categories={storeCategories}
+          currencyLabel={currencyLabel}
+          locale={locale}
+          onClose={closeProductModal}
+        />
+      ) : null}
     </div>
   );
 }

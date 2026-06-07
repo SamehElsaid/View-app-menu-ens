@@ -393,6 +393,10 @@ export function pickItemDescription(item: MenuItem, locale: "ar" | "en"): string
 
 /** Latest menu items first (highest id), mapped for the hero showcase. */
 
+function hasMenuItemImage(item: MenuItem): boolean {
+  return Boolean(item.image?.trim());
+}
+
 export function mapMenuItemsToShowcase(
 
   items: MenuItem[],
@@ -405,7 +409,7 @@ export function mapMenuItemsToShowcase(
 
   return [...items]
 
-    .filter((item) => item.available !== false)
+    .filter((item) => item.available !== false && hasMenuItemImage(item))
 
     .sort((a, b) => b.id - a.id)
 

@@ -129,21 +129,9 @@ function ShowcaseCarousel({
     setActiveCategoryId(menuItem.categoryId ?? null);
     setActiveItemForce(menuItem);
 
-    const scrollToProduct = () => {
-      const target =
-        document.getElementById(`menu-product-${menuItem.id}`) ??
-        document.getElementById("menu");
-      if (!target) return false;
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
-      return true;
-    };
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        if (!scrollToProduct()) {
-          window.setTimeout(scrollToProduct, 150);
-        }
-      });
+    document.getElementById("menu")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
     });
   }, [products, index, menuItems, setActiveCategoryId, setActiveItemForce]);
 

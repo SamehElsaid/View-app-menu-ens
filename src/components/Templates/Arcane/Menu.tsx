@@ -6,7 +6,11 @@ import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
-import { useArcaneTheme, hexToRgba, ARCANE_RED } from "./ArcaneThemeContext";
+import {
+  ARCANE_RED,
+  ARCANE_DEFAULT_SECONDARY,
+  hexToRgba,
+} from "./ArcaneThemeContext";
 import LoadImage from "@/components/ImageLoad";
 import {
   SKY_CART_UPDATED_EVENT,
@@ -32,7 +36,6 @@ function DishModal({
     Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
-  const { primary, secondary } = useArcaneTheme();
 
   useEffect(() => {
     document.body.style.overflow = dish ? "hidden" : "";
@@ -63,10 +66,10 @@ function DishModal({
 
   if (!dish) return null;
 
-  const backdrop = hexToRgba(primary, 0.45);
-  const modalShadow = `0 24px 80px ${hexToRgba(primary, 0.2)}, 0 8px 24px rgba(0,0,0,0.12)`;
-  const imageBg = hexToRgba(primary, 0.06);
-  const divider = hexToRgba(secondary, 0.55);
+  const backdrop = hexToRgba(ARCANE_RED, 0.45);
+  const modalShadow = `0 24px 80px ${hexToRgba(ARCANE_RED, 0.2)}, 0 8px 24px rgba(0,0,0,0.12)`;
+  const imageBg = hexToRgba(ARCANE_RED, 0.06);
+  const divider = hexToRgba(ARCANE_DEFAULT_SECONDARY, 0.55);
 
   return (
     <>
@@ -112,7 +115,7 @@ function DishModal({
           {dish.discountPercent ? (
             <span
               className="absolute start-3 top-3 rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white shadow-md"
-              style={{ backgroundColor: primary }}
+              style={{ backgroundColor: ARCANE_RED }}
             >
               {dish.discountPercent}% off
             </span>
@@ -125,11 +128,11 @@ function DishModal({
             ) : null}
             <span
               className="text-3xl font-extrabold tracking-tight tabular-nums"
-              style={{ color: primary }}
+              style={{ color: ARCANE_RED }}
             >
               {dish.price}
             </span>
-            <span className="text-base font-semibold opacity-70" style={{ color: primary }}>
+            <span className="text-base font-semibold opacity-70" style={{ color: ARCANE_RED }}>
               {currencyLabel}
             </span>
           </div>
@@ -165,7 +168,7 @@ function DishModal({
                   }}
                   className="rounded-xl px-4 py-2.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
                   style={{
-                    background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
+                    background: `linear-gradient(to bottom right, ${ARCANE_RED}, ${ARCANE_DEFAULT_SECONDARY})`,
                   }}
                 >
                   {locale === "ar" ? "أضف إلى السلة" : "Add to cart"}
@@ -440,7 +443,6 @@ export default function Menu({
 }) {
   const locale = useLocale() as "ar" | "en";
   const isAr = locale === "ar";
-  const { primary } = useArcaneTheme();
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
   const displayName = menuInfo?.name?.trim() || "Arcane";
   const currencyLabel = useCurrencyLabel()(currency);
@@ -523,7 +525,7 @@ export default function Menu({
       <div className="mx-auto max-w-7xl">
         <p
           className="mb-3 text-center text-[10px] font-black uppercase tracking-[0.28em] sm:mb-4 sm:text-xs sm:tracking-[0.35em]"
-          style={{ color: primary }}
+          style={{ color: ARCANE_RED }}
         >
           {displayName}
         </p>

@@ -4,6 +4,7 @@ import { Suspense, useEffect } from "react";
 import { useLocale } from "next-intl";
 import Navbar from "./Navbar";
 import Hero from "./Hero";
+import PromoBannerArcane from "./PromoBannerArcane";
 import Menu from "./Menu";
 import Footer from "./Footer";
 import { useAppSelector } from "@/store/hooks";
@@ -63,6 +64,7 @@ function ArcaneTemplate() {
       >
         <Navbar />
         <Hero />
+        <PromoBannerArcane />
         <Suspense fallback={null}>
           <Menu
             items={storeMenuItems ?? []}
