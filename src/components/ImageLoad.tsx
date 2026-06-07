@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect, useState, type SyntheticEvent } from "react";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import { useMenuLogoFallback } from "@/context/menuLogoFallbackContext";
 import {
   DEFAULT_MENU_ITEM_IMAGE_SRC,
   resolveMenuItemImageSrc,
 } from "@/lib/menuItemImage";
+
+type ImageFallbackStage = "primary" | "logo" | "default";
 
 function buildResizeUrl(src: string, width?: number, height?: number): string {
   if (!src.startsWith("http://") && !src.startsWith("https://")) {
@@ -29,6 +32,7 @@ function LoadImage({
   fill = false,
   disableLazy = false,
   useMenuLogoFallback: useLogoFallback = true,
+  onError,
   ...props
 }: {
   src: string;
@@ -40,14 +44,48 @@ function LoadImage({
   disableLazy?: boolean;
   /** When true (default), empty item images use the menu logo from MenuLogoFallbackProvider. */
   useMenuLogoFallback?: boolean;
+  onError?: (e: SyntheticEvent<HTMLImageElement, Event>) => void;
   [key: string]: unknown;
 }): React.ReactNode {
   const menuLogo = useMenuLogoFallback();
-  const normalizedSrc = resolveMenuItemImageSrc(
-    src,
+  const [fallbackStage, setFallbackStage] =
+    useState<ImageFallbackStage>("primary");
+
+  useEffect(() => {
+    setFallbackStage("primary");
+  }, [src]);
+
+  const logoSrc = resolveMenuItemImageSrc(
+    "",
     useLogoFallback ? menuLogo : undefined,
   );
+
+  const normalizedSrc =
+    fallbackStage === "default"
+      ? DEFAULT_MENU_ITEM_IMAGE_SRC
+      : fallbackStage === "logo"
+        ? logoSrc
+        : resolveMenuItemImageSrc(src, useLogoFallback ? menuLogo : undefined);
+
   const resizeUrl = buildResizeUrl(normalizedSrc, width, height);
+
+  const handleError = (e: SyntheticEvent<HTMLImageElement, Event>) => {
+    if (fallbackStage === "primary") {
+      if (logoSrc && logoSrc !== normalizedSrc) {
+        setFallbackStage("logo");
+        return;
+      }
+      setFallbackStage("default");
+      return;
+    }
+
+    if (fallbackStage === "logo") {
+      setFallbackStage("default");
+      return;
+    }
+
+    onError?.(e);
+  };
 
   return (
     <>
@@ -60,6 +98,7 @@ function LoadImage({
         visibleByDefault={disableLazy}
         width={fill ? "100%" : width}
         height={fill ? "100%" : height}
+        onError={handleError}
         {...props}
       />
     </>
