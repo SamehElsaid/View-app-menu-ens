@@ -12,12 +12,7 @@ import {
 } from "react";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import {
-  FiCheck,
-  FiChevronDown,
-  FiSend,
-  FiX,
-} from "react-icons/fi";
+import { FiCheck, FiChevronDown, FiSend, FiX } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
 import { useAppSelector } from "@/store/hooks";
 import { axiosPost } from "@/shared/axiosCall";
@@ -83,10 +78,7 @@ import {
   type AiOrderSuggestion,
 } from "@/types/aiOrder";
 import type { MenuItem } from "@/types/menu";
-import {
-  ALLOWED_CONTACT,
-  buildWhatsAppUrl,
-} from "@/lib/assistantConfig";
+import { ALLOWED_CONTACT, buildWhatsAppUrl } from "@/lib/assistantConfig";
 
 /** TEMP: hide AI avatar FAB and link to WhatsApp support instead. */
 const TEMP_WHATSAPP_FAB = false;
@@ -141,10 +133,6 @@ const WELCOME_MESSAGE: UiMessage = {
   text: "أهلاً 👋\nأنا لينا ✨ مساعدة Ensmenu\n\nأقدر أساعدك في الأسعار، المنيو الرقمي، أو تبدأ بسرعة 🍽️",
 };
 
-const TEASER_INTERVAL_MS = 10_000;
-const TEASER_VISIBLE_MS = 7_000;
-const TEASER_INITIAL_DELAY_MS = 5_000;
-
 function hasSeenBetaNotice(): boolean {
   if (typeof window === "undefined") return false;
   return sessionStorage.getItem(BETA_NOTICE_SESSION_KEY) === "1";
@@ -171,7 +159,12 @@ function readOrCreateSessionId(storageKey: string): string {
   return next;
 }
 
-function asAiOrderCart(raw: Record<number, { id: number; quantity: number; name: string; price: number; image: string }>): AiOrderCart {
+function asAiOrderCart(
+  raw: Record<
+    number,
+    { id: number; quantity: number; name: string; price: number; image: string }
+  >,
+): AiOrderCart {
   const out: AiOrderCart = {};
   for (const [k, v] of Object.entries(raw)) {
     out[k] = {
@@ -221,70 +214,13 @@ export default function OrderChatbot({
   const isArabic = locale.startsWith("ar");
   const direction: "rtl" | "ltr" = isArabic ? "rtl" : "ltr";
 
-  const labels = useMemo(
-    () => {
-      if (isBrowseOnly) {
-        return isArabic
-          ? {
-              button: "اسأل عن المنيو",
-              title: "مساعد المنيو ✨",
-              placeholder: "اسأل عن الأطباق أو الاقتراحات...",
-              confirm: "تأكيد الطلب",
-              edit: "تعديل الطلب",
-              error: "حصلت مشكلة بسيطة، جرّب تاني.",
-              emptyCart: "السلة فاضية حاليًا",
-              online: "متصل",
-              orderSummaryTitle: "ملخص الطلب",
-              showOrderSummary: "عرض ملخص الطلب",
-              hideOrderSummary: "إخفاء الملخص",
-              orderTotal: (total: string) => `الإجمالي: ${total}`,
-              askTable: "رقم الطاولة غير موجود في الرابط الحالي.",
-              success:
-                "✅ تم إرسال طلبك إلى المطعم بنجاح، وجاري تحضيره الآن. شكرًا لطلبك ونتمنى لك تجربة ممتعة 🌟",
-              add: "إضافة",
-              inlineCartTitle: "تعديل الطلب",
-              removeFromCart: "حذف",
-              quickConfirm: "تأكيد الطلب",
-              customerNameLabel: "اسم حضرتك",
-              customerNamePlaceholder: "مثال: أحمد محمد",
-              sendOrder: "إرسال الطلب",
-              customerNameRequired: "من فضلك اكتب اسمك قبل الإرسال",
-              quickChipsAria: "اقتراحات سريعة",
-              contactWhatsApp: "تواصل عبر واتساب",
-            }
-          : {
-              button: "Ask about the menu",
-              title: "Menu Assistant ✨",
-              placeholder: "Ask about dishes or recommendations...",
-              confirm: "Confirm order",
-              edit: "Edit order",
-              error: "Something went wrong. Please try again.",
-              emptyCart: "Your cart is empty",
-              online: "Online",
-              orderSummaryTitle: "Order summary",
-              showOrderSummary: "Show order summary",
-              hideOrderSummary: "Hide summary",
-              orderTotal: (total: string) => `Total: ${total}`,
-              askTable: "Table number is missing from the current URL.",
-              success:
-                "✅ Your order was sent to the restaurant and is being prepared. Thank you — enjoy your meal! 🌟",
-              add: "Add",
-              inlineCartTitle: "Edit order",
-              removeFromCart: "Remove",
-              quickConfirm: "Confirm order",
-              customerNameLabel: "Your name",
-              customerNamePlaceholder: "e.g. John Smith",
-              sendOrder: "Send order",
-              customerNameRequired: "Please enter your name before sending",
-              quickChipsAria: "Quick suggestions",
-              contactWhatsApp: "Contact on WhatsApp",
-            };
-      }
+  const labels = useMemo(() => {
+    if (isBrowseOnly) {
       return isArabic
         ? {
-            button: "اطلب بالذكاء الاصطناعي",
-            title: "مساعد الطلبات الذكي ✨",
-            placeholder: "اكتب طلبك هنا...",
+            button: "اسأل عن المنيو",
+            title: "مساعد المنيو ✨",
+            placeholder: "اسأل عن الأطباق أو الاقتراحات...",
             confirm: "تأكيد الطلب",
             edit: "تعديل الطلب",
             error: "حصلت مشكلة بسيطة، جرّب تاني.",
@@ -309,9 +245,9 @@ export default function OrderChatbot({
             contactWhatsApp: "تواصل عبر واتساب",
           }
         : {
-            button: "Order with AI",
-            title: "Smart Order Assistant ✨",
-            placeholder: "Type your order...",
+            button: "Ask about the menu",
+            title: "Menu Assistant ✨",
+            placeholder: "Ask about dishes or recommendations...",
             confirm: "Confirm order",
             edit: "Edit order",
             error: "Something went wrong. Please try again.",
@@ -335,25 +271,63 @@ export default function OrderChatbot({
             quickChipsAria: "Quick suggestions",
             contactWhatsApp: "Contact on WhatsApp",
           };
-    },
-    [isArabic, isBrowseOnly],
-  );
-
-  const teaserMessages = useMemo(
-    () =>
-      isArabic
-        ? [
-            WELCOME_MESSAGE.text,
-            "محتاج مساعدة في المنيو؟ اسألني 👋",
-            "جاهزة أساعدك تختار أو تطلب 🍽️",
-          ]
-        : [
-            "Hi 👋 I'm Lena ✨ — your Ensmenu assistant.\n\nI can help with pricing, digital menus, or getting started 🍽️",
-            "Need help with the menu? Ask me 👋",
-            "Ready to help you choose or order 🍽️",
-          ],
-    [isArabic],
-  );
+    }
+    return isArabic
+      ? {
+          button: "اطلب بالذكاء الاصطناعي",
+          title: "مساعد الطلبات الذكي ✨",
+          placeholder: "اكتب طلبك هنا...",
+          confirm: "تأكيد الطلب",
+          edit: "تعديل الطلب",
+          error: "حصلت مشكلة بسيطة، جرّب تاني.",
+          emptyCart: "السلة فاضية حاليًا",
+          online: "متصل",
+          orderSummaryTitle: "ملخص الطلب",
+          showOrderSummary: "عرض ملخص الطلب",
+          hideOrderSummary: "إخفاء الملخص",
+          orderTotal: (total: string) => `الإجمالي: ${total}`,
+          askTable: "رقم الطاولة غير موجود في الرابط الحالي.",
+          success:
+            "✅ تم إرسال طلبك إلى المطعم بنجاح، وجاري تحضيره الآن. شكرًا لطلبك ونتمنى لك تجربة ممتعة 🌟",
+          add: "إضافة",
+          inlineCartTitle: "تعديل الطلب",
+          removeFromCart: "حذف",
+          quickConfirm: "تأكيد الطلب",
+          customerNameLabel: "اسم حضرتك",
+          customerNamePlaceholder: "مثال: أحمد محمد",
+          sendOrder: "إرسال الطلب",
+          customerNameRequired: "من فضلك اكتب اسمك قبل الإرسال",
+          quickChipsAria: "اقتراحات سريعة",
+          contactWhatsApp: "تواصل عبر واتساب",
+        }
+      : {
+          button: "Order with AI",
+          title: "Smart Order Assistant ✨",
+          placeholder: "Type your order...",
+          confirm: "Confirm order",
+          edit: "Edit order",
+          error: "Something went wrong. Please try again.",
+          emptyCart: "Your cart is empty",
+          online: "Online",
+          orderSummaryTitle: "Order summary",
+          showOrderSummary: "Show order summary",
+          hideOrderSummary: "Hide summary",
+          orderTotal: (total: string) => `Total: ${total}`,
+          askTable: "Table number is missing from the current URL.",
+          success:
+            "✅ Your order was sent to the restaurant and is being prepared. Thank you — enjoy your meal! 🌟",
+          add: "Add",
+          inlineCartTitle: "Edit order",
+          removeFromCart: "Remove",
+          quickConfirm: "Confirm order",
+          customerNameLabel: "Your name",
+          customerNamePlaceholder: "e.g. John Smith",
+          sendOrder: "Send order",
+          customerNameRequired: "Please enter your name before sending",
+          quickChipsAria: "Quick suggestions",
+          contactWhatsApp: "Contact on WhatsApp",
+        };
+  }, [isArabic, isBrowseOnly]);
 
   const whatsappFabUrl = useMemo(
     () =>
@@ -385,8 +359,6 @@ export default function OrderChatbot({
   const [expandedSuggestionQtyKeys, setExpandedSuggestionQtyKeys] = useState<
     Set<string>
   >(() => new Set());
-  const [teaserVisible, setTeaserVisible] = useState(false);
-  const [teaserIndex, setTeaserIndex] = useState(0);
   const betaShownThisOpenRef = useRef(false);
   const messagesScrollRef = useRef<HTMLDivElement>(null);
   const orderSummaryPanelRef = useRef<HTMLDivElement>(null);
@@ -399,43 +371,9 @@ export default function OrderChatbot({
   }, [messages, open]);
 
   const handleOpenChat = useCallback(() => {
-    setTeaserVisible(false);
     setOpen(true);
     setMessages((prev) => (prev.length === 0 ? [WELCOME_MESSAGE] : prev));
   }, []);
-
-  useEffect(() => {
-    if (open || TEMP_WHATSAPP_FAB) {
-      setTeaserVisible(false);
-      return;
-    }
-
-    if (document.visibilityState === "hidden") return;
-
-    let hideTimer: ReturnType<typeof setTimeout>;
-    let intervalId: ReturnType<typeof setInterval>;
-
-    const showTeaser = () => {
-      if (document.visibilityState === "hidden") return;
-      setTeaserVisible(true);
-      clearTimeout(hideTimer);
-      hideTimer = setTimeout(() => {
-        setTeaserVisible(false);
-        setTeaserIndex((i) => (i + 1) % teaserMessages.length);
-      }, TEASER_VISIBLE_MS);
-    };
-
-    const initialTimer = setTimeout(() => {
-      showTeaser();
-      intervalId = setInterval(showTeaser, TEASER_INTERVAL_MS);
-    }, TEASER_INITIAL_DELAY_MS);
-
-    return () => {
-      clearTimeout(initialTimer);
-      clearTimeout(hideTimer);
-      clearInterval(intervalId);
-    };
-  }, [open, teaserMessages.length]);
 
   const resizeChatInput = useCallback(() => {
     const el = chatInputRef.current;
@@ -448,18 +386,24 @@ export default function OrderChatbot({
     resizeChatInput();
   }, [input, resizeChatInput]);
 
-  const scrollMessagesToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
-    const el = messagesScrollRef.current;
-    if (!el) return;
-    el.scrollTo({ top: el.scrollHeight, behavior });
-  }, []);
+  const scrollMessagesToBottom = useCallback(
+    (behavior: ScrollBehavior = "smooth") => {
+      const el = messagesScrollRef.current;
+      if (!el) return;
+      el.scrollTo({ top: el.scrollHeight, behavior });
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!open) return;
 
     scrollMessagesToBottom("instant");
     const rafId = requestAnimationFrame(() => scrollMessagesToBottom("smooth"));
-    const timeoutId = window.setTimeout(() => scrollMessagesToBottom("smooth"), 120);
+    const timeoutId = window.setTimeout(
+      () => scrollMessagesToBottom("smooth"),
+      120,
+    );
 
     return () => {
       cancelAnimationFrame(rafId);
@@ -646,7 +590,9 @@ export default function OrderChatbot({
     );
   };
 
-  const applyValidatedCart = (candidateCart: AiOrderCart | undefined): boolean => {
+  const applyValidatedCart = (
+    candidateCart: AiOrderCart | undefined,
+  ): boolean => {
     if (!candidateCart || typeof candidateCart !== "object") return false;
     const next: Record<number, SkyCartItem> = {};
 
@@ -878,7 +824,9 @@ export default function OrderChatbot({
         syncLastCartItemAfterCartChange();
         syncCartFromCookie();
         setConversationState(
-          Object.keys(readSkyCartFromCookie()).length > 0 ? "ordering" : "browsing",
+          Object.keys(readSkyCartFromCookie()).length > 0
+            ? "ordering"
+            : "browsing",
         );
       }
       return true;
@@ -1151,9 +1099,7 @@ export default function OrderChatbot({
     if (canOrderViaChat) {
       // Suggestion cards: Add is frontend-only; ignore n8n cartActions when showing cards.
       const cartActions =
-        visibleSuggestions.length > 0
-          ? []
-          : resolveCartActions(normalized);
+        visibleSuggestions.length > 0 ? [] : resolveCartActions(normalized);
 
       if (cartActions.length) {
         clearN8nPendingState();
@@ -1269,259 +1215,265 @@ export default function OrderChatbot({
           <div className="relative">
             <div
               ref={messagesScrollRef}
-              className="h-[360px] sm:h-[380px] overflow-y-auto overscroll-contain bg-gradient-to-b from-zinc-50/80 to-white px-3.5 py-3.5 space-y-3"
+              className="h-[360px] sm:h-[380px] overflow-y-auto overscroll-contain bg-linear-to-b from-zinc-50/80 to-white px-3.5 py-3.5 space-y-3"
             >
-            {showBetaCard ? (
-              <div
-                className="flex justify-center px-1 pb-1"
-                role="note"
-                aria-label="إشعار النسخة التجريبية"
-              >
-                <p className="max-w-[95%] rounded-lg border border-amber-100/90 bg-amber-50/70 px-2.5 py-2 text-center text-[10px] leading-[1.55] text-zinc-600 sm:text-[11px]">
-                  {BETA_NOTICE_AR}
-                </p>
-              </div>
-            ) : null}
-            {visibleMessages.map((m) => (
-              <Fragment key={m.id}>
+              {showBetaCard ? (
                 <div
-                  className={`flex transition-all duration-200 ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                  className="flex justify-center px-1 pb-1"
+                  role="note"
+                  aria-label="إشعار النسخة التجريبية"
                 >
-                  <div
-                    className={
-                      m.role === "user"
-                        ? "w-fit max-w-[70%] min-w-[80px] shrink-0 space-y-2"
-                        : "max-w-[88%] min-w-0 space-y-2"
-                    }
-                  >
-                    {m.text.trim() ? (
-                    <div
-                      className={`rounded-2xl px-3.5 py-3 text-[13px] leading-[1.65] shadow-[0_2px_10px_rgba(2,6,23,0.06)] ${
-                        m.role === "user"
-                          ? "w-fit max-w-full min-w-[80px] whitespace-normal break-normal [overflow-wrap:break-word] bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-br-md"
-                          : "max-w-full whitespace-pre-line break-words bg-white/95 text-zinc-800 rounded-bl-md border border-zinc-200/80"
-                      }`}
-                    >
-                      {m.text}
-                    </div>
-                    ) : null}
-                    {m.role === "bot"
-                      ? (() => {
-                          const cards = suggestionCardsForDisplay(m.suggestions);
-                          if (!cards.length) return null;
-                          return (
-                            <div className="grid gap-2">
-                              {cards.map((s) => {
-                                const rawImage =
-                                  s.image ??
-                                  localMenuById.get(s.id)?.image ??
-                                  "";
-                                const cartQty = getSuggestionCartQty(s.id);
-                                const showQty = isSuggestionQtyVisible(
-                                  m.id,
-                                  s.id,
-                                );
-
-                                return (
-                                <div
-                                  key={`${m.id}_${s.id}`}
-                                  className="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-200 bg-white p-2 shadow-[0_1px_6px_rgba(2,6,23,0.06)]"
-                                >
-                                  <LoadImage
-                                    src={rawImage}
-                                    alt={s.name}
-                                    className="h-11 w-11 shrink-0 rounded-lg object-cover border border-zinc-200"
-                                    width={44}
-                                    height={44}
-                                  />
-                                  <div className="min-w-0 flex-1 basis-0 grow">
-                                    <p className="truncate text-xs font-semibold text-zinc-800">
-                                      {s.name}
-                                    </p>
-                                    <p className="text-[11px] text-zinc-500">
-                                      {Number(s.price).toFixed(2)}{" "}
-                                      {currencyLabel(s.currency)}
-                                    </p>
-                                  </div>
-                                  {!canOrderViaChat ? null : showQty ? (
-                                    <div className="flex shrink-0 flex-col items-center gap-0.5">
-                                      <div
-                                        className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-zinc-50/80 px-1 py-0.5"
-                                        role="group"
-                                        aria-label={
-                                          isArabic ? "الكمية" : "Quantity"
-                                        }
-                                      >
-                                        <button
-                                          type="button"
-                                          aria-label={
-                                            isArabic
-                                              ? "تقليل الكمية"
-                                              : "Decrease quantity"
-                                          }
-                                          disabled={cartQty <= 0 || isSending}
-                                          onClick={() => {
-                                            if (cartQty <= 0) return;
-                                            handleSuggestionCartAdjust(
-                                              m.id,
-                                              s.id,
-                                              -1,
-                                            );
-                                          }}
-                                          className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
-                                        >
-                                          −
-                                        </button>
-                                        <span className="min-w-[1.5rem] text-center text-sm font-semibold tabular-nums text-zinc-800">
-                                          {cartQty}
-                                        </span>
-                                        <button
-                                          type="button"
-                                          aria-label={
-                                            isArabic
-                                              ? "زيادة الكمية"
-                                              : "Increase quantity"
-                                          }
-                                          disabled={cartQty >= 999 || isSending}
-                                          onClick={() =>
-                                            handleSuggestionCartAdjust(
-                                              m.id,
-                                              s.id,
-                                              1,
-                                            )
-                                          }
-                                          className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
-                                        >
-                                          +
-                                        </button>
-                                      </div>
-                                      <button
-                                        type="button"
-                                        disabled={isSending}
-                                        aria-label={
-                                          isArabic
-                                            ? "إخفاء الكمية"
-                                            : "Hide quantity"
-                                        }
-                                        onClick={() =>
-                                          collapseSuggestionQty(m.id, s.id)
-                                        }
-                                        className="flex h-6 w-8 items-center justify-center rounded-md text-violet-600 transition hover:bg-violet-50 disabled:opacity-50"
-                                      >
-                                        <FiChevronDown
-                                          className="h-4 w-4"
-                                          aria-hidden
-                                        />
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      disabled={isSending}
-                                      onClick={() =>
-                                        openSuggestionQty(m.id, s.id)
-                                      }
-                                      className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-violet-600 px-2.5 py-1.5 text-[11px] font-semibold text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-60"
-                                    >
-                                      <span>{labels.add}</span>
-                                      {cartQty > 0 ? (
-                                        <span className="rounded-full bg-white/25 px-1.5 py-0.5 text-[10px] font-bold tabular-nums leading-none">
-                                          {cartQty}
-                                        </span>
-                                      ) : null}
-                                    </button>
-                                  )}
-                                </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        })()
-                      : null}
+                  <p className="max-w-[95%] rounded-lg border border-amber-100/90 bg-amber-50/70 px-2.5 py-2 text-center text-[10px] leading-[1.55] text-zinc-600 sm:text-[11px]">
+                    {BETA_NOTICE_AR}
+                  </p>
                 </div>
-              </div>
-              </Fragment>
-            ))}
-            {isSending ? (
-              <div className="flex justify-start">
-                <div className="rounded-2xl rounded-bl-md border border-zinc-200/70 bg-zinc-100 px-3 py-2 text-xs text-zinc-500">
-                  <div className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.2s]" />
-                    <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.1s]" />
-                    <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" />
+              ) : null}
+              {visibleMessages.map((m) => (
+                <Fragment key={m.id}>
+                  <div
+                    className={`flex transition-all duration-200 ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={
+                        m.role === "user"
+                          ? "w-fit max-w-[70%] min-w-20 shrink-0 space-y-2"
+                          : "max-w-[88%] min-w-0 space-y-2"
+                      }
+                    >
+                      {m.text.trim() ? (
+                        <div
+                          className={`rounded-2xl px-3.5 py-3 text-[13px] leading-[1.65] shadow-[0_2px_10px_rgba(2,6,23,0.06)] ${
+                            m.role === "user"
+                              ? "w-fit max-w-full min-w-20 whitespace-normal break-normal wrap-break-word bg-linear-to-r from-violet-600 to-fuchsia-500 text-white rounded-br-md"
+                              : "max-w-full whitespace-pre-line wrap-break-word bg-white/95 text-zinc-800 rounded-bl-md border border-zinc-200/80"
+                          }`}
+                        >
+                          {m.text}
+                        </div>
+                      ) : null}
+                      {m.role === "bot"
+                        ? (() => {
+                            const cards = suggestionCardsForDisplay(
+                              m.suggestions,
+                            );
+                            if (!cards.length) return null;
+                            return (
+                              <div className="grid gap-2">
+                                {cards.map((s) => {
+                                  const rawImage =
+                                    s.image ??
+                                    localMenuById.get(s.id)?.image ??
+                                    "";
+                                  const cartQty = getSuggestionCartQty(s.id);
+                                  const showQty = isSuggestionQtyVisible(
+                                    m.id,
+                                    s.id,
+                                  );
+
+                                  return (
+                                    <div
+                                      key={`${m.id}_${s.id}`}
+                                      className="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-200 bg-white p-2 shadow-[0_1px_6px_rgba(2,6,23,0.06)]"
+                                    >
+                                      <LoadImage
+                                        src={rawImage}
+                                        alt={s.name}
+                                        className="h-11 w-11 shrink-0 rounded-lg object-cover border border-zinc-200"
+                                        width={44}
+                                        height={44}
+                                      />
+                                      <div className="min-w-0 flex-1 basis-0 grow">
+                                        <p className="truncate text-xs font-semibold text-zinc-800">
+                                          {s.name}
+                                        </p>
+                                        <p className="text-[11px] text-zinc-500">
+                                          {Number(s.price).toFixed(2)}{" "}
+                                          {currencyLabel(s.currency)}
+                                        </p>
+                                      </div>
+                                      {!canOrderViaChat ? null : showQty ? (
+                                        <div className="flex shrink-0 flex-col items-center gap-0.5">
+                                          <div
+                                            className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-zinc-50/80 px-1 py-0.5"
+                                            role="group"
+                                            aria-label={
+                                              isArabic ? "الكمية" : "Quantity"
+                                            }
+                                          >
+                                            <button
+                                              type="button"
+                                              aria-label={
+                                                isArabic
+                                                  ? "تقليل الكمية"
+                                                  : "Decrease quantity"
+                                              }
+                                              disabled={
+                                                cartQty <= 0 || isSending
+                                              }
+                                              onClick={() => {
+                                                if (cartQty <= 0) return;
+                                                handleSuggestionCartAdjust(
+                                                  m.id,
+                                                  s.id,
+                                                  -1,
+                                                );
+                                              }}
+                                              className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                            >
+                                              −
+                                            </button>
+                                            <span className="min-w-6 text-center text-sm font-semibold tabular-nums text-zinc-800">
+                                              {cartQty}
+                                            </span>
+                                            <button
+                                              type="button"
+                                              aria-label={
+                                                isArabic
+                                                  ? "زيادة الكمية"
+                                                  : "Increase quantity"
+                                              }
+                                              disabled={
+                                                cartQty >= 999 || isSending
+                                              }
+                                              onClick={() =>
+                                                handleSuggestionCartAdjust(
+                                                  m.id,
+                                                  s.id,
+                                                  1,
+                                                )
+                                              }
+                                              className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                            >
+                                              +
+                                            </button>
+                                          </div>
+                                          <button
+                                            type="button"
+                                            disabled={isSending}
+                                            aria-label={
+                                              isArabic
+                                                ? "إخفاء الكمية"
+                                                : "Hide quantity"
+                                            }
+                                            onClick={() =>
+                                              collapseSuggestionQty(m.id, s.id)
+                                            }
+                                            className="flex h-6 w-8 items-center justify-center rounded-md text-violet-600 transition hover:bg-violet-50 disabled:opacity-50"
+                                          >
+                                            <FiChevronDown
+                                              className="h-4 w-4"
+                                              aria-hidden
+                                            />
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          type="button"
+                                          disabled={isSending}
+                                          onClick={() =>
+                                            openSuggestionQty(m.id, s.id)
+                                          }
+                                          className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-violet-600 px-2.5 py-1.5 text-[11px] font-semibold text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-60"
+                                        >
+                                          <span>{labels.add}</span>
+                                          {cartQty > 0 ? (
+                                            <span className="rounded-full bg-white/25 px-1.5 py-0.5 text-[10px] font-bold tabular-nums leading-none">
+                                              {cartQty}
+                                            </span>
+                                          ) : null}
+                                        </button>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()
+                        : null}
+                    </div>
+                  </div>
+                </Fragment>
+              ))}
+              {isSending ? (
+                <div className="flex justify-start">
+                  <div className="rounded-2xl rounded-bl-md border border-zinc-200/70 bg-zinc-100 px-3 py-2 text-xs text-zinc-500">
+                    <div className="flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.2s]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.1s]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : null}
-            {!isBrowseOnly && showInlineCartEditor && cartItems.length > 0 ? (
-              <div className="rounded-xl border border-violet-200/90 bg-white p-3 shadow-[0_4px_14px_rgba(124,58,237,0.08)]">
-                <p className="mb-2 text-xs font-semibold text-zinc-800">
-                  {labels.inlineCartTitle}
-                </p>
-                <ul className="max-h-44 space-y-2 overflow-y-auto pe-0.5">
-                  {cartItems.map((item) => {
-                    const localItem = localMenuById.get(item.id);
-                    const name = localItem
-                      ? displayNameForItem(localItem)
-                      : item.name;
-                    return (
-                      <li
-                        key={item.id}
-                        className="flex flex-wrap items-center gap-2 rounded-lg border border-zinc-100 bg-zinc-50/90 p-2 sm:flex-nowrap"
-                      >
-                        <div className="min-w-0 flex-1 basis-full sm:basis-auto">
-                          <p className="truncate text-xs font-semibold text-zinc-800">
-                            {name}
-                          </p>
-                          <p className="text-[11px] text-zinc-500">
-                            {formatPrice(item.price)} × {item.quantity} —{" "}
-                            <span className="font-medium text-zinc-700">
-                              {formatPrice(item.price * item.quantity)}
+              ) : null}
+              {!isBrowseOnly && showInlineCartEditor && cartItems.length > 0 ? (
+                <div className="rounded-xl border border-violet-200/90 bg-white p-3 shadow-[0_4px_14px_rgba(124,58,237,0.08)]">
+                  <p className="mb-2 text-xs font-semibold text-zinc-800">
+                    {labels.inlineCartTitle}
+                  </p>
+                  <ul className="max-h-44 space-y-2 overflow-y-auto pe-0.5">
+                    {cartItems.map((item) => {
+                      const localItem = localMenuById.get(item.id);
+                      const name = localItem
+                        ? displayNameForItem(localItem)
+                        : item.name;
+                      return (
+                        <li
+                          key={item.id}
+                          className="flex flex-wrap items-center gap-2 rounded-lg border border-zinc-100 bg-zinc-50/90 p-2 sm:flex-nowrap"
+                        >
+                          <div className="min-w-0 flex-1 basis-full sm:basis-auto">
+                            <p className="truncate text-xs font-semibold text-zinc-800">
+                              {name}
+                            </p>
+                            <p className="text-[11px] text-zinc-500">
+                              {formatPrice(item.price)} × {item.quantity} —{" "}
+                              <span className="font-medium text-zinc-700">
+                                {formatPrice(item.price * item.quantity)}
+                              </span>
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 items-center gap-1">
+                            <button
+                              type="button"
+                              aria-label={
+                                isArabic ? "تقليل الكمية" : "Decrease quantity"
+                              }
+                              onClick={() => handleInlineCartDecrease(item.id)}
+                              className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100"
+                            >
+                              −
+                            </button>
+                            <span className="min-w-6 text-center text-sm font-semibold tabular-nums text-zinc-800">
+                              {item.quantity}
                             </span>
-                          </p>
-                        </div>
-                        <div className="flex shrink-0 items-center gap-1">
-                          <button
-                            type="button"
-                            aria-label={
-                              isArabic ? "تقليل الكمية" : "Decrease quantity"
-                            }
-                            onClick={() => handleInlineCartDecrease(item.id)}
-                            className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100"
-                          >
-                            −
-                          </button>
-                          <span className="min-w-[1.5rem] text-center text-sm font-semibold tabular-nums text-zinc-800">
-                            {item.quantity}
-                          </span>
-                          <button
-                            type="button"
-                            aria-label={
-                              isArabic ? "زيادة الكمية" : "Increase quantity"
-                            }
-                            disabled={item.quantity >= 999}
-                            onClick={() => handleInlineCartIncrease(item.id)}
-                            className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-40"
-                          >
-                            +
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleInlineCartRemove(item.id)}
-                            className="rounded-md border border-rose-200 bg-rose-50 px-2 py-1.5 text-[10px] font-semibold text-rose-700 transition hover:bg-rose-100"
-                          >
-                            {labels.removeFromCart}
-                          </button>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-                <p className="mt-2 border-t border-violet-100 pt-2 text-xs font-bold text-zinc-800">
-                  {labels.orderTotal(formatPrice(totalPrice))}
-                </p>
-              </div>
-            ) : null}
+                            <button
+                              type="button"
+                              aria-label={
+                                isArabic ? "زيادة الكمية" : "Increase quantity"
+                              }
+                              disabled={item.quantity >= 999}
+                              onClick={() => handleInlineCartIncrease(item.id)}
+                              className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-40"
+                            >
+                              +
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleInlineCartRemove(item.id)}
+                              className="rounded-md border border-rose-200 bg-rose-50 px-2 py-1.5 text-[10px] font-semibold text-rose-700 transition hover:bg-rose-100"
+                            >
+                              {labels.removeFromCart}
+                            </button>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <p className="mt-2 border-t border-violet-100 pt-2 text-xs font-bold text-zinc-800">
+                    {labels.orderTotal(formatPrice(totalPrice))}
+                  </p>
+                </div>
+              ) : null}
             </div>
 
             {!isBrowseOnly && showOrderSummarySheet ? (
@@ -1631,7 +1583,7 @@ export default function OrderChatbot({
                       <button
                         type="submit"
                         disabled={isSending || !checkoutNameInput.trim()}
-                        className="w-full rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-500 px-3 py-2.5 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="w-full rounded-lg bg-linear-to-r from-violet-600 to-fuchsia-500 px-3 py-2.5 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {labels.sendOrder}
                       </button>
@@ -1642,7 +1594,7 @@ export default function OrderChatbot({
                         type="button"
                         onClick={() => void confirmOrder()}
                         disabled={isSending || !cartItems.length}
-                        className="flex-1 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-500 px-3 py-2.5 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="flex-1 rounded-lg bg-linear-to-r from-violet-600 to-fuchsia-500 px-3 py-2.5 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         {labels.confirm}
                       </button>
@@ -1669,7 +1621,7 @@ export default function OrderChatbot({
               <button
                 type="button"
                 onClick={openOrderSummarySheet}
-                className="flex w-full items-center justify-between gap-2 rounded-xl border border-violet-200 bg-gradient-to-r from-violet-50 to-fuchsia-50/80 px-3 py-2.5 text-start transition hover:border-violet-300 hover:from-violet-100"
+                className="flex w-full items-center justify-between gap-2 rounded-xl border border-violet-200 bg-linear-to-r from-violet-50 to-fuchsia-50/80 px-3 py-2.5 text-start transition hover:border-violet-300 hover:from-violet-100"
               >
                 <span className="text-xs font-semibold text-violet-800">
                   {labels.showOrderSummary}
@@ -1704,10 +1656,10 @@ export default function OrderChatbot({
                   >
                     <span>{labels.quickConfirm}</span>
                     <span
-                      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-sm"
+                      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-linear-to-br from-emerald-500 to-teal-600 text-white shadow-sm"
                       aria-hidden
                     >
-                      <FiCheck className="h-3 w-3 stroke-[3]" />
+                      <FiCheck className="h-3 w-3 stroke-3" />
                     </span>
                   </button>
                 </div>
@@ -1720,9 +1672,7 @@ export default function OrderChatbot({
                   role="group"
                   aria-label={labels.quickChipsAria}
                 >
-                  <div
-                    className="overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth pb-1 [scrollbar-width:thin] [scrollbar-color:rgba(124,58,237,0.35)_transparent] touch-pan-x [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-violet-300/80 [&::-webkit-scrollbar-track]:bg-transparent"
-                  >
+                  <div className="overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth pb-1 [scrollbar-width:thin] [scrollbar-color:rgba(124,58,237,0.35)_transparent] touch-pan-x [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-violet-300/80 [&::-webkit-scrollbar-track]:bg-transparent">
                     <div className="flex w-max flex-nowrap gap-2 py-0.5 pe-1 ps-0.5 snap-x snap-mandatory">
                       {quickChips.map((chip, index) => (
                         <button
@@ -1759,7 +1709,7 @@ export default function OrderChatbot({
               <button
                 type="submit"
                 disabled={isSending || !input.trim()}
-                className="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white transition hover:opacity-95 disabled:opacity-60"
+                className="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-r from-violet-600 to-fuchsia-500 text-white transition hover:opacity-95 disabled:opacity-60"
                 aria-label="Send"
               >
                 <FiSend className="h-4 w-4" />
@@ -1769,36 +1719,6 @@ export default function OrderChatbot({
         </div>
       ) : (
         <div dir="ltr" className="relative size-14 overflow-visible">
-          {teaserVisible && !TEMP_WHATSAPP_FAB ? (
-            <div
-              role="status"
-              dir={direction}
-              className={`pointer-events-auto absolute bottom-[calc(100%+0.75rem)] w-[min(260px,calc(100vw-5.5rem))] animate-in fade-in slide-in-from-bottom-2 duration-300 ${
-                isArabic ? "right-0" : "left-0"
-              }`}
-            >
-              <button
-                type="button"
-                onClick={handleOpenChat}
-                className={`w-full rounded-2xl border border-zinc-200/90 bg-white px-3.5 py-3 text-start text-[13px] leading-snug font-medium whitespace-pre-line text-zinc-700 shadow-lg shadow-zinc-900/10 transition-colors hover:bg-violet-50/80 ${
-                  isArabic ? "rounded-br-sm" : "rounded-bl-sm"
-                }`}
-              >
-                {teaserMessages[teaserIndex]}
-              </button>
-              <button
-                type="button"
-                onClick={() => setTeaserVisible(false)}
-                aria-label={isArabic ? "إغلاق" : "Dismiss"}
-                className={`absolute -top-1.5 flex size-6 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-sm transition-colors hover:bg-zinc-50 ${
-                  isArabic ? "-left-1.5" : "-right-1.5"
-                }`}
-              >
-                <FiX size={12} />
-              </button>
-            </div>
-          ) : null}
-
           {TEMP_WHATSAPP_FAB ? (
             <a
               href={whatsappFabUrl}

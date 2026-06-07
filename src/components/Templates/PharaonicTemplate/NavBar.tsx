@@ -21,7 +21,7 @@ export default function NavBar() {
       style={{ borderColor: `${primary}33` }}
     >
       <HieroglyphBorder className="opacity-30" />
-      <div className="flex h-[60px] min-h-[56px] items-center justify-between px-4 sm:h-[72px] sm:px-8">
+      <div className="flex h-[60px] min-h-14 items-center justify-between px-4 sm:h-[72px] sm:px-8">
         <a
           href="#top"
           className="flex shrink-0 items-center gap-2 no-underline sm:gap-3"
@@ -63,7 +63,6 @@ export default function NavBar() {
         </a>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          <PharaonicMenuCta variant="nav" />
           <LanguageToggle />
         </div>
       </div>
