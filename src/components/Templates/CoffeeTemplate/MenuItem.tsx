@@ -197,11 +197,12 @@ const MenuItem = ({
           <FiX className="text-xl" />
         </button>
 
-        <div className="relative aspect-[16/10] w-full overflow-hidden rounded-t-2xl bg-[#2a2520] ring-1 ring-inset ring-white/5">
+        <div className="relative aspect-[16/10] w-full overflow-hidden rounded-t-2xl bg-[#2a2520] ring-1 ring-inset ring-white/5 leading-none">
           <LoadImage
             src={image ?? ""}
             alt={locale === "ar" ? displayNameAr : name}
-            className="h-full w-full object-cover object-center"
+            fill
+            className="object-cover object-center"
             disableLazy={true}
           />
           <div
@@ -312,11 +313,12 @@ const MenuItem = ({
         className="group relative w-full p-3 text-start transition-all duration-300 hover:border-[#F2B705]/35 hover:shadow-[0_12px_40px_-8px_rgba(242,183,5,0.12)] focus:border-[#F2B705]/45 focus:outline-none focus:ring-2 focus:ring-[#F2B705]/25 sm:p-4"
       >
         <div className="flex items-center gap-3 sm:gap-4">
-          <div className="relative size-[4.5rem] shrink-0 overflow-hidden rounded-xl bg-[#2a2520] ring-1 ring-inset ring-white/[0.06] sm:h-[5.25rem] sm:w-[5.25rem] md:h-[5.75rem] md:w-[5.75rem]">
+          <div className="relative size-[4.5rem] shrink-0 overflow-hidden rounded-xl bg-[#2a2520] ring-1 ring-inset ring-white/[0.06] leading-none sm:h-[5.25rem] sm:w-[5.25rem] md:h-[5.75rem] md:w-[5.75rem]">
             <LoadImage
               src={image ?? ""}
               alt={locale === "ar" ? displayNameAr : name}
-              className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+              fill
+              className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
               disableLazy={false}
             />
           </div>

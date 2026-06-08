@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import type {
@@ -25,6 +31,7 @@ import {
   sortMenuItems,
   sortMenuItemsForDisplay,
 } from "@/lib/menuCategoryOrder";
+import NeonDetailModal from "./NeonDetailModal";
 
 function NeonMenuItemCard({
   item,
@@ -75,12 +82,13 @@ function NeonMenuItemCard({
         e.currentTarget.style.borderColor = "";
       }}
     >
-      <div className="relative h-48 overflow-hidden">
+      <div className="relative h-48 overflow-hidden leading-none">
         <LoadImage
           src={item.image}
           alt={itemName}
+          fill
           disableLazy={true}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          className="object-cover transition-transform duration-300 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/20 to-transparent" />
         {item.discountPercent && item.discountPercent > 0 && (
@@ -208,7 +216,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   const tableCartAllowed = useTableCartAllowed();
   const isTableOrder =
     Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
-  const [, setSelectedFoodItem] = useState<MenuItem | null>(null);
+  const [selectedFoodItem, setSelectedFoodItem] = useState<MenuItem | null>(
+    null,
+  );
+  const productsRef = useRef<HTMLDivElement>(null);
   const { openItem } = useTrackMenuItemClick();
 
   const menuInfo =
@@ -258,10 +269,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     const dbCategories = sortCategories(
       menuCategories.filter((cat) => cat.isActive !== false),
     ).map((cat) => ({
-        id: cat.id.toString(),
-        name: locale === "ar" ? cat.nameAr || cat.name : cat.nameEn || cat.name,
-        icon: "🍽️",
-      }));
+      id: cat.id.toString(),
+      name: locale === "ar" ? cat.nameAr || cat.name : cat.nameEn || cat.name,
+      icon: "🍽️",
+    }));
 
     return [allCategory, ...dbCategories];
   }, [menuCategories, locale]);
@@ -278,10 +289,40 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     );
   }, [menuItems, menuCategories, selectedCategory]);
 
+  const scrollToProducts = useCallback(() => {
+    const el = productsRef.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 96;
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  }, []);
+
+  const handleCategorySelect = useCallback(
+    (categoryId: string) => {
+      onCategoryChange(categoryId);
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(scrollToProducts);
+      });
+    },
+    [onCategoryChange, scrollToProducts],
+  );
+
+  const selectedModalCategoryName = useMemo(() => {
+    if (!selectedFoodItem) return "";
+    return (
+      categories.find(
+        (cat) => cat.id === selectedFoodItem.categoryId?.toString(),
+      )?.name ||
+      (locale === "ar"
+        ? selectedFoodItem.categoryNameAr || selectedFoodItem.categoryName
+        : selectedFoodItem.categoryNameEn || selectedFoodItem.categoryName) ||
+      ""
+    );
+  }, [selectedFoodItem, categories, locale]);
+
   return (
     <section
       id="templates"
-      className="py-24 md:py-32 bg-linear-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 relative overflow-hidden"
+      className="py-10 bg-linear-to-b from-white to-slate-50 dark:from-slate-950 dark:to-slate-900 relative overflow-hidden"
     >
       {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -317,7 +358,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         {/* Categories Filter */}
         <div className="mb-16 -mx-4 px-4 md:mx-0 md:px-0">
           <div
-            className="flex flex-nowrap md:flex-wrap items-center gap-3 md:gap-4 md:justify-center pb-2 md:pb-0 snap-x snap-mandatory scroll-smooth [-webkit-overflow-scrolling:touch]"
+            className="flex flex-nowrap md:flex-wrap items-center gap-3 md:gap-4 md:justify-center  pb-2 md:pb-0  scroll-smooth [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             role="tablist"
             aria-label={locale === "ar" ? "فئات القائمة" : "Menu categories"}
           >
@@ -330,7 +371,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   type="button"
                   role="tab"
                   aria-selected={isActive}
-                  onClick={() => onCategoryChange(category.id)}
+                  onClick={() => handleCategorySelect(category.id)}
                   className={[
                     "shrink-0 snap-start flex items-center gap-2 rounded-2xl border-2 px-4 py-2.5 text-sm font-semibold transition-all duration-200 md:gap-3 md:px-6 md:py-3 md:text-base",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--neon-primary)]",
@@ -363,7 +404,11 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <PromoBanner />
         </div>
         {/* Menu Items Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div
+          id="neon-menu-products"
+          ref={productsRef}
+          className="scroll-mt-28 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        >
           {filteredItems.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <p className="text-slate-600 dark:text-slate-400 text-base">
@@ -413,14 +458,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </div>
       </div>
 
-      {/* Food Item Modal */}
-      {/* <FoodItemModal
-        isOpen={selectedFoodItem !== null}
-        onClose={() => setSelectedFoodItem(null)}
-        item={selectedFoodItem}
-        isProPlan={isProPlan}
-        currency={currency}
-      /> */}
+      {selectedFoodItem ? (
+        <NeonDetailModal
+          item={selectedFoodItem}
+          onClose={() => setSelectedFoodItem(null)}
+          currency={currency}
+          primaryColor={primaryColor}
+          secondaryColor={secondaryColor}
+          isProPlan={isProPlan}
+          isTableOrder={isTableOrder}
+          categoryName={selectedModalCategoryName}
+        />
+      ) : null}
     </section>
   );
 };

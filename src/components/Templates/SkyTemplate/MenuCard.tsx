@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { Icon } from "../components/Icon";
+import { useState } from "react";
 import { MenuItem } from "@/types/menu";
+import SkyDetailModal from "./SkyDetailModal";
 import { arabCurrencies, Currency } from "@/constants/currencies";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
@@ -35,9 +35,7 @@ export default function MenuCard({
   const tableCartAllowed = useTableCartAllowed();
   const isTableOrder =
     Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
-  const direction = locale === "ar" ? "rtl" : "ltr";
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
 
   // Get translated name and description based on locale
@@ -65,30 +63,10 @@ export default function MenuCard({
     return currencySymbol;
   };
 
-  useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isModalOpen]);
-
   const handleCardClick = () => {
     trackItem(item.id);
     setIsModalOpen(true);
-    setIsClosing(false);
     onClick();
-  };
-
-  const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      setIsModalOpen(false);
-      setIsClosing(false);
-    }, 300); // Match animation duration
   };
 
   return (
@@ -148,7 +126,7 @@ export default function MenuCard({
             <div className="w-8 h-1 bg-(--bg-main)/10 rounded-full group-hover:w-16 transition-all duration-500" />
           </div>
 
-          <p className="text-(--bg-main)/70 text-lg leading-relaxed mb-8 h-12 overflow-hidden font-medium opacity-90 line-clamp-2">
+          <p className="text-(--bg-main)/70 text-lg leading-relaxed mb-8  overflow-hidden font-medium opacity-90 line-clamp-2">
             {itemDescription}
           </p>
 
@@ -197,7 +175,9 @@ export default function MenuCard({
           )}
           {isTableOrder && quantity > 0 && (
             <p className="mt-2 text-base text-(--bg-main)/70">
-              {locale === "ar" ? `في السلة: ${quantity}` : `In cart: ${quantity}`}
+              {locale === "ar"
+                ? `في السلة: ${quantity}`
+                : `In cart: ${quantity}`}
             </p>
           )}
         </div>
@@ -206,159 +186,19 @@ export default function MenuCard({
         <div className="absolute top-0 left-0 w-1.5 h-full bg-(--bg-main)/10 group-hover:bg-(--bg-main) transition-colors duration-700" />
       </div>
 
-      {/* Popup Modal */}
-      {isModalOpen && (
-        <div
-          className={`fixed inset-0 z-1111111111 flex items-center justify-center p-4 transition-opacity duration-300 ${
-            isClosing ? "opacity-0" : "opacity-100"
-          }`}
-          onClick={handleClose}
-        >
-          {/* Backdrop */}
-          <div
-            className={`absolute inset-0 bg-black/80  backdrop-blur-md transition-opacity duration-300 ${
-              isClosing ? "opacity-0" : "opacity-100"
-            }`}
-          />
-
-          {/* Modal Content */}
-          <div
-            dir={direction}
-            className={`relative w-full max-w-2xl bg-white rounded-[2.5rem] overflow-hidden border border-(--bg-main)/20 shadow-2xl transition-all duration-300 ${
-              isClosing ? "animate-modal-out" : "animate-modal-in"
-            }`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Close Button */}
-            <button
-              onClick={handleClose}
-              className={`absolute top-6 z-30 w-12 h-12 rounded-full bg-(--bg-main)/90 backdrop-blur-base flex items-center justify-center text-white hover:bg-(--bg-main) transition-all duration-300 shadow-lg ${
-                direction === "rtl" ? "left-6" : "right-6"
-              }`}
-            >
-              <Icon name="close-line" className="text-xl" />
-            </button>
-
-            {/* Image Section */}
-            <div className="relative h-80 sm:h-96 overflow-hidden">
-              <LoadImage
-                src={item.image}
-                alt={itemName}
-                disableLazy={true}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-linear-to-t from-white via-transparent to-transparent" />
-
-              {/* Category Badge */}
-              {itemCategoryName && (
-                <div
-                  className={`absolute top-6 bg-(--bg-main)/90 backdrop-blur-md text-white text-base font-black px-4 py-2 rounded-full shadow-base tracking-widest uppercase border border-white/20 ${
-                    direction === "rtl" ? "right-6" : "left-6"
-                  }`}
-                >
-                  {itemCategoryName}
-                </div>
-              )}
-
-              {/* Price Badge */}
-              <div
-                className={`absolute bottom-6 bg-(--bg-main) text-white px-6 py-3 rounded-2xl shadow-xl border-4 border-white ${
-                  direction === "rtl" ? "right-6" : "left-6"
-                }`}
-              >
-                <span className="text-2xl font-black tracking-tighter">
-                  {item.price} {getCurrency()}
-                </span>
-              </div>
-            </div>
-
-            {/* Content Section */}
-            <div className="p-8 space-y-6">
-              {/* Title */}
-              <div>
-                <h2 className="text-3xl font-black text-(--bg-main) mb-3 tracking-tight">
-                  {itemName}
-                </h2>
-                <div className="w-12 h-1.5 bg-(--bg-main) rounded-full" />
-              </div>
-
-              {/* Description */}
-              <p className="w-full text-(--bg-main)/70 text-lg leading-relaxed font-medium text-balance wrap-break-word">
-                {itemDescription}
-              </p>
-
-              {isTableOrder && (
-                <div className="flex items-center justify-between gap-4 rounded-2xl border border-(--bg-main)/20 p-4">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAddToCart(selectedQuantity);
-                      setSelectedQuantity(1);
-                    }}
-                    className="rounded-xl bg-(--bg-main) px-4 py-2 text-base font-semibold text-white transition-opacity hover:opacity-90"
-                  >
-                    {addToCartLabel}
-                  </button>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedQuantity((prev) => Math.max(1, prev - 1));
-                      }}
-                      aria-label={decreaseLabel}
-                      className="h-8 w-8 rounded-lg border border-(--bg-main)/40 text-(--bg-main)"
-                    >
-                      -
-                    </button>
-                    <span className="min-w-6 text-center text-base font-semibold text-(--bg-main)">
-                      {selectedQuantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedQuantity((prev) => prev + 1);
-                      }}
-                      aria-label={increaseLabel}
-                      className="h-8 w-8 rounded-lg border border-(--bg-main)/40 text-(--bg-main)"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              )}
-              {isTableOrder && quantity > 0 && (
-                <p className="text-base text-(--bg-main)/70">
-                  {locale === "ar" ? `في السلة: ${quantity}` : `In cart: ${quantity}`}
-                </p>
-              )}
-
-              {/* Divider */}
-              <div className="h-px bg-(--bg-main)/10" />
-
-              {/* Additional Info */}
-              {item.originalPrice && item.discountPercent && (
-                <div className="flex items-center justify-between p-4 bg-(--bg-main)/5 rounded-2xl">
-                  <span className="text-(--bg-main)/70 font-medium">
-                    {locale === "ar" ? "السعر الأصلي" : "Original Price"}
-                  </span>
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg text-(--bg-main)/50 line-through font-medium">
-                      {item.originalPrice} {getCurrency()}
-                    </span>
-                    <span className="text-base font-black bg-(--bg-main) text-white px-3 py-1 rounded-full">
-                      -{item.discountPercent}%
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {isModalOpen ? (
+        <SkyDetailModal
+          item={item}
+          onClose={() => setIsModalOpen(false)}
+          currency={currency}
+          isTableOrder={isTableOrder}
+          quantity={quantity}
+          addToCartLabel={addToCartLabel}
+          increaseLabel={increaseLabel}
+          decreaseLabel={decreaseLabel}
+          onAddToCart={onAddToCart}
+        />
+      ) : null}
     </>
   );
 }

@@ -87,21 +87,32 @@ function LoadImage({
     onError?.(e);
   };
 
+  const imageClassName = [
+    fill ? "absolute inset-0 h-full w-full" : "block max-w-full",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+
+  const wrapperClassName = fill
+    ? "absolute inset-0 block h-full w-full overflow-hidden"
+    : "block leading-none";
+
   return (
-    <>
-      <LazyLoadImage
-        src={resizeUrl}
-        alt={alt}
-        className={`${fill ? "absolute inset-0 w-full h-full" : ""} ${className}`.trim()}
-        placeholderSrc={DEFAULT_MENU_ITEM_IMAGE_SRC}
-        effect="blur"
-        visibleByDefault={disableLazy}
-        width={fill ? "100%" : width}
-        height={fill ? "100%" : height}
-        onError={handleError}
-        {...props}
-      />
-    </>
+    <LazyLoadImage
+      src={resizeUrl}
+      alt={alt}
+      className={imageClassName}
+      wrapperClassName={wrapperClassName}
+      placeholderSrc={DEFAULT_MENU_ITEM_IMAGE_SRC}
+      effect="blur"
+      visibleByDefault={disableLazy}
+      width={fill ? "100%" : width}
+      height={fill ? "100%" : height}
+      onError={handleError}
+      {...props}
+    />
   );
 }
 

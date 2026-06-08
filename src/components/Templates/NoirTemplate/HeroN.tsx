@@ -2,11 +2,7 @@
 
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
-import {
-  useNoirTheme,
-  hexToRgba,
-  NoirChevronRight,
-} from "./NoirThemeContext";
+import { useNoirTheme, hexToRgba, NoirChevronRight } from "./NoirThemeContext";
 
 function NoirBackgroundLayers() {
   const { primary, secondary } = useNoirTheme();
@@ -41,12 +37,12 @@ export default function HeroN() {
 
   const heroTitle =
     locale === "ar"
-      ? (c?.heroTitleAr?.trim() || menuInfo?.name || "")
-      : (c?.heroTitleEn?.trim() || menuInfo?.name || "");
+      ? c?.heroTitleAr?.trim() || menuInfo?.name || ""
+      : c?.heroTitleEn?.trim() || menuInfo?.name || "";
   const heroSubtitle =
     locale === "ar"
-      ? (c?.heroSubtitleAr?.trim() || menuInfo?.description || "")
-      : (c?.heroSubtitleEn?.trim() || menuInfo?.description || "");
+      ? c?.heroSubtitleAr?.trim() || menuInfo?.description || ""
+      : c?.heroSubtitleEn?.trim() || menuInfo?.description || "";
 
   const titleParts = heroTitle
     .split(/\n+/)
@@ -60,7 +56,7 @@ export default function HeroN() {
   return (
     <>
       <NoirBackgroundLayers />
-      <section className="flex flex-col items-center justify-center text-center w-full min-w-0 px-4 sm:px-8 pt-50 pb-16 relative">
+      <section className="flex flex-col items-center justify-center text-center w-full min-w-0 px-4 sm:px-8 pt-30 pb-16 relative">
         {menuLabel ? (
           <p className="font-body text-lg tracking-[0.5em] uppercase text-cyan mb-6 opacity-0 animate-fade-up [animation-delay:0.2s]">
             — {menuLabel} —
