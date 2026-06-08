@@ -3,8 +3,7 @@
 import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import {
-  ARCANE_RED,
-  ARCANE_DEFAULT_SECONDARY,
+  useArcaneTheme,
   hexToRgba,
 } from "./ArcaneThemeContext";
 import LoadImage from "@/components/ImageLoad";
@@ -13,6 +12,8 @@ const FOOTER_WAVE_PATH =
   "M0,52 C280,4 560,108 840,42 C1080,8 1280,88 1440,36 L1440,120 L0,120 Z";
 
 function FooterWave() {
+  const { primary } = useArcaneTheme();
+
   return (
     <div
       className="pointer-events-none relative z-20 -mb-px w-full translate-y-px leading-[0]"
@@ -23,7 +24,7 @@ function FooterWave() {
         preserveAspectRatio="none"
         className="block h-16 w-full sm:h-24 md:h-28 lg:h-32"
       >
-        <path d={FOOTER_WAVE_PATH} fill={ARCANE_RED} />
+        <path d={FOOTER_WAVE_PATH} fill={primary} />
       </svg>
     </div>
   );
@@ -33,6 +34,7 @@ export default function Footer() {
   const locale = useLocale() as "ar" | "en";
   const isAr = locale === "ar";
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const { primary, secondary } = useArcaneTheme();
 
   const displayName = menuInfo?.name?.trim() || "Arcane";
   const year = new Date().getFullYear();
@@ -43,13 +45,13 @@ export default function Footer() {
         <FooterWave />
       </div>
 
-      <div className="py-5 sm:py-6 md:py-8" style={{ backgroundColor: ARCANE_RED }}>
+      <div className="py-5 sm:py-6 md:py-8" style={{ backgroundColor: primary }}>
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 text-center sm:gap-5 sm:px-6 md:flex-row md:items-center md:justify-between md:gap-4 md:text-start">
           <div className="flex max-w-full items-center justify-center gap-2 md:justify-start">
             {menuInfo?.logo ? (
               <div
                 className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full ring-1 ring-white/25"
-                style={{ boxShadow: `0 4px 14px ${hexToRgba(ARCANE_RED, 0.4)}` }}
+                style={{ boxShadow: `0 4px 14px ${hexToRgba(primary, 0.4)}` }}
               >
                 <LoadImage
                   src={menuInfo.logo}
@@ -63,7 +65,7 @@ export default function Footer() {
               <div
                 className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-black text-white"
                 style={{
-                  background: `linear-gradient(to bottom right, ${ARCANE_RED}, ${ARCANE_DEFAULT_SECONDARY})`,
+                  background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
                 }}
               >
                 {displayName.charAt(0)}

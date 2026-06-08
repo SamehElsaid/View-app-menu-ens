@@ -7,8 +7,7 @@ import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import {
-  ARCANE_RED,
-  ARCANE_DEFAULT_SECONDARY,
+  useArcaneTheme,
   hexToRgba,
 } from "./ArcaneThemeContext";
 import LoadImage from "@/components/ImageLoad";
@@ -47,6 +46,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [pastHero, setPastHero] = useState(false);
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const { primary, secondary } = useArcaneTheme();
   const displayName = menuInfo?.name?.trim() || "Arcane";
   const onHero = !pastHero;
 
@@ -66,13 +66,13 @@ export default function Navbar() {
     };
   }, []);
 
-  const logoShadow = hexToRgba(ARCANE_RED, 0.35);
+  const logoShadow = hexToRgba(primary, 0.35);
 
   const headerClass = onHero
     ? "border-transparent bg-transparent text-white"
     : "border-[#eeeeee]/80 bg-white/95 text-[#111111] shadow-sm backdrop-blur-xl";
 
-  const nameColor = onHero ? "#FFFFFF" : ARCANE_RED;
+  const nameColor = onHero ? "#FFFFFF" : primary;
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -114,7 +114,7 @@ export default function Navbar() {
               style={{
                 background: onHero
                   ? "rgba(255,255,255,0.2)"
-                  : `linear-gradient(to bottom right, ${ARCANE_RED}, ${ARCANE_DEFAULT_SECONDARY})`,
+                  : `linear-gradient(to bottom right, ${primary}, ${secondary})`,
               }}
             >
               {displayName.charAt(0)}

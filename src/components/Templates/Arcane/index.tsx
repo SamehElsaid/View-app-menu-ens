@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { Suspense, useEffect } from "react";
 import { useLocale } from "next-intl";
 import Navbar from "./Navbar";
@@ -12,6 +13,7 @@ import {
   ArcaneThemeProvider,
   ARCANE_DEFAULT_PRIMARY,
   ARCANE_DEFAULT_SECONDARY,
+  hexToRgba,
 } from "./ArcaneThemeContext";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
 import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
@@ -60,7 +62,14 @@ function ArcaneTemplate() {
     <ArcaneThemeProvider primary={primary} secondary={secondary}>
       <main
         className="arcane-root menu-template relative z-10 min-h-screen overflow-x-clip scroll-smooth bg-white font-body text-[#111111] antialiased md:pb-0"
-        style={{ fontFamily: menuTemplateFontFamily(locale) }}
+        style={{
+          fontFamily: menuTemplateFontFamily(locale),
+          ["--color-arcane-red" as string]: primary,
+          ["--arcane-red" as string]: primary,
+          ["--color-arcane-secondary" as string]: secondary,
+          ["--arcane-glow" as string]: hexToRgba(primary, 0.18),
+          ["--arcane-glow-secondary" as string]: hexToRgba(secondary, 0.14),
+        } as CSSProperties}
       >
         <Navbar />
         <Hero />

@@ -3,27 +3,51 @@ import type { CSSProperties } from "react";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import type { Category, MenuItem } from "@/types/menu";
 
+/** Music template defaults — tomato (primary) & sky (secondary) */
+export const MUSIC_DEFAULT_PRIMARY = "#4338CA";
+export const MUSIC_DEFAULT_SECONDARY = "#06B6D4";
 
-
-/** Arcane palette — Zaun indigo, Hextech cyan, Piltover brass & shimmer pink */
-
+/** Brand palette — driven by dashboard colors via CSS variables on `.music-root` */
 export const MUSIC_BRAND = {
-
   honeydew: "#F8FAFF",
-
-  peach: "#6366F1",
-
-  coral: "#EC4899",
-
-  tomato: "#4338CA",
-
-  sky: "#06B6D4",
-
+  peach: "var(--color-brand-peach)",
+  coral: "var(--color-brand-coral)",
+  tomato: "var(--color-brand-tomato)",
+  sky: "var(--color-brand-sky)",
   darkBg: "#0F172A",
-
   darkCard: "#1E1B4B",
-
 } as const;
+
+export function buildMusicBrandStyle(
+  primary: string,
+  secondary: string,
+): CSSProperties {
+  const coral = `color-mix(in srgb, ${secondary} 65%, ${primary})`;
+  const honeydew = "#F8FAFF";
+
+  return {
+    "--color-brand-tomato": primary,
+    "--color-brand-peach": `color-mix(in srgb, ${primary} 78%, white)`,
+    "--color-brand-sky": secondary,
+    "--color-brand-coral": coral,
+    "--color-brand-tomato-press": `color-mix(in srgb, ${primary} 78%, #000)`,
+    "--music-bg": honeydew,
+    "--music-bg-elevated": `color-mix(in srgb, ${secondary} 12%, ${honeydew})`,
+    "--music-pink": coral,
+    "--music-purple": primary,
+    "--music-cyan": secondary,
+    "--music-text": primary,
+    "--music-text-soft": `color-mix(in srgb, ${primary} 72%, transparent)`,
+    "--music-text-muted": `color-mix(in srgb, ${primary} 50%, transparent)`,
+    "--music-glass": `color-mix(in srgb, ${honeydew} 92%, transparent)`,
+    "--music-glass-hover": `color-mix(in srgb, ${secondary} 14%, ${honeydew})`,
+    "--music-border": `color-mix(in srgb, ${primary} 12%, transparent)`,
+    "--music-border-active": `color-mix(in srgb, ${primary} 35%, transparent)`,
+    "--music-glow-pink": `color-mix(in srgb, ${coral} 22%, transparent)`,
+    "--music-glow-purple": `color-mix(in srgb, ${primary} 14%, transparent)`,
+    "--music-glow-cyan": `color-mix(in srgb, ${secondary} 20%, transparent)`,
+  } as CSSProperties;
+}
 
 
 
@@ -61,7 +85,7 @@ const MOOD_VARS: Record<
 
   tomato: {
 
-    accent: MUSIC_BRAND.tomato,
+    accent: "var(--color-brand-tomato)",
 
     accentSoft: "color-mix(in srgb, var(--color-brand-tomato) 28%, transparent)",
 
@@ -77,7 +101,7 @@ const MOOD_VARS: Record<
 
   sky: {
 
-    accent: MUSIC_BRAND.sky,
+    accent: "var(--color-brand-sky)",
 
     accentSoft: "color-mix(in srgb, var(--color-brand-sky) 32%, transparent)",
 
@@ -93,7 +117,7 @@ const MOOD_VARS: Record<
 
   peach: {
 
-    accent: MUSIC_BRAND.peach,
+    accent: "var(--color-brand-peach)",
 
     accentSoft: "color-mix(in srgb, var(--color-brand-peach) 48%, transparent)",
 
@@ -109,7 +133,7 @@ const MOOD_VARS: Record<
 
   coral: {
 
-    accent: MUSIC_BRAND.coral,
+    accent: "var(--color-brand-coral)",
 
     accentSoft: "color-mix(in srgb, var(--color-brand-coral) 30%, transparent)",
 
@@ -129,13 +153,13 @@ const MOOD_VARS: Record<
 
 export const MOOD_GLOW_HEX: Record<MoodKey, string> = {
 
-  tomato: MUSIC_BRAND.tomato,
+  tomato: "var(--color-brand-tomato)",
 
-  sky: MUSIC_BRAND.sky,
+  sky: "var(--color-brand-sky)",
 
-  peach: MUSIC_BRAND.peach,
+  peach: "var(--color-brand-peach)",
 
-  coral: MUSIC_BRAND.coral,
+  coral: "var(--color-brand-coral)",
 
 };
 
@@ -159,7 +183,7 @@ export const PRODUCT_THEME: Record<MoodKey, ProductTheme> = {
 
   tomato: {
 
-    accentColor: MUSIC_BRAND.tomato,
+    accentColor: "var(--color-brand-tomato)",
 
     glowColor: "color-mix(in srgb, var(--color-brand-tomato) 42%, transparent)",
 
@@ -171,7 +195,7 @@ export const PRODUCT_THEME: Record<MoodKey, ProductTheme> = {
 
   sky: {
 
-    accentColor: MUSIC_BRAND.sky,
+    accentColor: "var(--color-brand-sky)",
 
     glowColor: "color-mix(in srgb, var(--color-brand-sky) 48%, transparent)",
 
@@ -183,7 +207,7 @@ export const PRODUCT_THEME: Record<MoodKey, ProductTheme> = {
 
   peach: {
 
-    accentColor: MUSIC_BRAND.peach,
+    accentColor: "var(--color-brand-peach)",
 
     glowColor: "color-mix(in srgb, var(--color-brand-peach) 55%, transparent)",
 
@@ -195,7 +219,7 @@ export const PRODUCT_THEME: Record<MoodKey, ProductTheme> = {
 
   coral: {
 
-    accentColor: MUSIC_BRAND.coral,
+    accentColor: "var(--color-brand-coral)",
 
     glowColor: "color-mix(in srgb, var(--color-brand-coral) 45%, transparent)",
 

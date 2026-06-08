@@ -5,7 +5,7 @@ import { useLocale } from "next-intl";
 import { FaMugHot } from "react-icons/fa6";
 import { GiCoffeeBeans } from "react-icons/gi";
 import { useAppSelector } from "@/store/hooks";
-import { ARCANE_RED, ARCANE_WHITE } from "./ArcaneThemeContext";
+import { useArcaneTheme, ARCANE_WHITE } from "./ArcaneThemeContext";
 
 const HERO_WAVE_PATH =
   "M0,32 C180,108 420,4 720,78 C980,118 1180,42 1440,88 L1440,120 L0,120 Z";
@@ -28,6 +28,8 @@ function HeroWave() {
 }
 
 function HeroCafeMotion() {
+  const { primary } = useArcaneTheme();
+
   return (
     <div
       className="relative mx-auto flex h-[152px] w-[152px] items-center justify-center sm:h-[180px] sm:w-[180px] md:h-[200px] md:w-[200px]"
@@ -52,7 +54,7 @@ function HeroCafeMotion() {
       >
         <FaMugHot
           className="text-[2.6rem] sm:text-[2.85rem] md:text-[3rem]"
-          style={{ color: ARCANE_RED }}
+          style={{ color: primary }}
         />
       </motion.div>
 
@@ -61,7 +63,7 @@ function HeroCafeMotion() {
         animate={{ y: [0, -7, 0] }}
         transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
       >
-        <GiCoffeeBeans className="text-lg sm:text-xl" style={{ color: ARCANE_RED }} />
+        <GiCoffeeBeans className="text-lg sm:text-xl" style={{ color: primary }} />
       </motion.span>
 
       <motion.span
@@ -69,7 +71,7 @@ function HeroCafeMotion() {
         animate={{ y: [0, -6, 0] }}
         transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 0.45 }}
       >
-        <GiCoffeeBeans className="text-base opacity-85" style={{ color: ARCANE_RED }} />
+        <GiCoffeeBeans className="text-base opacity-85" style={{ color: primary }} />
       </motion.span>
 
       <motion.span
@@ -77,7 +79,7 @@ function HeroCafeMotion() {
         animate={{ y: [0, -5, 0] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 0.75 }}
       >
-        <FaMugHot className="text-sm sm:text-base" style={{ color: ARCANE_RED }} />
+        <FaMugHot className="text-sm sm:text-base" style={{ color: primary }} />
       </motion.span>
     </div>
   );
@@ -87,6 +89,7 @@ export default function Hero() {
   const locale = useLocale() as "ar" | "en";
   const isAr = locale === "ar";
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const { primary } = useArcaneTheme();
 
   const heroTitle = menuInfo?.name?.trim() || (isAr ? "القائمة" : "Menu");
   const heroDescription = menuInfo?.description?.trim() ?? "";
@@ -105,7 +108,7 @@ export default function Hero() {
     <section
       id="top"
       className="relative scroll-mt-20 overflow-x-clip pb-0 pt-[calc(5.25rem+env(safe-area-inset-top,0px))] sm:pt-[calc(6.25rem+env(safe-area-inset-top,0px))]"
-      style={{ backgroundColor: ARCANE_RED }}
+      style={{ backgroundColor: primary }}
       aria-labelledby="arcane-hero-title"
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
@@ -141,7 +144,7 @@ export default function Hero() {
                 type="button"
                 onClick={scrollToMenu}
                 className="inline-flex w-full min-h-11 items-center justify-center rounded-full bg-white px-6 py-2.5 text-xs font-black uppercase tracking-wider shadow-[0_8px_24px_rgba(0,0,0,0.15)] transition hover:opacity-95 active:scale-[0.98] sm:w-auto sm:px-8 sm:py-3 sm:text-sm"
-                style={{ color: ARCANE_RED }}
+                style={{ color: primary }}
               >
                 {isAr ? "تصفح القائمة" : "Browse Menu"}
               </button>

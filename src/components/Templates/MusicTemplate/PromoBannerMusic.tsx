@@ -44,7 +44,7 @@ export default function PromoBannerMusic() {
         slidesPerView={1}
         autoplay={{ delay: 6000, disableOnInteraction: false }}
         onSlideChange={(swiper) => setSelectedIndex(swiper.realIndex)}
-        className="music-feed-card music-feed-card--browse overflow-hidden rounded-none border-y border-brand-sky/20 shadow-[0_8px_32px_-16px_rgba(67,56,202,0.22)]"
+        className="music-feed-card music-feed-card--browse overflow-hidden rounded-none border-y border-brand-sky/20 shadow-[0_8px_32px_-16px_color-mix(in_srgb,var(--color-brand-tomato)_22%,transparent)]"
       >
         {sortedAds.map((ad) => {
           const title =
@@ -76,7 +76,7 @@ export default function PromoBannerMusic() {
 
                 <div className="absolute top-3 start-3 z-20 flex items-center gap-1.5 rounded-full border border-white/30 bg-brand-tomato/80 px-2.5 py-1 text-white shadow-sm backdrop-blur-sm">
                   <span
-                    className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-coral shadow-[0_0_8px_rgba(236,72,153,0.85)]"
+                    className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-coral shadow-[0_0_8px_color-mix(in_srgb,var(--color-brand-coral)_85%,transparent)]"
                     aria-hidden
                   />
                   <span
@@ -92,7 +92,7 @@ export default function PromoBannerMusic() {
                   >
                     {isAr ? "عرض مميز" : "Featured promo"}
                   </p>
-                  <h2 className="mb-2 line-clamp-2 text-balance font-body text-xl font-bold leading-snug tracking-tight sm:text-2xl md:text-3xl">
+                  <h2 className="mb-2 line-clamp-2 text-balance font-body text-xl font-bold leading-snug tracking-tight text-white sm:text-2xl md:text-3xl">
                     {title}
                   </h2>
                   {content ? (

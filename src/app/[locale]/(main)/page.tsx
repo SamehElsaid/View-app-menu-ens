@@ -21,6 +21,7 @@ import MaintenanceView from "@/components/Global/MaintenanceView";
 import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
+import RetroCoffeeTemplate from "@/components/Templates/RetroCoffeeTemplate";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -81,14 +82,15 @@ export default function Page() {
         <MenuLogoFallbackProvider logo={menu.menuInfo?.logo ?? null}>
           {menu.theme === "default" && <Default />}
           {menu.theme === "sky" && <SkyTemplate />}
-          {menu.theme === "neon" && <NeonTemplate />}
+          {menu.theme === "neon" && <NeonTemplate />} 
           {menu.theme === "coffee" && <CoffeeTemplate />}
-          {menu.theme === "emerald" && <EmeraldTemplate />} 
-          {menu.theme === "noir" && <NoirTemplate />}
+          {menu.theme === "emerald" && <EmeraldTemplate />}
+          {/* {menu.theme === "noir" && <NoirTemplate />}  */}
           {menu.theme === "oceanic" && <OceanicTemplate />}
+          {menu.theme === "pharaonic" && <PharaonicTemplate />}
           {menu.theme === "arcane" && <ArcaneTemplate />}
-          {menu.theme === "pharaonic" && <MusicTemplate />}
-        {/*   {menu.theme === "pharaonic" && <PharaonicTemplate />} */}
+          {menu.theme === "music" && <MusicTemplate />}
+          {menu.theme === "noir" && <RetroCoffeeTemplate />}
           {tableCartAllowed ? (
             <Suspense fallback={null}>
               <RequestStaffButton />

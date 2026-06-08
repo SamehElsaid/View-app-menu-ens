@@ -7,8 +7,7 @@ import type { Category, MenuItem } from "@/types/menu";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 import {
-  ARCANE_RED,
-  ARCANE_DEFAULT_SECONDARY,
+  useArcaneTheme,
   hexToRgba,
 } from "./ArcaneThemeContext";
 import LoadImage from "@/components/ImageLoad";
@@ -18,6 +17,7 @@ import {
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import { useAppSelector } from "@/store/hooks";
 
 function DishModal({
@@ -30,6 +30,7 @@ function DishModal({
   currencyLabel: string;
 }) {
   const locale = useLocale() as "ar" | "en";
+  const { primary, secondary } = useArcaneTheme();
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
   const isTableOrder =
@@ -66,10 +67,10 @@ function DishModal({
 
   if (!dish) return null;
 
-  const backdrop = hexToRgba(ARCANE_RED, 0.45);
-  const modalShadow = `0 24px 80px ${hexToRgba(ARCANE_RED, 0.2)}, 0 8px 24px rgba(0,0,0,0.12)`;
-  const imageBg = hexToRgba(ARCANE_RED, 0.06);
-  const divider = hexToRgba(ARCANE_DEFAULT_SECONDARY, 0.55);
+  const backdrop = hexToRgba(primary, 0.45);
+  const modalShadow = `0 24px 80px ${hexToRgba(primary, 0.2)}, 0 8px 24px rgba(0,0,0,0.12)`;
+  const imageBg = hexToRgba(primary, 0.06);
+  const divider = hexToRgba(secondary, 0.55);
 
   return (
     <>
@@ -115,7 +116,7 @@ function DishModal({
           {dish.discountPercent ? (
             <span
               className="absolute start-3 top-3 rounded-full px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white shadow-md"
-              style={{ backgroundColor: ARCANE_RED }}
+              style={{ backgroundColor: primary }}
             >
               {dish.discountPercent}% off
             </span>
@@ -128,11 +129,11 @@ function DishModal({
             ) : null}
             <span
               className="text-3xl font-extrabold tracking-tight tabular-nums"
-              style={{ color: ARCANE_RED }}
+              style={{ color: primary }}
             >
               {dish.price}
             </span>
-            <span className="text-base font-semibold opacity-70" style={{ color: ARCANE_RED }}>
+            <span className="text-base font-semibold opacity-70" style={{ color: primary }}>
               {currencyLabel}
             </span>
           </div>
@@ -168,7 +169,7 @@ function DishModal({
                   }}
                   className="rounded-xl px-4 py-2.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
                   style={{
-                    background: `linear-gradient(to bottom right, ${ARCANE_RED}, ${ARCANE_DEFAULT_SECONDARY})`,
+                    background: `linear-gradient(to bottom right, ${primary}, ${secondary})`,
                   }}
                 >
                   {locale === "ar" ? "أضف إلى السلة" : "Add to cart"}
@@ -228,6 +229,8 @@ function CategoryPills({
   onChange: (id: number) => void;
   locale: "ar" | "en";
 }) {
+  const { primary } = useArcaneTheme();
+
   const tabs: Category[] = [
     { id: 0, name: "All", nameAr: "الكل", nameEn: "All", menuItems: [] },
     ...categories,
@@ -250,8 +253,8 @@ function CategoryPills({
             onClick={() => onChange(cat.id)}
             className="shrink-0 snap-start rounded-full border-2 px-4 py-2 text-xs font-black uppercase tracking-wide transition-colors sm:px-6 sm:py-2.5 sm:text-sm"
             style={{
-              borderColor: isActive ? ARCANE_RED : "#e5e5e5",
-              backgroundColor: isActive ? ARCANE_RED : "transparent",
+              borderColor: isActive ? primary : "#e5e5e5",
+              backgroundColor: isActive ? primary : "transparent",
               color: isActive ? "#FFFFFF" : "#111111",
             }}
           >
@@ -274,6 +277,8 @@ function SlideProgress({
   total: number;
   isAr: boolean;
 }) {
+  const { primary } = useArcaneTheme();
+
   return (
     <div className={`mt-5 ${isAr ? "text-end" : ""}`}>
       <p className="text-xs font-semibold tabular-nums text-[#666666] sm:text-sm">
@@ -291,7 +296,7 @@ function SlideProgress({
           className="h-full rounded-full transition-[width] duration-300"
           style={{
             width: `${total > 0 ? ((slideIndex + 1) / total) * 100 : 0}%`,
-            backgroundColor: ARCANE_RED,
+            backgroundColor: primary,
           }}
         />
       </div>
@@ -326,6 +331,7 @@ function ProductMenuCard({
   currencyLabel: string;
   onSelect: () => void;
 }) {
+  const { primary } = useArcaneTheme();
   const name = isAr ? item.nameAr : item.nameEn;
   const { hasDiscount, discountPercent } = getItemDiscount(item);
 
@@ -339,7 +345,7 @@ function ProductMenuCard({
           ? "border-2 shadow-md"
           : "border-[#eeeeee] hover:border-[#dddddd]"
       }`}
-      style={isActive ? { borderColor: ARCANE_RED } : undefined}
+      style={isActive ? { borderColor: primary } : undefined}
     >
       <div className="relative aspect-square overflow-hidden bg-[#fafafa]">
         <LoadImage
@@ -352,7 +358,7 @@ function ProductMenuCard({
         {hasDiscount && discountPercent ? (
           <span
             className="absolute start-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-black uppercase text-white"
-            style={{ backgroundColor: ARCANE_RED }}
+            style={{ backgroundColor: primary }}
           >
             {isAr ? `${discountPercent}%` : `-${discountPercent}%`}
           </span>
@@ -372,7 +378,7 @@ function ProductMenuCard({
           ) : null}
           <span
             className="text-sm font-black tabular-nums sm:text-base"
-            style={{ color: ARCANE_RED }}
+            style={{ color: primary }}
           >
             {currencyLabel} {item.price}
           </span>
@@ -443,9 +449,11 @@ export default function Menu({
 }) {
   const locale = useLocale() as "ar" | "en";
   const isAr = locale === "ar";
+  const { primary } = useArcaneTheme();
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
   const displayName = menuInfo?.name?.trim() || "Arcane";
   const currencyLabel = useCurrencyLabel()(currency);
+  const { trackItem } = useTrackMenuItemClick();
 
   const [activeCategory, setActiveCategory] = useState(0);
   const [slideIndex, setSlideIndex] = useState(0);
@@ -467,16 +475,26 @@ export default function Menu({
     setSlideIndex(0);
   }, [activeCategory]);
 
+  const trackProductAt = (index: number) => {
+    const item = filteredItems[index];
+    if (item?.id) trackItem(item.id);
+  };
+
   const goPrev = () => {
-    setSlideIndex((i) => (i <= 0 ? Math.max(0, total - 1) : i - 1));
+    const next = slideIndex <= 0 ? Math.max(0, total - 1) : slideIndex - 1;
+    setSlideIndex(next);
+    trackProductAt(next);
   };
 
   const goNext = () => {
-    setSlideIndex((i) => (i >= total - 1 ? 0 : i + 1));
+    const next = slideIndex >= total - 1 ? 0 : slideIndex + 1;
+    setSlideIndex(next);
+    trackProductAt(next);
   };
 
   const selectProduct = (index: number) => {
     setSlideIndex(index);
+    trackProductAt(index);
     featuredRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -525,7 +543,7 @@ export default function Menu({
       <div className="mx-auto max-w-7xl">
         <p
           className="mb-3 text-center text-[10px] font-black uppercase tracking-[0.28em] sm:mb-4 sm:text-xs sm:tracking-[0.35em]"
-          style={{ color: ARCANE_RED }}
+          style={{ color: primary }}
         >
           {displayName}
         </p>
@@ -535,11 +553,11 @@ export default function Menu({
         >
           {isAr ? (
             <>
-              استكشف <span style={{ color: ARCANE_RED }}>القائمة</span>
+              استكشف <span style={{ color: primary }}>القائمة</span>
             </>
           ) : (
             <>
-              Explore <span style={{ color: ARCANE_RED }}>Menu</span>
+              Explore <span style={{ color: primary }}>Menu</span>
             </>
           )}
         </h2>
@@ -585,7 +603,7 @@ export default function Menu({
             >
               <p
                 className="text-xs font-black uppercase tracking-[0.2em] sm:text-sm sm:tracking-[0.25em]"
-                style={{ color: ARCANE_RED }}
+                style={{ color: primary }}
               >
                 {categoryLabel}
               </p>
@@ -603,7 +621,7 @@ export default function Menu({
                 {hasDiscount && discountPercent ? (
                   <span
                     className="mb-2 inline-flex w-fit rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white sm:px-3.5 sm:py-1.5 sm:text-xs"
-                    style={{ backgroundColor: ARCANE_RED }}
+                    style={{ backgroundColor: primary }}
                   >
                     {isAr ? `${discountPercent}% خصم` : `${discountPercent}% off`}
                   </span>
@@ -618,7 +636,7 @@ export default function Menu({
                   ) : null}
                   <p
                     className="font-body text-2xl font-black tabular-nums sm:text-3xl md:text-4xl"
-                    style={{ color: ARCANE_RED }}
+                    style={{ color: primary }}
                   >
                     {currencyLabel} {current?.price}
                   </p>
@@ -630,9 +648,12 @@ export default function Menu({
               >
                 <button
                   type="button"
-                  onClick={() => current && setSelectedDish(current)}
+                  onClick={() => {
+                    if (current?.id) trackItem(current.id);
+                    if (current) setSelectedDish(current);
+                  }}
                   className="w-full rounded-full px-6 py-3.5 text-xs font-black uppercase tracking-wider text-white sm:w-auto sm:px-8 sm:py-4 sm:text-sm"
-                  style={{ backgroundColor: ARCANE_RED }}
+                  style={{ backgroundColor: primary }}
                 >
                   {isAr ? "عرض التفاصيل" : "View Details"}
                 </button>
@@ -640,7 +661,7 @@ export default function Menu({
                   type="button"
                   onClick={goNext}
                   className="w-full rounded-full border-2 px-6 py-3.5 text-xs font-black uppercase tracking-wider sm:w-auto sm:px-8 sm:py-4 sm:text-sm"
-                  style={{ borderColor: ARCANE_RED, color: ARCANE_RED }}
+                  style={{ borderColor: primary, color: primary }}
                 >
                   {isAr ? "التالي ←" : "Next →"}
                 </button>

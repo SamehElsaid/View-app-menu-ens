@@ -15,6 +15,10 @@ import { ENSFixedBanner } from "../components/ENSFixedBanner";
 import { MusicProvider, useMusic } from "./MusicContext";
 
 import { resolveMusicMood } from "./moodEnergy";
+import {
+  applyMusicBrandVars,
+  useMusicBrandStyle,
+} from "./useMusicBrandStyle";
 
 import Atmosphere from "./Atmosphere";
 
@@ -43,6 +47,8 @@ function MusicTemplateContent() {
 
   const { activeCategoryId, activeItem } = useMusic();
 
+  const brandStyle = useMusicBrandStyle();
+
 
 
   const mood = useMemo(
@@ -68,12 +74,14 @@ function MusicTemplateContent() {
 
 
   useEffect(() => {
-
     document.body.classList.add("music-theme");
+    const clearBodyVars = applyMusicBrandVars(document.body, brandStyle);
 
-    return () => document.body.classList.remove("music-theme");
-
-  }, []);
+    return () => {
+      clearBodyVars();
+      document.body.classList.remove("music-theme");
+    };
+  }, [brandStyle]);
 
 
 
@@ -89,7 +97,7 @@ function MusicTemplateContent() {
 
       data-product-mood={mood.productMood}
 
-      style={{ ...mood.style, fontFamily: menuTemplateFontFamily(locale) }}
+      style={{ ...brandStyle, ...mood.style, fontFamily: menuTemplateFontFamily(locale) }}
 
     >
 

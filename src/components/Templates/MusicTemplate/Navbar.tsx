@@ -67,7 +67,7 @@ export default function Navbar() {
               ☕
             </span>
           )}
-          <span className="music-logo__text text-brand-tomato transition-colors duration-300">
+          <span className="music-logo__text transition-colors duration-300">
             {displayName}
           </span>
         </div>

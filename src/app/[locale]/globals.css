@@ -454,6 +454,29 @@ body.arcane-theme .arcane-partners-swiper .swiper-pagination-bullet-active {
   min-height: 0;
 }
 
+/* Retro template — show full-page background image */
+body:has(.retro-root),
+.menu-template:has(.retro-root) {
+  background: transparent !important;
+}
+
+.retro-page-bg {
+  width: 100vw;
+  height: 100lvh;
+  height: 100dvh;
+  min-height: -webkit-fill-available;
+  background-position: center center;
+}
+
+.retro-page-bg--desktop {
+  background-size: cover;
+}
+
+.retro-page-bg--mobile {
+  background-size: 100% 100%;
+  background-position: center center;
+}
+
 body.music-theme {
   margin: 0;
   min-height: 100dvh;
@@ -1586,6 +1609,11 @@ body.music-theme {
 .music-feed__price {
   font-size: 0.9375rem;
   font-weight: 700;
+  color: var(--color-brand-coral);
+}
+
+.music-feed__badge {
+  color: var(--music-text);
 }
 
 .music-product-modal__backdrop {

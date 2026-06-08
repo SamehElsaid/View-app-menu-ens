@@ -205,8 +205,8 @@ export default function OrderChatbot({
 
   /** Clear ENS fixed banner (~52px) on free-plan menus. */
   const chatAnchorClass = isFreePlan
-    ? "bottom-[4.75rem] sm:bottom-20"
-    : "bottom-5";
+    ? "bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-20"
+    : "bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))]";
 
   const localeFromDocument =
     typeof document !== "undefined" ? document.documentElement.lang : "";
@@ -1183,7 +1183,7 @@ export default function OrderChatbot({
 
   return (
     <div
-      className={`fixed ${chatAnchorClass} ${isArabic ? "right-5" : "left-5"} z-99992`}
+      className={`fixed ${chatAnchorClass} ${isArabic ? "left-5" : "right-5"} z-99992`}
       dir={direction}
     >
       {open ? (

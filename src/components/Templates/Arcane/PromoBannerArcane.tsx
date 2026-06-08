@@ -9,8 +9,7 @@ import type { Ad } from "@/types/Ad";
 import LoadImage from "@/components/ImageLoad";
 import { trackAdClick } from "@/lib/trackAdClick";
 import {
-  ARCANE_RED,
-  ARCANE_DEFAULT_SECONDARY,
+  useArcaneTheme,
   hexToRgba,
 } from "./ArcaneThemeContext";
 import "swiper/css";
@@ -19,6 +18,7 @@ export default function PromoBannerArcane() {
   const ads = useAppSelector((state) => state.menu.ads) ?? [];
   const locale = useLocale();
   const isAr = locale === "ar";
+  const { primary, secondary } = useArcaneTheme();
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const sortedAds = [...ads]
@@ -46,7 +46,7 @@ export default function PromoBannerArcane() {
         slidesPerView={1}
         autoplay={{ delay: 6000, disableOnInteraction: false }}
         onSlideChange={(swiper) => setSelectedIndex(swiper.realIndex)}
-        className="overflow-hidden rounded-2xl border-2 border-[#eeeeee] shadow-[0_16px_48px_-24px_rgba(209,40,42,0.35)]"
+        className="overflow-hidden rounded-2xl border-2 border-[#eeeeee] shadow-[0_16px_48px_-24px_rgba(0,0,0,0.18)]"
       >
         {sortedAds.map((ad) => {
           const title =
@@ -74,13 +74,13 @@ export default function PromoBannerArcane() {
                   className="absolute inset-0"
                   style={{
                     background: isAr
-                      ? `linear-gradient(255deg, ${hexToRgba(ARCANE_DEFAULT_SECONDARY, 0.62)} 0%, ${hexToRgba(ARCANE_RED, 0.28)} 34%, transparent 68%)`
-                      : `linear-gradient(105deg, ${hexToRgba(ARCANE_DEFAULT_SECONDARY, 0.62)} 0%, ${hexToRgba(ARCANE_RED, 0.28)} 34%, transparent 68%)`,
+                      ? `linear-gradient(255deg, ${hexToRgba(secondary, 0.62)} 0%, ${hexToRgba(primary, 0.28)} 34%, transparent 68%)`
+                      : `linear-gradient(105deg, ${hexToRgba(secondary, 0.62)} 0%, ${hexToRgba(primary, 0.28)} 34%, transparent 68%)`,
                   }}
                 />
                 <div
                   className={`absolute top-3 z-20 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-white ${isAr ? "start-3" : "end-3"}`}
-                  style={{ backgroundColor: ARCANE_RED }}
+                  style={{ backgroundColor: primary }}
                 >
                   {isAr ? "إعلان" : "Ad"}
                 </div>
@@ -107,7 +107,7 @@ export default function PromoBannerArcane() {
                       rel="noopener noreferrer"
                       onClick={(e: MouseEvent) => e.stopPropagation()}
                       className="inline-flex w-fit items-center gap-2 rounded-full px-6 py-2.5 text-[10px] font-black uppercase tracking-[0.18em] text-white no-underline transition-opacity hover:opacity-90 sm:text-xs"
-                      style={{ backgroundColor: ARCANE_RED }}
+                      style={{ backgroundColor: primary }}
                     >
                       {isAr ? "اكتشف الآن" : "Discover"}
                       <span aria-hidden>{isAr ? "←" : "→"}</span>
@@ -129,7 +129,7 @@ export default function PromoBannerArcane() {
               style={{
                 width: selectedIndex === i ? 32 : 6,
                 backgroundColor:
-                  selectedIndex === i ? ARCANE_RED : hexToRgba(ARCANE_RED, 0.25),
+                  selectedIndex === i ? primary : hexToRgba(primary, 0.25),
               }}
             />
           ))}
