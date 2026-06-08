@@ -90,12 +90,11 @@ export default function MenuSection({ currency }: { currency: string }) {
       id="menu"
       className={`max-w-7xl mx-auto scroll-mt-32 relative ${isModalOpen ? "z-11111111111" : "z-10"} mt-10`}
     >
-     
-
       {/* Categories Navigation */}
       <SwiperCategory
         isGray={true}
         sticky={false}
+        showNavButtons
         categories={categories as MenuCategoryLike[]}
         activeCategory={activeCategory}
         setActiveCategory={setActiveCategory}

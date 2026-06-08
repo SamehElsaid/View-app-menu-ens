@@ -21,7 +21,7 @@ interface NavbarProps {
 }
 
 const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
-  const [fabCategoriesOpen, setFabCategoriesOpen] = useState(false);
+  const [categoriesOpen, setCategoriesOpen] = useState(false);
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -33,18 +33,18 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
   ];
 
   useEffect(() => {
-    if (!fabCategoriesOpen) return;
+    if (!categoriesOpen) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setFabCategoriesOpen(false);
+      if (e.key === "Escape") setCategoriesOpen(false);
     };
     document.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = prev;
       document.removeEventListener("keydown", onKey);
     };
-  }, [fabCategoriesOpen]);
+  }, [categoriesOpen]);
 
   const scrollToMenu = () => {
     const menuSection = document.getElementById("menu");
@@ -68,7 +68,7 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
     const categoryElement = document.getElementById(elementId);
     if (categoryElement) {
       categoryElement.scrollIntoView({ behavior: "smooth", block: "start" });
-      setFabCategoriesOpen(false);
+      setCategoriesOpen(false);
     }
   };
 
@@ -82,7 +82,6 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
 
   const categoriesLabel = locale === "ar" ? "التصنيفات" : "Categories";
   const isAr = locale === "ar";
-  const fabSideClass = isAr ? "right-6 md:right-8" : "left-6 md:left-8";
   const panelSideClass = isAr
     ? "right-0 border-l border-[#3B332E]"
     : "left-0 border-r border-[#3B332E]";
@@ -134,6 +133,22 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
                 );
               })}
 
+              {categories.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => setCategoriesOpen(true)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#3B332E] hover:bg-[#F2B705]/20 text-[#B6AA99] hover:text-[#F2B705] transition-all duration-300"
+                  aria-label={categoriesLabel}
+                  aria-expanded={categoriesOpen}
+                  aria-controls="coffee-categories-panel"
+                >
+                  <FiLayers className="h-5 w-5 shrink-0" strokeWidth={1.75} />
+                  <span className="hidden sm:inline text-base font-medium">
+                    {categoriesLabel}
+                  </span>
+                </button>
+              ) : null}
+
               <button
                 type="button"
                 onClick={toggleLanguage}
@@ -162,19 +177,7 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
         </div>
       </nav>
 
-      {categories.length > 0 && !fabCategoriesOpen && (
-        <button
-          type="button"
-          onClick={() => setFabCategoriesOpen(true)}
-          className={`fixed bottom-6 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-[#F2B705] text-[#17120F] shadow-[0_8px_32px_-4px_rgba(242,183,5,0.45)] transition hover:scale-105 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F2B705] focus-visible:ring-offset-2 focus-visible:ring-offset-[#17120F] md:bottom-8 md:h-16 md:w-16 ${fabSideClass}`}
-          aria-label={categoriesLabel}
-          aria-expanded="false"
-        >
-          <FiLayers className="h-7 w-7 md:h-8 md:w-8" strokeWidth={1.75} />
-        </button>
-      )}
-
-      {fabCategoriesOpen && categories.length > 0 && (
+      {categoriesOpen && categories.length > 0 && (
         <div
           className="fixed inset-0 z-100"
           role="dialog"
@@ -184,10 +187,11 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
           <button
             type="button"
             className="absolute inset-0 bg-black/65 backdrop-blur-[2px]"
-            onClick={() => setFabCategoriesOpen(false)}
+            onClick={() => setCategoriesOpen(false)}
             aria-label={locale === "ar" ? "إغلاق" : "Close overlay"}
           />
           <aside
+            id="coffee-categories-panel"
             className={`absolute top-0 flex h-full w-full max-w-base flex-col bg-[#221D1A] shadow-2xl ${panelSideClass}`}
           >
             <div className="flex items-center justify-between border-b border-[#3B332E] px-5 py-4">
@@ -199,7 +203,7 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
               </h2>
               <button
                 type="button"
-                onClick={() => setFabCategoriesOpen(false)}
+                onClick={() => setCategoriesOpen(false)}
                 className="flex h-10 w-10 items-center justify-center rounded-full text-[#B6AA99] transition hover:bg-[#3B332E] hover:text-[#F2B705]"
                 aria-label={locale === "ar" ? "إغلاق" : "Close"}
               >
