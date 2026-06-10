@@ -46,6 +46,14 @@ function SkyTemplate() {
   );
 
   useEffect(() => {
+    if (editedCategories.length === 0) return;
+    const hasActive = editedCategories.some((c) => c.id === activeCategory);
+    if (!hasActive) {
+      setActiveCategory(editedCategories[0].id as number);
+    }
+  }, [editedCategories, activeCategory]);
+
+  useEffect(() => {
     writeSkyCartToCookie(cart);
   }, [cart]);
 
@@ -145,6 +153,7 @@ function SkyTemplate() {
       <section className="relative w-full  -mt-20 py-24 px-6 md:px-12 bg-white rounded-t-[5rem] shadow-[0_-20px_50px_-20px_rgba(14,165,233,0.05)]">
         <div className="max-w-7xl mx-auto relative z-10">
           <SwiperCategory
+            showNavButtons
             categories={editedCategories}
             activeCategory={activeCategory}
             setActiveCategory={setActiveCategory}

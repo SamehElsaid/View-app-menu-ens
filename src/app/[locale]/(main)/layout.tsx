@@ -1,5 +1,6 @@
 import Header from "@/components/Global/Header";
 import UseDispatchMenu from "@/hooks/UseDispatchMenu";
+import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { resolveMenuSlug } from "@/lib/menuSlug";
 import { serverGet } from "@/shared/serverApi";
 import { MenuItem, MenuInfo, MenuCustomizations, Category } from "@/types/menu";
@@ -95,36 +96,10 @@ const DEFAULT_ICON_URL = "/favicon.svg";
 
 function resolveMenuIconUrl(logo: string | null | undefined): string {
   const trimmed = logo?.trim();
-
   if (!trimmed) {
     return DEFAULT_ICON_URL;
   }
-
-  if (trimmed.startsWith("data:")) {
-    return trimmed;
-  }
-
-  const baseApi = process.env.NEXT_PUBLIC_BASE_URL;
-  const baseHost = baseApi?.replace(/\/api\/?$/, "") ?? "";
-
-  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-    const uploadsIndex = trimmed.indexOf("/uploads/");
-    if (uploadsIndex !== -1 && baseHost) {
-      return `${baseHost}${trimmed.slice(uploadsIndex)}`;
-    }
-    return trimmed;
-  }
-
-  if (!baseHost) {
-    return trimmed;
-  }
-
-  if (trimmed.startsWith(baseHost)) {
-    return trimmed;
-  }
-
-  const normalizedPath = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
-  return `${baseHost}${normalizedPath}`;
+  return resolveMenuItemImageSrc(trimmed);
 }
 
 export async function generateMetadata({

@@ -12,7 +12,9 @@
     "noItems": "No items in the menu",
     "off": "OFF",
     "ourMenu": "Our Menu",
-    "enjoyFood": "Enjoy the best food in a peaceful atmosphere and colors that inspire rejuvenation and relaxation."
+    "enjoyFood": "Enjoy the best food in a peaceful atmosphere and colors that inspire rejuvenation and relaxation.",
+    "scrollCategoriesPrev": "Previous categories",
+    "scrollCategoriesNext": "Next categories"
   },
   "menuNotFound": {
     "title": "This menu is not found",

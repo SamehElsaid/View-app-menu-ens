@@ -33,6 +33,9 @@ const THEME_BG_MAIN_FALLBACK: Record<string, string> = {
   sky: "#2196F3",
   neon: "#14b8a6",
   coffee: "#F2B705",
+  retro: "#C67115",
+  music: "#4338CA",
+  arcane: "#D1282A",
   emerald: "#4c1121",
   noir: "#7c3aed",
   oceanic: "#0ea5e9",
@@ -367,9 +370,13 @@ export default function RequestStaffButton() {
   /** After mount: searchParams and locale match the browser; avoids hydration mismatch. */
   if (!hasMounted || !isTableOrder) return null;
 
+  const cartAnchorClass = isArabic
+    ? "bottom-6 left-5"
+    : "bottom-[calc(6.75rem+env(safe-area-inset-bottom,0px))] right-5 sm:bottom-28";
+
   return createPortal(
     <div
-      className={`fixed bottom-6 z-99990 flex flex-col items-center gap-1 ${isArabic ? "left-5" : "right-5"}`}
+      className={`fixed z-99990 flex flex-col items-center gap-1 ${cartAnchorClass}`}
       style={{ "--bg-main": accentMain } as CSSProperties}
     >
       <button

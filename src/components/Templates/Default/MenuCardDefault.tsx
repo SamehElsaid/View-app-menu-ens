@@ -170,9 +170,7 @@ export const MenuCardDefault = ({
                 <div className="flex items-center gap-1.5 rounded-2xl border border-(--bg-main)/25 bg-white/80 px-1 py-1">
                   <button
                     type="button"
-                    onClick={() =>
-                      setCardPickQty((q) => Math.max(1, q - 1))
-                    }
+                    onClick={() => setCardPickQty((q) => Math.max(1, q - 1))}
                     className="flex h-8 w-8 items-center justify-center rounded-xl text-base font-bold text-(--bg-main) transition hover:bg-(--bg-main)/10"
                     aria-label={locale === "ar" ? "تقليل" : "Decrease"}
                   >
