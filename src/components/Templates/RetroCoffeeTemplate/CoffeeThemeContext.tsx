@@ -8,9 +8,6 @@ export const RETRO_BROWN = "#84623E";
 export const RETRO_SURFACE = "#f4ebd9";
 export const RETRO_SURFACE_BORDER = "#e6d9be";
 
-export const COFFEE_DEFAULT_PRIMARY = RETRO_PRIMARY;
-export const COFFEE_DEFAULT_SECONDARY = RETRO_BROWN;
-
 export type CoffeePalette = {
   bg: string;
   bgMid: string;
@@ -59,24 +56,16 @@ type CoffeeThemeValue = {
 
 const CoffeeThemeContext = createContext<CoffeeThemeValue | null>(null);
 
-export function CoffeeThemeProvider({
-  children,
-  primary = COFFEE_DEFAULT_PRIMARY,
-  secondary = COFFEE_DEFAULT_SECONDARY,
-}: {
-  children: ReactNode;
-  primary?: string;
-  secondary?: string;
-}) {
+export function CoffeeThemeProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
-      primary,
-      secondary,
+      primary: RETRO_PRIMARY,
+      secondary: RETRO_BROWN,
       cream: RETRO_CREAM,
-      colors: buildRetroPalette(primary, secondary),
-      gradients: buildRetroGradients(primary, secondary),
+      colors: buildRetroPalette(RETRO_PRIMARY, RETRO_BROWN),
+      gradients: buildRetroGradients(RETRO_PRIMARY, RETRO_BROWN),
     }),
-    [primary, secondary],
+    [],
   );
 
   return (

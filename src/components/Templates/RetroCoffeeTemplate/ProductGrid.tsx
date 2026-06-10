@@ -1,17 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useLocale } from "next-intl";
-import { useSearchParams } from "next/navigation";
 import type { Category, MenuItem } from "@/types/menu";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
-import {
-  readSkyCartFromCookie,
-  subscribeSkyCartUpdated,
-  upsertSkyCartQuantityFromMenuItem,
-  type SkyCartItem,
-} from "@/lib/skyTemplateCart";
 import { sortMenuItems } from "@/lib/menuCategoryOrder";
 import { useCoffee } from "./CoffeeContext";
 import { useCoffeeTheme } from "./CoffeeThemeContext";
@@ -30,20 +22,9 @@ export default function ProductGrid({
 }: ProductGridProps) {
   const locale = useLocale();
   const isAr = locale === "ar";
-  const { activeCategoryId } = useCoffee();
+  const { activeCategoryId, isTableOrder, cartById, addToCart } = useCoffee();
   const { colors, primary } = useCoffeeTheme();
   const currencyLabel = useCurrencyLabel()(currency);
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
-  const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
-
-  useEffect(() => {
-    const sync = () => setCartById(readSkyCartFromCookie());
-    sync();
-    return subscribeSkyCartUpdated(sync);
-  }, []);
 
   const filteredItems = useMemo(() => {
     const base =
@@ -58,16 +39,8 @@ export default function ProductGrid({
     activeCategoryId == null
       ? ""
       : isAr
-        ? activeCategory?.nameAr?.trim() ||
-          activeCategory?.name?.trim() ||
-          ""
-        : activeCategory?.nameEn?.trim() ||
-          activeCategory?.name?.trim() ||
-          "";
-
-  const handleAddToCart = (item: MenuItem, quantity: number) => {
-    upsertSkyCartQuantityFromMenuItem(item, quantity);
-  };
+        ? activeCategory?.nameAr?.trim() || activeCategory?.name?.trim() || ""
+        : activeCategory?.nameEn?.trim() || activeCategory?.name?.trim() || "";
 
   if (!items.length) {
     return (
@@ -105,9 +78,7 @@ export default function ProductGrid({
       {filteredItems.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-base" style={{ color: colors.textMuted }}>
-            {isAr
-              ? "لا توجد عناصر في هذا القسم"
-              : "No items in this category"}
+            {isAr ? "لا توجد عناصر في هذا القسم" : "No items in this category"}
           </p>
         </div>
       ) : (
@@ -120,7 +91,7 @@ export default function ProductGrid({
               currencyLabel={currencyLabel}
               isTableOrder={isTableOrder}
               cartQuantity={cartById[item.id]?.quantity ?? 0}
-              onAddToCart={handleAddToCart}
+              onAddToCart={addToCart}
             />
           ))}
         </div>

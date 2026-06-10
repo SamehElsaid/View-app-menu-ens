@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
         hostname: "ensapi.ensbot.net",
       },
       {
+        protocol: "https",
+        hostname: "api.ensmenu.com",
+      },
+      {
         protocol: "http",
         hostname: "localhost",
         port: "5000",

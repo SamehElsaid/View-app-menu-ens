@@ -8,8 +8,6 @@ import { sortCategories } from "@/lib/menuCategoryOrder";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
 import {
   CoffeeThemeProvider,
-  COFFEE_DEFAULT_PRIMARY,
-  COFFEE_DEFAULT_SECONDARY,
   useCoffeeTheme,
 } from "./CoffeeThemeContext";
 import { CoffeeProvider } from "./CoffeeContext";
@@ -66,17 +64,8 @@ function RetroCoffeeTemplateContent() {
 }
 
 function RetroCoffeeTemplate() {
-  const menuCustomizations = useAppSelector(
-    (state) => state.menu.menuCustomizations,
-  );
-
-  const primary =
-    menuCustomizations?.primaryColor?.trim() || COFFEE_DEFAULT_PRIMARY;
-  const secondary =
-    menuCustomizations?.secondaryColor?.trim() || COFFEE_DEFAULT_SECONDARY;
-
   return (
-    <CoffeeThemeProvider primary={primary} secondary={secondary}>
+    <CoffeeThemeProvider>
       <CoffeeProvider>
         <RetroCoffeeTemplateContent />
       </CoffeeProvider>

@@ -60,7 +60,9 @@ export default function HeroSection({
   const isAr = locale === "ar";
   const t = useTranslations("menu");
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
-  const customizations = useAppSelector((state) => state.menu.menuCustomizations);
+  const customizations = useAppSelector(
+    (state) => state.menu.menuCustomizations,
+  );
   const ads = useAppSelector((state) => state.menu.ads) ?? [];
   const { colors, primary } = useCoffeeTheme();
 
@@ -126,10 +128,7 @@ export default function HeroSection({
         }}
       >
         {featuredImage ? (
-          <div
-            className="relative aspect-square w-14 shrink-0 overflow-hidden rounded-full border bg-white sm:w-20"
-            style={{ borderColor: RETRO_SURFACE_BORDER }}
-          >
+          <div className="relative aspect-square w-14 shrink-0 overflow-hidden  sm:w-20">
             <LoadImage
               src={featuredImage}
               alt={title}
