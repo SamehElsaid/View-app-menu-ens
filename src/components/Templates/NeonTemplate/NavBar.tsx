@@ -197,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               }}
             >
               <FiGlobe className="w-5 h-5" />
-              {locale === "ar" ? "EN" : "عربي"}
+              {locale === "ar" ? "EN" : "AR"}
             </button>
 
             <button

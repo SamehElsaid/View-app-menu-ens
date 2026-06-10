@@ -15,10 +15,13 @@ import { useSearchParams } from "next/navigation";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import MusicTemplate from "@/components/Templates/MusicTemplate";
+import ArcaneTemplate from "@/components/Templates/Arcane";
 import MaintenanceView from "@/components/Global/MaintenanceView";
 import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
+import RetroCoffeeTemplate from "@/components/Templates/RetroCoffeeTemplate";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -85,6 +88,9 @@ export default function Page() {
           {menu.theme === "noir" && <NoirTemplate />}
           {menu.theme === "oceanic" && <OceanicTemplate />}
           {menu.theme === "pharaonic" && <PharaonicTemplate />}
+          {menu.theme === "arcane" && <ArcaneTemplate />}
+          {menu.theme === "music" && <MusicTemplate />}
+          {menu.theme === "retro" && <RetroCoffeeTemplate />}
           {tableCartAllowed ? (
             <Suspense fallback={null}>
               <RequestStaffButton />

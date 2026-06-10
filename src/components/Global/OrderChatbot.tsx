@@ -205,8 +205,8 @@ export default function OrderChatbot({
 
   /** Clear ENS fixed banner (~52px) on free-plan menus. */
   const chatAnchorClass = isFreePlan
-    ? "bottom-[4.75rem] sm:bottom-20"
-    : "bottom-5";
+    ? "bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-20"
+    : "bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))]";
 
   const localeFromDocument =
     typeof document !== "undefined" ? document.documentElement.lang : "";
@@ -1188,12 +1188,12 @@ export default function OrderChatbot({
     >
       {open ? (
         <div className="w-[min(92vw,390px)] rounded-3xl border border-zinc-200/80 bg-white shadow-[0_20px_45px_rgba(2,6,23,0.15)] ring-1 ring-black/5 overflow-hidden transition-all duration-300 animate-in fade-in zoom-in-95">
-          <div className="relative overflow-hidden bg-gradient-to-br from-violet-600 via-violet-500 to-fuchsia-500 px-4 py-4 text-white">
+          <div className="relative overflow-hidden bg-linear-to-br from-violet-600 via-violet-500 to-fuchsia-500 px-4 py-4 text-white">
             <div className="absolute -top-10 -end-10 h-24 w-24 rounded-full bg-white/15 blur-2xl" />
             <div className="absolute -bottom-6 start-0 h-16 w-16 rounded-full bg-fuchsia-300/20 blur-xl" />
             <div className="relative flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <p className="text-[16px] sm:text-[17px] font-semibold leading-snug tracking-tight">
+                <p className="text-md sm:text-[17px] font-semibold leading-snug tracking-tight">
                   {labels.title}
                 </p>
                 <p className="text-[11px] text-white/90 mt-2 flex items-center gap-2 font-medium">
@@ -1652,7 +1652,7 @@ export default function OrderChatbot({
                     type="button"
                     onClick={handleQuickConfirm}
                     disabled={isSending}
-                    className="inline-flex min-w-[11.5rem] items-center justify-center gap-2 rounded-full border border-emerald-200/80 bg-gradient-to-r from-white via-emerald-50/90 to-white px-5 py-2.5 text-[12px] font-semibold tracking-tight text-emerald-900 shadow-[0_2px_12px_rgba(16,185,129,0.14)] ring-1 ring-emerald-100/80 transition hover:border-emerald-300 hover:shadow-[0_4px_16px_rgba(16,185,129,0.2)] hover:ring-emerald-200/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-55"
+                    className="inline-flex min-w-46 items-center justify-center gap-2 rounded-full border border-emerald-200/80 bg-gradient-to-r from-white via-emerald-50/90 to-white px-5 py-2.5 text-[12px] font-semibold tracking-tight text-emerald-900 shadow-[0_2px_12px_rgba(16,185,129,0.14)] ring-1 ring-emerald-100/80 transition hover:border-emerald-300 hover:shadow-[0_4px_16px_rgba(16,185,129,0.2)] hover:ring-emerald-200/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-55"
                   >
                     <span>{labels.quickConfirm}</span>
                     <span
