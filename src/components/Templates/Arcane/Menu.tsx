@@ -109,7 +109,7 @@ export default function Menu({
         id="menu"
         className="overflow-x-clip bg-white px-4 py-16 text-center sm:px-6 sm:py-24"
       >
-        <p className="text-base text-[#666666] sm:text-lg">
+        <p className="text-base text-arcane-muted sm:text-lg">
           {locale === "ar" ? "لا توجد عناصر في القائمة." : "No menu items yet."}
         </p>
       </section>
@@ -146,7 +146,7 @@ export default function Menu({
         </p>
         <h2
           id="menu-heading"
-          className="mb-4 text-center font-body text-2xl font-black uppercase tracking-tight text-[#111111] sm:mb-6 sm:text-3xl md:text-4xl lg:text-5xl"
+          className="mb-4 text-center font-body text-2xl font-black uppercase tracking-tight text-arcane-ink sm:mb-6 sm:text-3xl md:text-4xl lg:text-5xl"
         >
           {locale === "ar" ? (
             <>

@@ -2415,7 +2415,6 @@ body.music-theme {
 /* Tablet */
 @media (min-width: 640px) {
   .music-container {
-    max-width: 640px;
     padding-inline: 24px;
   }
 }
