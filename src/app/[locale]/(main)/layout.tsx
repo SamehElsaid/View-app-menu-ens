@@ -81,7 +81,7 @@ const getMenu = async (locale: string) => {
 const defaultMetadata: Record<string, { title: string; description: string }> =
   {
     en: {
-      title: "ENSmenu",
+      title:  "ENSmenu",
       description:
         "ENSmenu is a platform for creating digital menus for restaurants and cafes",
     },
@@ -137,25 +137,30 @@ export async function generateMetadata({
   const defaults = defaultMetadata[lang] ?? defaultMetadata.ar;
   const data = await getMenu(locale);
   const iconUrl = resolveMenuIconUrl(data?.menu?.logo);
+  const title = data?.menu?.name;
+  const description = data?.menu?.description;
+  
+
+  console.log(title, description);
 
   return {
-    title: defaults.title,
-    description: defaults.description,
+    title: title ?? defaults.title,
+    description: description ?? defaults.description,
     icons: {
       icon: [{ url: iconUrl }],
       shortcut: iconUrl,
       apple: iconUrl,
     },
     openGraph: {
-      title: defaults.title,
-      description: defaults.description,
+      title: title ?? defaults.title,
+      description: description ?? defaults.description,
       locale: lang === "ar" ? "ar_SA" : "en_US",
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: defaults.title,
-      description: defaults.description,
+      title: title ?? defaults.title,
+      description: description ?? defaults.description,
     },
     alternates: {
       languages: {
