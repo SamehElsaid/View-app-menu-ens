@@ -12,6 +12,7 @@ import {
 } from "./FunnyThemeContext";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
 import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
+import { isFreeMenuPlan } from "@/lib/menuPlan";
 
 function FunnyTemplate() {
   const locale = useLocale();
@@ -58,7 +59,7 @@ function FunnyTemplate() {
           </section>
 
           <Footer />
-          {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
+          {isFreeMenuPlan(menuInfo?.ownerPlanType) && <ENSFixedBanner />}
         </div>
       </main>
     </FunnyThemeProvider>

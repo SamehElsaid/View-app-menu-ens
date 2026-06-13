@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
-import { useColourfulTheme, hexToRgba } from "./ColourfulThemeContext";
+import { useColourfulTheme } from "./ColourfulThemeContext";
 import LoadImage from "@/components/ImageLoad";
 import {
   subscribeSkyCartUpdated,
@@ -483,8 +483,15 @@ export default function MenuSection({
   const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const locale = useLocale();
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const menuCustomizations = useAppSelector(
+    (state) => state.menu.menuCustomizations,
+  );
   const siteName = menuInfo?.name?.trim();
-  const displayName = siteName || (locale === "ar" ? "ملوّن" : "Colourful");
+  const heroTitle =
+    locale === "ar"
+      ? menuCustomizations?.heroTitleAr?.trim() || siteName
+      : menuCustomizations?.heroTitleEn?.trim() || siteName;
+  const displayName = heroTitle || (locale === "ar" ? "ملوّن" : "Colourful");
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
   const isTableOrder =

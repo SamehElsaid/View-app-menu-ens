@@ -464,13 +464,21 @@ export default function MenuSection({
   const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const locale = useLocale();
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const menuCustomizations = useAppSelector(
+    (state) => state.menu.menuCustomizations,
+  );
   const siteName = menuInfo?.name?.trim();
-  const displayName = siteName || (locale === "ar" ? "مرح" : "Funny");
+  const heroTitle =
+    locale === "ar"
+      ? menuCustomizations?.heroTitleAr?.trim() || siteName
+      : menuCustomizations?.heroTitleEn?.trim() || siteName;
+  const displayName = heroTitle || (locale === "ar" ? "مرح" : "Funny");
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
   const isTableOrder =
     Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
   const currencyLabel = useCurrencyLabel()(currency);
+  const { primary } = useFunnyTheme();
 
   useEffect(() => {
     const sync = () => setCartById(readSkyCartFromCookie());
@@ -491,12 +499,16 @@ export default function MenuSection({
   return (
     <>
       <div className="mb-10">
-        <p className="font-sans text-lg font-600 tracking-[0.18em] uppercase mb-3 text-white/70">
+        <p
+          className="font-sans text-lg font-600 tracking-[0.18em] uppercase mb-3"
+          style={{ color: primary }}
+        >
          {displayName}
         </p>
         <h4
           id="menu-heading"
-          className="font-body text-white text-xl tracking-tight"
+          className="font-body text-xl tracking-tight"
+          style={{ color: primary }}
         >
           {locale === "ar" ? "القائمة" : "Menu"}
         </h4>
@@ -512,8 +524,9 @@ export default function MenuSection({
 
       <p
         key={`${activeCategory}-count`}
-        className="inline-flex flex-wrap items-center gap-1 rounded-2xl border border-white/30 bg-white/20 px-4 py-2.5 mb-8 font-sans text-base font-500 text-white backdrop-blur-sm shadow-sm animate-fade-in motion-reduce:animate-none"
-      >
+        className="inline-flex flex-wrap items-center gap-1 rounded-2xl border border-white/30 bg-white/20 px-4 py-2.5 mb-8 font-sans text-base font-500 backdrop-blur-sm shadow-sm animate-fade-in motion-reduce:animate-none"
+        style={{ color: primary }}
+     >
         {filteredItems.length}{" "}
         {filteredItems.length === 1
           ? locale === "ar"

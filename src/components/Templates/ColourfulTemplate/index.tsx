@@ -13,6 +13,7 @@ import {
 } from "./ColourfulThemeContext";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
 import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
+import { isFreeMenuPlan } from "@/lib/menuPlan";
 
 function ColourfulTemplate() {
   const locale = useLocale();
@@ -59,7 +60,7 @@ function ColourfulTemplate() {
           </section>
 
           <Footer />
-          {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
+          {isFreeMenuPlan(menuInfo?.ownerPlanType) && <ENSFixedBanner />}
         </div>
       </main>
     </ColourfulThemeProvider>
