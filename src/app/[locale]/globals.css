@@ -460,6 +460,34 @@ body:has(.retro-root),
   background: transparent !important;
 }
 
+/* Colourful template — show decorative theme background */
+body:has(.colourful-root),
+.menu-template:has(.colourful-root) {
+  background: transparent !important;
+}
+
+.colourful-root {
+  --colourful-primary: #4c1121;
+  --colourful-secondary: #9b2545;
+  background-color: #f8f6f3;
+}
+
+.colourful-root-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Funny template — themed page background + cards */
+body:has(.funny-root),
+.menu-template:has(.funny-root) {
+  background: transparent !important;
+}
+
+.funny-root-content {
+  position: relative;
+  z-index: 1;
+}
+
 .retro-page-bg {
   width: 100vw;
   height: 100lvh;
