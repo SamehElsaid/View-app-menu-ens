@@ -8,6 +8,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
+import { IoCartOutline } from "react-icons/io5";
 import { useLocale } from "next-intl";
 import LoadImage from "@/components/ImageLoad";
 import { useAppSelector } from "@/store/hooks";
@@ -69,7 +70,10 @@ function useProductTransition(total: number) {
     [index],
   );
 
-  const next = useCallback(() => goTo((index + 1) % total), [goTo, index, total]);
+  const next = useCallback(
+    () => goTo((index + 1) % total),
+    [goTo, index, total],
+  );
   const prev = useCallback(
     () => goTo((index - 1 + total) % total),
     [goTo, index, total],
@@ -93,14 +97,26 @@ function ShowcaseCarousel({
     products.length,
   );
   const menuItems = useAppSelector((state) => state.menu.menu) ?? [];
-  const { setActiveItemForce, setActiveCategoryId } = useMusic();
+  const {
+    setActiveItemForce,
+    setActiveCategoryId,
+    isTableOrder,
+    cartById,
+    addToCart,
+  } = useMusic();
+  const [featuredQty, setFeaturedQty] = useState(1);
 
   const active = products[index];
+  const activeMenuItem = menuItems.find((item) => item.id === active?.id);
+  const inCartQty = activeMenuItem
+    ? (cartById[activeMenuItem.id]?.quantity ?? 0)
+    : 0;
   const activeMood = active.mood;
   const orbsRef = useRef<FloatOrb[]>(buildOrbs(8));
   const orbElsRef = useRef<(HTMLSpanElement | null)[]>([]);
   const rafRef = useRef(0);
   const clockRef = useRef(0);
+  const locale = useLocale() as "ar" | "en";
 
   const [bgLayer, setBgLayer] = useState({ current: 0, previous: 0, fade: 1 });
   const prevIndexRef = useRef(index);
@@ -171,7 +187,7 @@ function ShowcaseCarousel({
 
   return (
     <section
-      className="music-showcase-hero music-showcase-card music-showcase-hero--cinematic relative isolate w-full overflow-hidden rounded-[1.25rem] border border-brand-sky/20 bg-brand-honeydew transition-[border-color,box-shadow] duration-500 ease-out sm:rounded-[1.5rem] lg:rounded-[1.75rem]"
+      className="music-showcase-hero music-showcase-card music-showcase-hero--cinematic relative isolate w-full overflow-hidden rounded-[1.25rem] border border-brand-sky/20 bg-brand-honeydew transition-[border-color,box-shadow] duration-500 ease-out sm:rounded-3xl lg:rounded-[1.75rem]"
       data-mood={activeMood}
       style={
         {
@@ -184,28 +200,31 @@ function ShowcaseCarousel({
       aria-roledescription="carousel"
     >
       <div
-        className={`music-showcase-hero__ambient music-showcase-hero__ambient--${prevMood} pointer-events-none absolute inset-0 transition-opacity duration-[550ms] ease-out`}
+        className={`music-showcase-hero__ambient music-showcase-hero__ambient--${prevMood} pointer-events-none absolute inset-0 transition-opacity duration-550 ease-out`}
         style={{ opacity: 1 - bgLayer.fade }}
         aria-hidden
       />
       <div
-        className={`music-showcase-hero__ambient music-showcase-hero__ambient--${currMood} pointer-events-none absolute inset-0 transition-opacity duration-[550ms] ease-out`}
+        className={`music-showcase-hero__ambient music-showcase-hero__ambient--${currMood} pointer-events-none absolute inset-0 transition-opacity duration-550 ease-out`}
         style={{ opacity: bgLayer.fade }}
         aria-hidden
       />
 
       <div
-        className={`music-showcase-hero__bg music-showcase-hero__bg--${prevMood} pointer-events-none absolute inset-0 transition-opacity duration-[550ms] ease-out`}
+        className={`music-showcase-hero__bg music-showcase-hero__bg--${prevMood} pointer-events-none absolute inset-0 transition-opacity duration-550 ease-out`}
         style={{ opacity: 1 - bgLayer.fade }}
         aria-hidden
       />
       <div
-        className={`music-showcase-hero__bg music-showcase-hero__bg--${currMood} pointer-events-none absolute inset-0 transition-opacity duration-[550ms] ease-out`}
+        className={`music-showcase-hero__bg music-showcase-hero__bg--${currMood} pointer-events-none absolute inset-0 transition-opacity duration-550 ease-out`}
         style={{ opacity: bgLayer.fade }}
         aria-hidden
       />
 
-      <div className="music-showcase-hero__blobs pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+      <div
+        className="music-showcase-hero__blobs pointer-events-none absolute inset-0 overflow-hidden"
+        aria-hidden
+      >
         <span className="music-showcase-hero__blob music-showcase-hero__blob--a" />
         <span className="music-showcase-hero__blob music-showcase-hero__blob--b" />
         {orbsRef.current.map((orb, i) => (
@@ -234,7 +253,7 @@ function ShowcaseCarousel({
           <div className="music-showcase-hero__glow-halo" aria-hidden />
 
           <div
-            className={`music-showcase-hero__disc-wrap relative w-[min(72vw,300px)] transition-[opacity,transform] duration-[500ms] sm:w-[min(68vw,340px)] lg:w-[min(42vw,400px)] ${imageMotion}`}
+            className={`music-showcase-hero__disc-wrap relative w-[min(72vw,300px)] transition-[opacity,transform] duration-500 sm:w-[min(68vw,340px)] lg:w-[min(42vw,400px)] ${imageMotion}`}
             style={{ transitionTimingFunction: EASE }}
           >
             <div className="music-showcase-hero__disc-ring" aria-hidden />
@@ -255,7 +274,7 @@ function ShowcaseCarousel({
         </div>
 
         <div
-          className={`music-showcase-hero__content order-2 mt-8 flex flex-col items-center text-center text-brand-tomato transition-[opacity,transform] duration-[500ms] ease-out lg:order-1 lg:mt-0 lg:items-start lg:text-start ${contentMotion}`}
+          className={`music-showcase-hero__content order-2 mt-8 flex flex-col items-center text-center text-brand-tomato transition-[opacity,transform] duration-500 ease-out lg:order-1 lg:mt-0 lg:items-start lg:text-start ${contentMotion}`}
           style={{ transitionTimingFunction: EASE }}
         >
           <p className="music-showcase-hero__tag mb-3 inline-block rounded-full bg-brand-sky/25 px-2.5 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-brand-tomato transition-[background-color,color] duration-500 ease-out">
@@ -266,7 +285,7 @@ function ShowcaseCarousel({
             {active.name}
           </h2>
 
-          <p className="music-showcase-hero__desc mb-8 max-w-[22rem] text-[clamp(0.875rem,3.2vw,1.0625rem)] leading-[1.65] text-brand-tomato/70 transition-colors duration-300 lg:max-w-md">
+          <p className="music-showcase-hero__desc mb-8 max-w-88 text-[clamp(0.875rem,3.2vw,1.0625rem)] leading-[1.65] text-brand-tomato/70 transition-colors duration-300 lg:max-w-md">
             {active.description}
           </p>
 
@@ -277,18 +296,46 @@ function ShowcaseCarousel({
               aria-label="Previous product"
               className="flex h-12 w-12 items-center justify-center rounded-full border border-brand-sky/35 bg-brand-sky/12 text-brand-tomato backdrop-blur-sm transition-all duration-300 ease-out hover:scale-105 hover:bg-brand-sky/20 active:scale-95"
             >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-                <path
-                  d="M11 4L6 9L11 14"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              {locale === "ar" ? (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 18 18"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M7 4L12 9L7 14"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 18 18"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M11 4L6 9L11 14"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
             </button>
 
-            <div className="flex items-center gap-1.5 px-1" role="tablist" aria-label="Products">
+            <div
+              className="flex items-center gap-1.5 px-1"
+              role="tablist"
+              aria-label="Products"
+            >
               {products.map((p, i) => (
                 <button
                   key={p.id}
@@ -297,7 +344,7 @@ function ShowcaseCarousel({
                   aria-selected={i === index}
                   aria-label={p.name}
                   onClick={() => goTo(i)}
-                  className={`music-showcase-hero__dot rounded-full transition-all duration-[450ms] ease-out ${
+                  className={`music-showcase-hero__dot rounded-full transition-all duration-450 ease-out ${
                     i === index
                       ? "music-showcase-hero__dot--active h-[7px] w-7"
                       : "h-[7px] w-[7px] bg-brand-sky/35"
@@ -312,25 +359,97 @@ function ShowcaseCarousel({
               aria-label="Next product"
               className="flex h-12 w-12 items-center justify-center rounded-full border border-brand-sky/35 bg-brand-sky/12 text-brand-tomato backdrop-blur-sm transition-all duration-300 ease-out hover:scale-105 hover:bg-brand-sky/20 active:scale-95"
             >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden>
-                <path
-                  d="M7 4L12 9L7 14"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              {locale === "ar" ? (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 18 18"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M11 4L6 9L11 14"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 18 18"
+                  fill="none"
+                  aria-hidden
+                >
+                  <path
+                    d="M7 4L12 9L7 14"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={handleOrder}
-            className="music-cta inline-flex min-h-[48px] items-center justify-center rounded-full bg-brand-tomato px-9 text-[0.8125rem] font-semibold uppercase tracking-[0.12em] text-brand-honeydew transition-all duration-300 ease-out hover:bg-brand-coral active:duration-200"
-          >
-            {orderLabel}
-          </button>
+          <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:flex-wrap lg:items-start">
+            <button
+              type="button"
+              onClick={handleOrder}
+              className="music-cta inline-flex min-h-12 w-full items-center justify-center rounded-full bg-brand-tomato px-9 text-[0.8125rem] font-semibold uppercase tracking-[0.12em] text-brand-honeydew transition-all duration-300 ease-out hover:bg-brand-coral active:duration-200 sm:w-auto"
+            >
+              {orderLabel}
+            </button>
+
+            {isTableOrder && activeMenuItem ? (
+              <div className="flex w-full flex-col items-center gap-2 sm:w-auto lg:items-start">
+                <div className="flex w-full items-center gap-2.5 sm:w-auto">
+                  <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-brand-sky/35 bg-brand-sky/10 p-0.5">
+                    <button
+                      type="button"
+                      className="flex h-9 w-9 items-center justify-center rounded-full text-base font-bold text-brand-tomato transition-all duration-200 hover:bg-brand-sky/15 active:scale-90"
+                      onClick={() => setFeaturedQty((q) => Math.max(1, q - 1))}
+                      aria-label={locale === "ar" ? "تقليل" : "Decrease"}
+                    >
+                      −
+                    </button>
+                    <span className="min-w-8 px-1 text-center text-sm font-bold tabular-nums text-brand-tomato">
+                      {featuredQty}
+                    </span>
+                    <button
+                      type="button"
+                      className="flex h-9 w-9 items-center justify-center rounded-full text-base font-bold text-brand-tomato transition-all duration-200 hover:bg-brand-sky/15 active:scale-90"
+                      onClick={() => setFeaturedQty((q) => q + 1)}
+                      aria-label={locale === "ar" ? "زيادة" : "Increase"}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addToCart(activeMenuItem, featuredQty);
+                      setFeaturedQty(1);
+                    }}
+                    className="inline-flex min-h-12 flex-1 items-center justify-center gap-2 rounded-full bg-brand-coral px-6 text-[0.8125rem] font-semibold uppercase tracking-[0.12em] text-brand-honeydew transition-all duration-300 ease-out hover:bg-brand-tomato active:duration-200 sm:flex-none"
+                  >
+                    <IoCartOutline className="h-4 w-4 shrink-0" aria-hidden />
+                    {locale === "ar" ? "أضف للسلة" : "Add to cart"}
+                  </button>
+                </div>
+                {inCartQty > 0 ? (
+                  <p className="text-center text-xs font-medium text-brand-tomato/60 lg:text-start">
+                    {locale === "ar"
+                      ? `في السلة: ${inCartQty}`
+                      : `In cart: ${inCartQty}`}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
 
@@ -338,13 +457,14 @@ function ShowcaseCarousel({
         className="pointer-events-none absolute bottom-4 end-5 text-[0.6875rem] font-medium tabular-nums text-brand-tomato/50 transition-colors duration-300 lg:bottom-5 lg:end-7"
         aria-live="polite"
       >
-        {String(index + 1).padStart(2, "0")} / {String(products.length).padStart(2, "0")}
+        {String(index + 1).padStart(2, "0")} /{" "}
+        {String(products.length).padStart(2, "0")}
       </p>
     </section>
   );
 }
 
-export default function Hero() {
+export default function   Hero() {
   const locale = useLocale() as "ar" | "en";
   const storeMenuItems = useAppSelector((state) => state.menu.menu);
 
@@ -363,7 +483,7 @@ export default function Hero() {
     <div className="music-showcase-wrap">
       <ShowcaseCarousel
         products={products}
-        featuredLabel={locale === "ar" ? "منتج مميز" : "Featured Item"}
+        featuredLabel={locale === "ar" ? "أحدث المنتجات" : "Recently Added"}
         orderLabel={locale === "ar" ? "اطلب الآن" : "Order Now"}
       />
     </div>

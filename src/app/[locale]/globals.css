@@ -105,7 +105,11 @@ html[lang="ar"] .font-logo {
   --color-brand-sky: #06b6d4;
   --color-brand-dark-bg: #0f172a;
   --color-brand-dark-card: #1e1b4b;
-  --color-brand-tomato-press: color-mix(in srgb, var(--color-brand-tomato) 78%, #000);
+  --color-brand-tomato-press: color-mix(
+    in srgb,
+    var(--color-brand-tomato) 78%,
+    #000
+  );
 
   /* Arcane cafe palette (utilities: bg-arcane-red, text-arcane-ink, …) */
   --color-arcane-red: #d1282a;
@@ -309,7 +313,8 @@ body.arcane-theme {
 
 body.arcane-theme .arcane-pattern-band {
   background-color: var(--color-arcane-pattern);
-  background-image: radial-gradient(
+  background-image:
+    radial-gradient(
       circle at 20% 30%,
       rgba(209, 40, 42, 0.06) 0,
       transparent 45%
@@ -331,7 +336,9 @@ body.arcane-theme .book {
   letter-spacing: 0.02em;
   border-radius: 1rem;
   box-shadow: 0 4px 24px rgba(17, 17, 17, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   cursor: pointer;
 }
 
@@ -515,20 +522,60 @@ body.music-theme {
     background-color 0.5s cubic-bezier(0.22, 1, 0.36, 1),
     color 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   --music-bg: var(--color-brand-honeydew);
-  --music-bg-elevated: color-mix(in srgb, var(--color-brand-sky) 12%, var(--color-brand-honeydew));
+  --music-bg-elevated: color-mix(
+    in srgb,
+    var(--color-brand-sky) 12%,
+    var(--color-brand-honeydew)
+  );
   --music-pink: var(--color-brand-coral);
   --music-purple: var(--color-brand-tomato);
   --music-cyan: var(--color-brand-sky);
   --music-text: var(--color-brand-tomato);
-  --music-text-soft: color-mix(in srgb, var(--color-brand-tomato) 72%, transparent);
-  --music-text-muted: color-mix(in srgb, var(--color-brand-tomato) 50%, transparent);
-  --music-glass: color-mix(in srgb, var(--color-brand-honeydew) 92%, transparent);
-  --music-glass-hover: color-mix(in srgb, var(--color-brand-sky) 14%, var(--color-brand-honeydew));
-  --music-border: color-mix(in srgb, var(--color-brand-tomato) 12%, transparent);
-  --music-border-active: color-mix(in srgb, var(--color-brand-tomato) 35%, transparent);
-  --music-glow-pink: color-mix(in srgb, var(--color-brand-coral) 22%, transparent);
-  --music-glow-purple: color-mix(in srgb, var(--color-brand-tomato) 14%, transparent);
-  --music-glow-cyan: color-mix(in srgb, var(--color-brand-sky) 20%, transparent);
+  --music-text-soft: color-mix(
+    in srgb,
+    var(--color-brand-tomato) 72%,
+    transparent
+  );
+  --music-text-muted: color-mix(
+    in srgb,
+    var(--color-brand-tomato) 50%,
+    transparent
+  );
+  --music-glass: color-mix(
+    in srgb,
+    var(--color-brand-honeydew) 92%,
+    transparent
+  );
+  --music-glass-hover: color-mix(
+    in srgb,
+    var(--color-brand-sky) 14%,
+    var(--color-brand-honeydew)
+  );
+  --music-border: color-mix(
+    in srgb,
+    var(--color-brand-tomato) 12%,
+    transparent
+  );
+  --music-border-active: color-mix(
+    in srgb,
+    var(--color-brand-tomato) 35%,
+    transparent
+  );
+  --music-glow-pink: color-mix(
+    in srgb,
+    var(--color-brand-coral) 22%,
+    transparent
+  );
+  --music-glow-purple: color-mix(
+    in srgb,
+    var(--color-brand-tomato) 14%,
+    transparent
+  );
+  --music-glow-cyan: color-mix(
+    in srgb,
+    var(--color-brand-sky) 20%,
+    transparent
+  );
 }
 
 .music-root {
@@ -541,7 +588,11 @@ body.music-theme {
     color 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   isolation: isolate;
   --mood-accent: var(--color-brand-tomato);
-  --mood-accent-soft: color-mix(in srgb, var(--color-brand-tomato) 28%, transparent);
+  --mood-accent-soft: color-mix(
+    in srgb,
+    var(--color-brand-tomato) 28%,
+    transparent
+  );
   --mood-bg-a: color-mix(in srgb, var(--color-brand-tomato) 16%, transparent);
   --mood-bg-b: color-mix(in srgb, var(--color-brand-sky) 28%, transparent);
   --mood-bg-c: color-mix(in srgb, var(--color-brand-coral) 14%, transparent);
@@ -676,14 +727,20 @@ body.music-theme {
 /* Browse/products card — lightweight, grid texture, soft lift on hover */
 .music-feed-card--browse {
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--color-brand-honeydew) 55%, transparent) inset,
+    0 1px 0 color-mix(in srgb, var(--color-brand-honeydew) 55%, transparent)
+      inset,
     0 6px 20px -10px color-mix(in srgb, var(--color-brand-sky) 28%, transparent);
 }
 
 .music-feed-card--browse:hover {
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--color-brand-honeydew) 50%, transparent) inset,
-    0 10px 28px -12px var(--feed-glow, color-mix(in srgb, var(--color-brand-coral) 18%, transparent));
+    0 1px 0 color-mix(in srgb, var(--color-brand-honeydew) 50%, transparent)
+      inset,
+    0 10px 28px -12px
+      var(
+        --feed-glow,
+        color-mix(in srgb, var(--color-brand-coral) 18%, transparent)
+      );
 }
 
 .music-feed__vinyl-toggle {
@@ -724,7 +781,8 @@ body.music-theme {
     var(--mood-accent-soft) 0%,
     transparent 68%
   );
-  animation: music-energy-pulse var(--mood-pulse-duration, 2.6s) ease-out infinite;
+  animation: music-energy-pulse var(--mood-pulse-duration, 2.6s) ease-out
+    infinite;
   z-index: 0;
 }
 
@@ -758,27 +816,33 @@ body.music-theme {
   background-color: var(--color-brand-tomato);
   color: var(--color-brand-honeydew);
   box-shadow:
-    0 1px 0 0 color-mix(in srgb, var(--color-brand-honeydew) 35%, transparent) inset,
+    0 1px 0 0 color-mix(in srgb, var(--color-brand-honeydew) 35%, transparent)
+      inset,
     0 4px 0 0 var(--color-brand-tomato-press),
-    0 10px 28px -6px color-mix(in srgb, var(--color-brand-tomato) 42%, transparent);
+    0 10px 28px -6px
+      color-mix(in srgb, var(--color-brand-tomato) 42%, transparent);
 }
 
 .music-cta:hover {
   transform: translateY(-2px);
   background-color: var(--color-brand-coral);
   box-shadow:
-    0 1px 0 0 color-mix(in srgb, var(--color-brand-honeydew) 40%, transparent) inset,
+    0 1px 0 0 color-mix(in srgb, var(--color-brand-honeydew) 40%, transparent)
+      inset,
     0 5px 0 0 var(--color-brand-tomato-press),
-    0 14px 32px -6px color-mix(in srgb, var(--color-brand-coral) 45%, transparent);
+    0 14px 32px -6px
+      color-mix(in srgb, var(--color-brand-coral) 45%, transparent);
 }
 
 .music-cta:active {
   transform: translateY(3px) scale(0.97);
   background-color: var(--color-brand-coral);
   box-shadow:
-    0 1px 0 0 color-mix(in srgb, var(--color-brand-honeydew) 20%, transparent) inset,
+    0 1px 0 0 color-mix(in srgb, var(--color-brand-honeydew) 20%, transparent)
+      inset,
     0 1px 0 0 var(--color-brand-tomato-press),
-    0 4px 12px -4px color-mix(in srgb, var(--color-brand-tomato) 35%, transparent);
+    0 4px 12px -4px
+      color-mix(in srgb, var(--color-brand-tomato) 35%, transparent);
   transition-duration: 0.18s;
 }
 
@@ -948,17 +1012,19 @@ body.music-theme {
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--color-brand-sky) 22%, transparent);
   border-radius: 16px;
-  background:
-    linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--color-brand-honeydew) 96%, var(--color-brand-sky)) 0%,
-      color-mix(in srgb, #ffffff 88%, var(--color-brand-honeydew)) 100%
-    );
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--color-brand-honeydew) 96%, var(--color-brand-sky))
+      0%,
+    color-mix(in srgb, #ffffff 88%, var(--color-brand-honeydew)) 100%
+  );
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--color-brand-honeydew) 70%, transparent) inset,
-    0 8px 28px -12px color-mix(in srgb, var(--color-brand-tomato) 12%, transparent),
+    0 1px 0 color-mix(in srgb, var(--color-brand-honeydew) 70%, transparent)
+      inset,
+    0 8px 28px -12px
+      color-mix(in srgb, var(--color-brand-tomato) 12%, transparent),
     0 0 0 1px color-mix(in srgb, var(--color-brand-sky) 8%, transparent);
 }
 
@@ -996,7 +1062,8 @@ body.music-theme {
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--color-brand-sky) 35%, transparent);
   background: #ffffff;
-  box-shadow: 0 4px 16px -6px color-mix(in srgb, var(--color-brand-sky) 28%, transparent);
+  box-shadow: 0 4px 16px -6px
+    color-mix(in srgb, var(--color-brand-sky) 28%, transparent);
 }
 
 .music-footer__logo--fallback {
@@ -1048,7 +1115,8 @@ body.music-theme {
   flex: 1 0 100%;
   text-align: center;
   padding-top: 10px;
-  border-top: 1px solid color-mix(in srgb, var(--color-brand-sky) 18%, transparent);
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-brand-sky) 18%, transparent);
 }
 
 .music-footer__copy-sep {
@@ -1066,6 +1134,56 @@ body.music-theme {
 .music-footer__link:hover {
   color: var(--color-brand-coral);
   text-decoration: underline;
+}
+
+.music-footer__social {
+  flex: 1 0 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid
+    color-mix(in srgb, var(--color-brand-sky) 18%, transparent);
+}
+
+.music-footer__social-label {
+  margin: 0;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.music-footer__social-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.music-footer__social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--color-brand-sky) 35%, transparent);
+  background: color-mix(in srgb, var(--color-brand-sky) 12%, transparent);
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.music-footer__social-link:hover {
+  color: var(--color-brand-honeydew);
+  background: var(--color-brand-coral);
+  border-color: color-mix(in srgb, var(--color-brand-coral) 55%, transparent);
+  transform: translateY(-1px);
 }
 
 @media (min-width: 640px) {
@@ -1108,6 +1226,24 @@ body.music-theme {
     padding-top: 0;
     border-top: none;
   }
+
+  .music-footer__social {
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding-top: 0;
+    border-top: none;
+  }
+
+  .music-footer__social-label {
+    font-size: 0.625rem;
+  }
+
+  .music-footer__social-link {
+    width: 34px;
+    height: 34px;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -1143,8 +1279,13 @@ body.music-theme {
 .music-showcase-hero--cinematic {
   background-color: var(--color-brand-honeydew);
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--color-brand-honeydew) 70%, transparent) inset,
-    0 20px 48px -20px var(--showcase-glow, color-mix(in srgb, var(--color-brand-coral) 16%, transparent)),
+    0 1px 0 color-mix(in srgb, var(--color-brand-honeydew) 70%, transparent)
+      inset,
+    0 20px 48px -20px
+      var(
+        --showcase-glow,
+        color-mix(in srgb, var(--color-brand-coral) 16%, transparent)
+      ),
     0 0 0 1px color-mix(in srgb, var(--color-brand-peach) 18%, transparent);
   transition:
     box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1),
@@ -1154,8 +1295,10 @@ body.music-theme {
 
 .music-showcase-card {
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--color-brand-honeydew) 55%, transparent) inset,
-    0 10px 32px -10px color-mix(in srgb, var(--color-brand-tomato) 12%, transparent);
+    0 1px 0 color-mix(in srgb, var(--color-brand-honeydew) 55%, transparent)
+      inset,
+    0 10px 32px -10px
+      color-mix(in srgb, var(--color-brand-tomato) 12%, transparent);
 }
 
 /* Layered ambient atmosphere (cross-fades per mood) */
@@ -1164,7 +1307,11 @@ body.music-theme {
   background:
     radial-gradient(
       ellipse 90% 70% at 72% 38%,
-      var(--showcase-glow, color-mix(in srgb, var(--color-brand-coral) 28%, transparent)) 0%,
+      var(
+          --showcase-glow,
+          color-mix(in srgb, var(--color-brand-coral) 28%, transparent)
+        )
+        0%,
       transparent 62%
     ),
     radial-gradient(
@@ -1176,37 +1323,128 @@ body.music-theme {
       165deg,
       var(--showcase-tint, var(--color-brand-honeydew)) 0%,
       var(--color-brand-honeydew) 48%,
-      color-mix(in srgb, var(--color-brand-honeydew) 92%, var(--color-brand-peach)) 100%
+      color-mix(
+          in srgb,
+          var(--color-brand-honeydew) 92%,
+          var(--color-brand-peach)
+        )
+        100%
     );
   transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .music-showcase-hero__ambient--tomato {
   background:
-    radial-gradient(ellipse 85% 65% at 70% 35%, color-mix(in srgb, var(--color-brand-tomato) 22%, transparent) 0%, transparent 60%),
-    radial-gradient(ellipse 55% 45% at 8% 82%, color-mix(in srgb, var(--color-brand-peach) 28%, transparent) 0%, transparent 52%),
-    linear-gradient(160deg, color-mix(in srgb, var(--color-brand-tomato) 8%, var(--color-brand-honeydew)) 0%, var(--color-brand-honeydew) 55%, color-mix(in srgb, var(--color-brand-peach) 18%, var(--color-brand-honeydew)) 100%);
+    radial-gradient(
+      ellipse 85% 65% at 70% 35%,
+      color-mix(in srgb, var(--color-brand-tomato) 22%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 55% 45% at 8% 82%,
+      color-mix(in srgb, var(--color-brand-peach) 28%, transparent) 0%,
+      transparent 52%
+    ),
+    linear-gradient(
+      160deg,
+      color-mix(
+          in srgb,
+          var(--color-brand-tomato) 8%,
+          var(--color-brand-honeydew)
+        )
+        0%,
+      var(--color-brand-honeydew) 55%,
+      color-mix(
+          in srgb,
+          var(--color-brand-peach) 18%,
+          var(--color-brand-honeydew)
+        )
+        100%
+    );
 }
 
 .music-showcase-hero__ambient--sky {
   background:
-    radial-gradient(ellipse 90% 68% at 68% 32%, color-mix(in srgb, var(--color-brand-sky) 32%, transparent) 0%, transparent 58%),
-    radial-gradient(ellipse 50% 42% at 14% 75%, color-mix(in srgb, var(--color-brand-honeydew) 55%, transparent) 0%, transparent 50%),
-    linear-gradient(155deg, color-mix(in srgb, var(--color-brand-sky) 12%, var(--color-brand-honeydew)) 0%, var(--color-brand-honeydew) 50%, color-mix(in srgb, var(--color-brand-peach) 22%, var(--color-brand-honeydew)) 100%);
+    radial-gradient(
+      ellipse 90% 68% at 68% 32%,
+      color-mix(in srgb, var(--color-brand-sky) 32%, transparent) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 50% 42% at 14% 75%,
+      color-mix(in srgb, var(--color-brand-honeydew) 55%, transparent) 0%,
+      transparent 50%
+    ),
+    linear-gradient(
+      155deg,
+      color-mix(
+          in srgb,
+          var(--color-brand-sky) 12%,
+          var(--color-brand-honeydew)
+        )
+        0%,
+      var(--color-brand-honeydew) 50%,
+      color-mix(
+          in srgb,
+          var(--color-brand-peach) 22%,
+          var(--color-brand-honeydew)
+        )
+        100%
+    );
 }
 
 .music-showcase-hero__ambient--peach {
   background:
-    radial-gradient(ellipse 80% 60% at 74% 40%, color-mix(in srgb, var(--color-brand-peach) 38%, transparent) 0%, transparent 58%),
-    radial-gradient(ellipse 48% 40% at 10% 80%, color-mix(in srgb, var(--color-brand-honeydew) 50%, transparent) 0%, transparent 48%),
-    linear-gradient(150deg, color-mix(in srgb, var(--color-brand-peach) 20%, var(--color-brand-honeydew)) 0%, var(--color-brand-honeydew) 100%);
+    radial-gradient(
+      ellipse 80% 60% at 74% 40%,
+      color-mix(in srgb, var(--color-brand-peach) 38%, transparent) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      ellipse 48% 40% at 10% 80%,
+      color-mix(in srgb, var(--color-brand-honeydew) 50%, transparent) 0%,
+      transparent 48%
+    ),
+    linear-gradient(
+      150deg,
+      color-mix(
+          in srgb,
+          var(--color-brand-peach) 20%,
+          var(--color-brand-honeydew)
+        )
+        0%,
+      var(--color-brand-honeydew) 100%
+    );
 }
 
 .music-showcase-hero__ambient--coral {
   background:
-    radial-gradient(ellipse 88% 66% at 72% 36%, color-mix(in srgb, var(--color-brand-coral) 28%, transparent) 0%, transparent 60%),
-    radial-gradient(ellipse 52% 44% at 6% 78%, color-mix(in srgb, var(--color-brand-peach) 24%, transparent) 0%, transparent 52%),
-    linear-gradient(158deg, color-mix(in srgb, var(--color-brand-coral) 10%, var(--color-brand-honeydew)) 0%, var(--color-brand-honeydew) 52%, color-mix(in srgb, var(--color-brand-peach) 20%, var(--color-brand-honeydew)) 100%);
+    radial-gradient(
+      ellipse 88% 66% at 72% 36%,
+      color-mix(in srgb, var(--color-brand-coral) 28%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 52% 44% at 6% 78%,
+      color-mix(in srgb, var(--color-brand-peach) 24%, transparent) 0%,
+      transparent 52%
+    ),
+    linear-gradient(
+      158deg,
+      color-mix(
+          in srgb,
+          var(--color-brand-coral) 10%,
+          var(--color-brand-honeydew)
+        )
+        0%,
+      var(--color-brand-honeydew) 52%,
+      color-mix(
+          in srgb,
+          var(--color-brand-peach) 20%,
+          var(--color-brand-honeydew)
+        )
+        100%
+    );
 }
 
 .music-showcase-hero__blob {
@@ -1222,7 +1460,10 @@ body.music-theme {
   right: 8%;
   width: min(240px, 45vw);
   height: min(240px, 45vw);
-  background: var(--showcase-glow, color-mix(in srgb, var(--color-brand-coral) 35%, transparent));
+  background: var(
+    --showcase-glow,
+    color-mix(in srgb, var(--color-brand-coral) 35%, transparent)
+  );
 }
 
 .music-showcase-hero__blob--b {
@@ -1249,7 +1490,11 @@ body.music-theme {
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    var(--showcase-glow, color-mix(in srgb, var(--color-brand-coral) 42%, transparent)) 0%,
+    var(
+        --showcase-glow,
+        color-mix(in srgb, var(--color-brand-coral) 42%, transparent)
+      )
+      0%,
     transparent 68%
   );
   filter: blur(28px);
@@ -1263,10 +1508,19 @@ body.music-theme {
   position: absolute;
   inset: -5%;
   border-radius: 50%;
-  border: 2px solid color-mix(in srgb, var(--showcase-accent, var(--color-brand-coral)) 35%, transparent);
+  border: 2px solid
+    color-mix(
+      in srgb,
+      var(--showcase-accent, var(--color-brand-coral)) 35%,
+      transparent
+    );
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--color-brand-peach) 45%, transparent),
-    0 0 48px -8px var(--showcase-glow, color-mix(in srgb, var(--color-brand-coral) 40%, transparent));
+    0 0 48px -8px
+      var(
+        --showcase-glow,
+        color-mix(in srgb, var(--color-brand-coral) 40%, transparent)
+      );
   animation: music-showcase-ring-pulse 3.2s ease-in-out infinite;
   transition:
     border-color 0.55s cubic-bezier(0.22, 1, 0.36, 1),
@@ -1289,9 +1543,19 @@ body.music-theme {
   position: relative;
   z-index: 1;
   box-shadow:
-    0 24px 48px -16px color-mix(in srgb, var(--showcase-accent, var(--color-brand-tomato)) 28%, transparent),
-    0 0 64px -20px var(--showcase-glow, color-mix(in srgb, var(--color-brand-coral) 35%, transparent));
-  outline: 2px solid color-mix(in srgb, var(--color-brand-peach) 55%, transparent);
+    0 24px 48px -16px
+      color-mix(
+        in srgb,
+        var(--showcase-accent, var(--color-brand-tomato)) 28%,
+        transparent
+      ),
+    0 0 64px -20px
+      var(
+        --showcase-glow,
+        color-mix(in srgb, var(--color-brand-coral) 35%, transparent)
+      );
+  outline: 2px solid
+    color-mix(in srgb, var(--color-brand-peach) 55%, transparent);
   outline-offset: -2px;
   transition:
     box-shadow 0.55s cubic-bezier(0.22, 1, 0.36, 1),
@@ -1301,7 +1565,12 @@ body.music-theme {
 .music-showcase-hero__disc-vignette {
   background: linear-gradient(
     to top,
-    color-mix(in srgb, var(--showcase-accent, var(--color-brand-tomato)) 22%, transparent) 0%,
+    color-mix(
+        in srgb,
+        var(--showcase-accent, var(--color-brand-tomato)) 22%,
+        transparent
+      )
+      0%,
     transparent 42%
   );
   transition: background 0.55s cubic-bezier(0.22, 1, 0.36, 1);
@@ -1309,7 +1578,11 @@ body.music-theme {
 
 .music-showcase-hero__dot--active {
   background-color: var(--showcase-accent, var(--color-brand-coral));
-  box-shadow: 0 0 12px -2px var(--showcase-glow, color-mix(in srgb, var(--color-brand-coral) 50%, transparent));
+  box-shadow: 0 0 12px -2px
+    var(
+      --showcase-glow,
+      color-mix(in srgb, var(--color-brand-coral) 50%, transparent)
+    );
 }
 
 .music-showcase-hero__bg {
@@ -1375,7 +1648,8 @@ body.music-theme {
   background: var(--music-glass);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 4px 20px color-mix(in srgb, var(--color-brand-tomato) 10%, transparent);
+  box-shadow: 0 4px 20px
+    color-mix(in srgb, var(--color-brand-tomato) 10%, transparent);
   transition:
     border-color 0.25s ease,
     box-shadow 0.25s ease,
@@ -1415,7 +1689,8 @@ body.music-theme {
   font-size: 0.75rem;
   color: var(--music-text);
   background: color-mix(in srgb, var(--color-brand-honeydew) 55%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-brand-tomato) 16%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-brand-tomato) 16%, transparent);
   box-shadow: 0 0 12px var(--music-glow-pink);
 }
 
@@ -1478,13 +1753,25 @@ body.music-theme {
 
 @media (hover: hover) {
   .music-genre-chip:hover {
-    border-color: color-mix(in srgb, var(--color-brand-tomato) 20%, transparent);
+    border-color: color-mix(
+      in srgb,
+      var(--color-brand-tomato) 20%,
+      transparent
+    );
     background: color-mix(in srgb, var(--color-brand-sky) 14%, transparent);
   }
 
   .music-icon:hover {
-    border-color: color-mix(in srgb, var(--color-brand-tomato) 25%, transparent);
-    background: color-mix(in srgb, var(--color-brand-honeydew) 35%, transparent);
+    border-color: color-mix(
+      in srgb,
+      var(--color-brand-tomato) 25%,
+      transparent
+    );
+    background: color-mix(
+      in srgb,
+      var(--color-brand-honeydew) 35%,
+      transparent
+    );
   }
 
   .music-lang-btn:hover {
@@ -1766,10 +2053,12 @@ body.music-theme {
   gap: 10px;
   width: 112px;
   padding: 10px 8px 12px;
-  border: 1px solid color-mix(in srgb, var(--color-brand-peach) 22%, transparent);
+  border: 1px solid
+    color-mix(in srgb, var(--color-brand-peach) 22%, transparent);
   border-radius: 0.75rem;
   background-color: #fff;
-  box-shadow: 0 2px 10px -4px color-mix(in srgb, var(--color-brand-tomato) 10%, transparent);
+  box-shadow: 0 2px 10px -4px
+    color-mix(in srgb, var(--color-brand-tomato) 10%, transparent);
   color: inherit;
   cursor: pointer;
   transition:
@@ -1798,7 +2087,11 @@ body.music-theme {
   transform: scale(1);
   z-index: 1;
   border-color: color-mix(in srgb, var(--color-brand-coral) 38%, transparent);
-  box-shadow: 0 8px 24px -8px var(--feed-glow, color-mix(in srgb, var(--color-brand-coral) 22%, transparent));
+  box-shadow: 0 8px 24px -8px
+    var(
+      --feed-glow,
+      color-mix(in srgb, var(--color-brand-coral) 22%, transparent)
+    );
 }
 
 .music-feed__thumb--active .music-feed__thumb-disc {
@@ -1835,7 +2128,11 @@ body.music-theme {
 .music-feed__thumb--active .music-feed__thumb-ring {
   opacity: 1;
   border-color: var(--feed-accent, var(--color-brand-coral));
-  box-shadow: 0 0 20px -4px var(--feed-glow, color-mix(in srgb, var(--color-brand-coral) 45%, transparent));
+  box-shadow: 0 0 20px -4px
+    var(
+      --feed-glow,
+      color-mix(in srgb, var(--color-brand-coral) 45%, transparent)
+    );
   animation: music-thumb-ring 2.8s ease-in-out infinite;
 }
 
@@ -1893,7 +2190,11 @@ body.music-theme {
   --vinyl-disc-outer: var(--color-brand-coral);
   --vinyl-disc-edge: var(--color-brand-tomato);
   --vinyl-disc-border: color-mix(in srgb, var(--color-brand-peach) 75%, white);
-  --vinyl-groove-line: color-mix(in srgb, var(--color-brand-tomato) 18%, transparent);
+  --vinyl-groove-line: color-mix(
+    in srgb,
+    var(--color-brand-tomato) 18%,
+    transparent
+  );
 }
 
 .music-vinyl-tile[data-mood="tomato"] {
@@ -1923,7 +2224,11 @@ body.music-theme {
 .music-vinyl-tile[data-mood="sky"] {
   --vinyl-disc-inner: var(--color-brand-honeydew);
   --vinyl-disc-mid: var(--color-brand-sky);
-  --vinyl-disc-outer: color-mix(in srgb, var(--color-brand-sky) 55%, var(--color-brand-peach));
+  --vinyl-disc-outer: color-mix(
+    in srgb,
+    var(--color-brand-sky) 55%,
+    var(--color-brand-peach)
+  );
   --vinyl-disc-edge: var(--color-brand-tomato);
   --vinyl-disc-border: color-mix(in srgb, var(--color-brand-sky) 45%, white);
 }
@@ -1942,7 +2247,11 @@ body.music-theme {
   position: absolute;
   inset: -8%;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--vinyl-glow, var(--music-glow-purple)) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    var(--vinyl-glow, var(--music-glow-purple)) 0%,
+    transparent 70%
+  );
   opacity: 0;
   transition: opacity 0.35s ease;
 }
@@ -1955,7 +2264,11 @@ body.music-theme {
 .music-vinyl-tile--sm.music-vinyl-tile--active .music-vinyl-tile__disc {
   box-shadow:
     inset 0 0 8px color-mix(in srgb, var(--vinyl-disc-edge) 30%, transparent),
-    0 0 20px var(--vinyl-glow, color-mix(in srgb, var(--color-brand-coral) 40%, transparent));
+    0 0 20px
+      var(
+        --vinyl-glow,
+        color-mix(in srgb, var(--color-brand-coral) 40%, transparent)
+      );
 }
 
 .music-vinyl-tile__spin {
@@ -2130,16 +2443,14 @@ body.music-theme {
 /* Tablet */
 @media (min-width: 640px) {
   .music-container {
-    max-width: 640px;
     padding-inline: 24px;
   }
-
 }
 
 /* Desktop */
 @media (min-width: 1024px) {
   .music-shell {
-    max-width: 960px;
+    max-width: 1200px;
     padding-inline: 32px;
   }
 
@@ -2164,7 +2475,6 @@ body.music-theme {
   .music-logo__text {
     font-size: 0.8125rem;
   }
-
 }
 
 /* Oceanic template */
@@ -5314,26 +5624,12 @@ html {
 }
 
 .pharaonic-root .ph-category-inner {
-  clip-path: polygon(
-    8% 0%,
-    92% 0%,
-    100% 50%,
-    92% 100%,
-    8% 100%,
-    0% 50%
-  );
+  clip-path: polygon(8% 0%, 92% 0%, 100% 50%, 92% 100%, 8% 100%, 0% 50%);
   border: 1px solid transparent;
 }
 
 .pharaonic-root .ph-category-inner--active {
-  clip-path: polygon(
-    6% 0%,
-    94% 0%,
-    100% 50%,
-    94% 100%,
-    6% 100%,
-    0% 50%
-  );
+  clip-path: polygon(6% 0%, 94% 0%, 100% 50%, 94% 100%, 6% 100%, 0% 50%);
 }
 
 .pharaonic-root .ph-menu-card {

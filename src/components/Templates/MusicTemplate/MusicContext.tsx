@@ -4,11 +4,22 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
+import { useSearchParams } from "next/navigation";
+import { useLocale } from "next-intl";
+import { toast } from "react-toastify";
 import type { MenuItem } from "@/types/menu";
+import {
+  readSkyCartFromCookie,
+  subscribeSkyCartUpdated,
+  upsertSkyCartQuantityFromMenuItem,
+  type SkyCartItem,
+} from "@/lib/skyTemplateCart";
+import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
 type MusicContextValue = {
   activeCategoryId: number | null;
@@ -20,14 +31,43 @@ type MusicContextValue = {
   /** @deprecated use openProductModal */
   activateItem: (item: MenuItem) => void;
   setActiveItemForce: (item: MenuItem | null) => void;
+  isTableOrder: boolean;
+  cartById: Record<number, SkyCartItem>;
+  addToCart: (item: MenuItem, quantity: number) => void;
 };
 
 const MusicContext = createContext<MusicContextValue | null>(null);
 
 export function MusicProvider({ children }: { children: ReactNode }) {
+  const locale = useLocale() as "ar" | "en";
+  const searchParams = useSearchParams();
+  const tableCartAllowed = useTableCartAllowed();
+  const isTableOrder =
+    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [activeItem, setActiveItem] = useState<MenuItem | null>(null);
   const [modalItem, setModalItem] = useState<MenuItem | null>(null);
+  const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
+
+  useEffect(() => {
+    const sync = () => setCartById(readSkyCartFromCookie());
+    sync();
+    return subscribeSkyCartUpdated(sync);
+  }, []);
+
+  const addToCart = useCallback(
+    (item: MenuItem, quantity: number) => {
+      upsertSkyCartQuantityFromMenuItem(item, quantity);
+      setCartById(readSkyCartFromCookie());
+      toast.success(
+        locale === "ar"
+          ? `تمت إضافة ${quantity} إلى السلة`
+          : `Added ${quantity} to cart`,
+      );
+    },
+    [locale],
+  );
 
   const openProductModal = useCallback((item: MenuItem) => {
     setModalItem(item);
@@ -56,6 +96,9 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       closeProductModal,
       activateItem,
       setActiveItemForce,
+      isTableOrder,
+      cartById,
+      addToCart,
     }),
     [
       activeCategoryId,
@@ -65,6 +108,9 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       closeProductModal,
       activateItem,
       setActiveItemForce,
+      isTableOrder,
+      cartById,
+      addToCart,
     ],
   );
 

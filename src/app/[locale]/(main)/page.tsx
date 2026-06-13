@@ -82,15 +82,15 @@ export default function Page() {
         <MenuLogoFallbackProvider logo={menu.menuInfo?.logo ?? null}>
           {menu.theme === "default" && <Default />}
           {menu.theme === "sky" && <SkyTemplate />}
-          {menu.theme === "neon" && <NeonTemplate />} 
+          {menu.theme === "neon" && <NeonTemplate />}
           {menu.theme === "coffee" && <CoffeeTemplate />}
           {menu.theme === "emerald" && <EmeraldTemplate />}
-          {/* {menu.theme === "noir" && <NoirTemplate />}  */}
+          {menu.theme === "noir" && <NoirTemplate />}
           {menu.theme === "oceanic" && <OceanicTemplate />}
           {menu.theme === "pharaonic" && <PharaonicTemplate />}
           {menu.theme === "arcane" && <ArcaneTemplate />}
           {menu.theme === "music" && <MusicTemplate />}
-          {menu.theme === "noir" && <RetroCoffeeTemplate />}
+          {menu.theme === "retro" && <RetroCoffeeTemplate />}
           {tableCartAllowed ? (
             <Suspense fallback={null}>
               <RequestStaffButton />

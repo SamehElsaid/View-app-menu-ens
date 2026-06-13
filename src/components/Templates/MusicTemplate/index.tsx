@@ -1,7 +1,5 @@
 "use client";
 
-
-
 import { useEffect, useMemo } from "react";
 
 import { useLocale } from "next-intl";
@@ -15,10 +13,7 @@ import { ENSFixedBanner } from "../components/ENSFixedBanner";
 import { MusicProvider, useMusic } from "./MusicContext";
 
 import { resolveMusicMood } from "./moodEnergy";
-import {
-  applyMusicBrandVars,
-  useMusicBrandStyle,
-} from "./useMusicBrandStyle";
+import { applyMusicBrandVars, useMusicBrandStyle } from "./useMusicBrandStyle";
 
 import Atmosphere from "./Atmosphere";
 
@@ -33,30 +28,23 @@ import Genres from "./Genres";
 import Tracks from "./Tracks";
 import Footer from "./Footer";
 
-
-
 function MusicTemplateContent() {
-
   const locale = useLocale();
 
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
 
   const storeMenuItems = useAppSelector((state) => state.menu.menu) ?? [];
 
-  const storeCategories = useAppSelector((state) => state.menu.categories) ?? [];
+  const storeCategories =
+    useAppSelector((state) => state.menu.categories) ?? [];
 
-  const { activeCategoryId, activeItem } = useMusic();
+  const { activeCategoryId, activeItem, isTableOrder } = useMusic();
 
   const brandStyle = useMusicBrandStyle();
 
-
-
   const mood = useMemo(
-
     () =>
-
       resolveMusicMood(
-
         activeCategoryId,
 
         storeCategories,
@@ -64,14 +52,10 @@ function MusicTemplateContent() {
         activeItem,
 
         storeMenuItems,
-
       ),
 
     [activeCategoryId, storeCategories, activeItem, storeMenuItems],
-
   );
-
-
 
   useEffect(() => {
     document.body.classList.add("music-theme");
@@ -83,87 +67,52 @@ function MusicTemplateContent() {
     };
   }, [brandStyle]);
 
-
-
   return (
-
     <div
-
-      className="music-root menu-template font-body min-h-screen antialiased transition-all duration-300"
-
+      className={`music-root menu-template font-body min-h-screen antialiased transition-all duration-300`}
       data-mood={mood.atmosphereMood}
-
       data-category-mood={mood.categoryMood}
-
       data-product-mood={mood.productMood}
-
-      style={{ ...brandStyle, ...mood.style, fontFamily: menuTemplateFontFamily(locale) }}
-
+      style={{
+        ...brandStyle,
+        ...mood.style,
+        fontFamily: menuTemplateFontFamily(locale),
+      }}
     >
-
       <Atmosphere mood={mood} />
 
-
-
       <div className="music-shell">
-
         <header className="music-container music-container--header">
-
           <Navbar />
-
         </header>
-
-
 
         <Hero />
 
         <PromoBannerMusic />
 
         <div className="music-container music-container--body">
-
           <Genres categories={storeCategories} />
 
           <Tracks
-
             items={storeMenuItems}
-
             currency={menuInfo?.currency || "AED"}
-
           />
-
         </div>
 
         <Footer />
-
       </div>
 
-
-
       {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
-
     </div>
-
   );
-
 }
-
-
 
 function MusicTemplate() {
-
   return (
-
     <MusicProvider>
-
       <MusicTemplateContent />
-
     </MusicProvider>
-
   );
-
 }
 
-
-
 export default MusicTemplate;
-

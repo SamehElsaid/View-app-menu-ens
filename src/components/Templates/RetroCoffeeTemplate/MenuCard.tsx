@@ -4,6 +4,7 @@ import { useEffect, useId, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
 import { FiX } from "react-icons/fi";
+import { IoCartOutline } from "react-icons/io5";
 import LoadImage from "@/components/ImageLoad";
 import type { MenuItem } from "@/types/menu";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
@@ -110,7 +111,7 @@ export default function MenuCard({
         aria-labelledby={titleId}
         className="relative max-h-[85dvh] w-full max-w-sm overflow-hidden rounded-[2rem] border-0 shadow-2xl animate-in fade-in zoom-in-95 duration-200 flex flex-col"
         style={{
-          backgroundColor: "#f4ebd9", 
+          backgroundColor: "#f4ebd9",
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -137,8 +138,12 @@ export default function MenuCard({
             className="absolute bottom-3 end-3 flex h-11 w-11 flex-col items-center justify-center rounded-full border border-white/20 text-center text-xs font-bold text-white shadow-md"
             style={{ backgroundColor: primary }}
           >
-            <span className="tabular-nums text-xs leading-none">{item.price}</span>
-            <span className="mt-0.5 text-[8px] font-medium uppercase opacity-90">{currencyLabel}</span>
+            <span className="tabular-nums text-xs leading-none">
+              {item.price}
+            </span>
+            <span className="mt-0.5 text-[8px] font-medium uppercase opacity-90">
+              {currencyLabel}
+            </span>
           </div>
 
           {!item.available ? (
@@ -166,7 +171,9 @@ export default function MenuCard({
                 className="inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white"
                 style={{ backgroundColor: primary }}
               >
-                {isAr ? `${item.discountPercent}٪ خصم` : `${item.discountPercent}% off`}
+                {isAr
+                  ? `${item.discountPercent}٪ خصم`
+                  : `${item.discountPercent}% off`}
               </span>
             ) : null}
 
@@ -215,16 +222,19 @@ export default function MenuCard({
                     onAddToCart(item, modalQty);
                     setOpen(false);
                   }}
-                  className="rounded-full px-4 py-1 text-xs font-bold text-white transition hover:brightness-110 active:scale-95"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-1 text-xs font-bold text-white transition hover:brightness-110 active:scale-95"
                   style={{ backgroundColor: primary }}
                 >
-                  {isAr ? "أضف" : "Add"}
+                  <IoCartOutline className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  {isAr ? "أضف للسلة" : "Add to cart"}
                 </button>
               </div>
 
               {modalInCart > 0 ? (
                 <p className="text-[11px] font-bold text-zinc-400">
-                  {isAr ? `في السلة حالياً: ${modalInCart}` : `In cart: ${modalInCart}`}
+                  {isAr
+                    ? `في السلة حالياً: ${modalInCart}`
+                    : `In cart: ${modalInCart}`}
                 </p>
               ) : null}
             </div>
@@ -237,19 +247,20 @@ export default function MenuCard({
   return (
     <>
       <article
-        className="coffee-menu-card group flex h-full w-full flex-col items-center text-center transition-all duration-300 sm:hover:-translate-y-1"
+        className=" group flex h-full w-full flex-col justify-between overflow-hidden rounded-xl border text-center shadow-[0_6px_18px_-6px_rgba(0,0,0,0.05)] transition-all duration-300 sm:rounded-[1.5rem] sm:hover:-translate-y-1 sm:hover:shadow-[0_12px_28px_-4px_rgba(0,0,0,0.08)]"
         style={{
           animationDelay: `${(index % 6) * 60}ms`,
+          ["--coffee-ring" as string]: primary,
+          backgroundColor: "#f4ebd9",
+          borderColor: "#e6d9be",
         }}
       >
         <button
           type="button"
           onClick={openModal}
-          className="relative flex w-full flex-col items-center overflow-hidden rounded-xl border shadow-[0_6px_18px_-6px_rgba(0,0,0,0.05)] transition-all duration-500 hover:shadow-[0_12px_28px_-4px_rgba(0,0,0,0.08)] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 sm:rounded-[1.5rem]"
+          className="relative flex w-full flex-col items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
           style={{
             ["--coffee-ring" as string]: primary,
-            backgroundColor: "#f4ebd9",
-            borderColor: "#e6d9be",
           }}
         >
           <div
@@ -337,42 +348,45 @@ export default function MenuCard({
 
         {isTableOrder && item.available ? (
           <div
-            className="z-10 -mt-3 w-full max-w-[130px] sm:-mt-3.5 sm:max-w-[140px]"
+            className="flex items-center gap-1.5 border-t px-2.5 py-2 sm:gap-2 sm:px-3 sm:py-2.5"
+            style={{
+              borderColor: "#e6d9be",
+              backgroundColor: "rgba(255,255,255,0.45)",
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between gap-1 rounded-full border border-zinc-200/80 bg-white p-1 shadow-md">
-              <div className="flex items-center gap-0.5">
-                <button
-                  type="button"
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold bg-zinc-100 shadow-sm transition-transform active:scale-90"
-                  style={{ color: colors.text }}
-                  onClick={() => setPickQty((q) => Math.max(1, q - 1))}
-                  aria-label={isAr ? "تقليل" : "Decrease"}
-                >
-                  −
-                </button>
-                <span className="min-w-4 text-center text-[11px] font-bold text-zinc-700">
-                  {pickQty}
-                </span>
-                <button
-                  type="button"
-                  className="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold bg-zinc-100 shadow-sm transition-transform active:scale-90"
-                  style={{ color: colors.text }}
-                  onClick={() => setPickQty((q) => q + 1)}
-                  aria-label={isAr ? "زيادة" : "Increase"}
-                >
-                  +
-                </button>
-              </div>
+            <div className="flex shrink-0 items-center gap-0.5 rounded-full border border-zinc-200/80 bg-white p-0.5 shadow-sm">
               <button
                 type="button"
-                onClick={(e) => handleAdd(e, pickQty)}
-                className="rounded-full px-2.5 py-0.5 text-[11px] font-bold text-white transition hover:brightness-110 active:scale-95"
-                style={{ backgroundColor: primary }}
+                className="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold bg-zinc-100 shadow-sm transition-transform active:scale-90 sm:h-7 sm:w-7"
+                style={{ color: colors.text }}
+                onClick={() => setPickQty((q) => Math.max(1, q - 1))}
+                aria-label={isAr ? "تقليل" : "Decrease"}
               >
-                {isAr ? "أضف" : "Add"}
+                −
+              </button>
+              <span className="min-w-4 text-center text-[11px] font-bold text-zinc-700 sm:min-w-5 sm:text-xs">
+                {pickQty}
+              </span>
+              <button
+                type="button"
+                className="flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold bg-zinc-100 shadow-sm transition-transform active:scale-90 sm:h-7 sm:w-7"
+                style={{ color: colors.text }}
+                onClick={() => setPickQty((q) => q + 1)}
+                aria-label={isAr ? "زيادة" : "Increase"}
+              >
+                +
               </button>
             </div>
+            <button
+              type="button"
+              onClick={(e) => handleAdd(e, pickQty)}
+              className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold text-white transition hover:brightness-110 active:scale-95 sm:min-h-10 sm:px-4 sm:text-xs"
+              style={{ backgroundColor: primary }}
+            >
+              <IoCartOutline className="h-4 w-4 shrink-0" aria-hidden />
+              {isAr ? "أضف للسلة" : "Add to cart"}
+            </button>
           </div>
         ) : null}
       </article>
