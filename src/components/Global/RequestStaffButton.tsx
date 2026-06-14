@@ -37,6 +37,8 @@ const THEME_BG_MAIN_FALLBACK: Record<string, string> = {
   music: "#4338CA",
   arcane: "#D1282A",
   emerald: "#4c1121",
+  colourful: "#4c1121",
+  funny: "#4c1121",
   noir: "#7c3aed",
   oceanic: "#0ea5e9",
   pharaonic: "#C9A227",
