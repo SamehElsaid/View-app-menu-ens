@@ -1,7 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { useCallback, useEffect } from "react";
 import { toast } from "react-toastify";
-import { useAppDispatch } from "@/store/hooks";
 
 interface ErrorResponse {
     status?: boolean;
@@ -11,9 +10,7 @@ interface ErrorResponse {
 }
 
 export default function useCatchError() {
-    const dispatch = useAppDispatch();
-
-    const handleErrorResponse = useCallback(
+  const handleErrorResponse = useCallback(
         (data: unknown, status: number) => {
             const errorData = data as ErrorResponse;
 
@@ -53,8 +50,7 @@ export default function useCatchError() {
                 }
             }
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [dispatch]
+        [],
     );
 
     useEffect(() => {

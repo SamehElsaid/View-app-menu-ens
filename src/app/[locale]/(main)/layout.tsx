@@ -1,4 +1,3 @@
-import Header from "@/components/Global/Header";
 import UseDispatchMenu from "@/hooks/UseDispatchMenu";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { resolveMenuSlug } from "@/lib/menuSlug";
@@ -162,7 +161,6 @@ export default async function MainLayout({
         }
         categories={(data?.categories as Category[]) ?? null}
       />
-      <Header />
       {children}
     </>
   );

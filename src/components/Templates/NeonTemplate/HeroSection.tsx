@@ -101,12 +101,12 @@ function NeonMenuItemCard({
         <h3 className="!text-lg font-bold text-slate-900 dark:text-white mb-2 line-clamp-1">
           {itemName}
         </h3>
-        {isProPlan && (
+        {itemDescription ? (
           <p className="text-lg text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed mb-2">
             {itemDescription}
           </p>
-        )}
-        <div className={`${isProPlan ? "mt-4" : "mt-2"} flex flex-col gap-3`}>
+        ) : null}
+        <div className="mt-2 flex flex-col gap-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span
               className="text-base px-3 py-1 rounded-full font-semibold w-fit"
