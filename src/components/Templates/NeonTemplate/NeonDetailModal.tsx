@@ -179,7 +179,7 @@ export default function NeonDetailModal({
             }}
           />
 
-          {isProPlan && itemDescription ? (
+          {itemDescription ? (
             <p className="mb-6 text-base leading-relaxed text-slate-600 dark:text-slate-300">
               {itemDescription}
             </p>

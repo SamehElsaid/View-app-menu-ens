@@ -3,8 +3,6 @@ import { NextIntlClientProvider } from "next-intl";
 import RenderInProvider from "@/components/Global/RenderInProvider";
 import ProgressBar from "@/components/Global/ProgressBar";
 import { MENU_GOOGLE_FONTS_URL } from "@/lib/menuTemplateFont";
-import "react-phone-number-input/style.css";
-import "react-datepicker/dist/react-datepicker.css";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "swiper/css";

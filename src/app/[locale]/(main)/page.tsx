@@ -22,6 +22,8 @@ import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
 import RetroCoffeeTemplate from "@/components/Templates/RetroCoffeeTemplate";
+import ColourfulTemplate from "@/components/Templates/ColourfulTemplate";
+import FunnyTemplate from "@/components/Templates/FunnyTemplate";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -91,6 +93,8 @@ export default function Page() {
           {menu.theme === "arcane" && <ArcaneTemplate />}
           {menu.theme === "music" && <MusicTemplate />}
           {menu.theme === "retro" && <RetroCoffeeTemplate />}
+          {menu.theme === "colourful" && <ColourfulTemplate />}
+          {menu.theme === "funny" && <FunnyTemplate />}
           {tableCartAllowed ? (
             <Suspense fallback={null}>
               <RequestStaffButton />
