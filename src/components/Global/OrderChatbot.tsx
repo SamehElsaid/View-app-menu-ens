@@ -106,6 +106,17 @@ type StaffCallPayload = {
   items: Array<{
     menuItemId: number;
     quantity: number;
+    price?: number;
+    size?: {
+      nameEn: string;
+      nameAr: string;
+      price: number;
+    } | null;
+    variant?: {
+      labelEn: string;
+      labelAr: string;
+      price: number;
+    } | null;
   }>;
 };
 
@@ -683,6 +694,9 @@ export default function OrderChatbot({
         items: items.map((item) => ({
           menuItemId: item.id,
           quantity: item.quantity,
+          price: item.price,
+          size: item.size ?? null,
+          variant: item.variant ?? null,
         })),
       };
 

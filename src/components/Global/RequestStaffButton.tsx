@@ -55,6 +55,7 @@ type StaffCallPayload = {
   items: Array<{
     menuItemId: number;
     quantity: number;
+    price?: number;
     size?: {
       nameEn: string;
       nameAr: string;
@@ -504,6 +505,7 @@ export default function RequestStaffButton() {
         items: cartItemsForOrder.map((item) => ({
           menuItemId: item.id,
           quantity: item.quantity,
+          price: item.price,
           size: item.size ?? null,
           variant: item.variant ?? null,
         })),
