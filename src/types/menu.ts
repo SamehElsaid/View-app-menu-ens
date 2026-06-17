@@ -55,6 +55,18 @@ export interface MenuCustomizations {
   heroSubtitleEn: string;
 }
 
+export interface MenuItemSizeOption {
+  nameAr: string;
+  nameEn: string;
+  price: number;
+}
+
+export interface MenuItemVariantOption {
+  labelAr: string;
+  labelEn: string;
+  price: number;
+}
+
 export interface MenuItem {
   id: number;
   name: string;
@@ -74,6 +86,8 @@ export interface MenuItem {
   discountPercent: number | null;
   available: boolean;
   sortOrder: number;
+  sizes?: MenuItemSizeOption[] | null;
+  variants?: MenuItemVariantOption[] | null;
   allergens?: string[] | null;
   ingredients?: string[];
 }
@@ -87,6 +101,7 @@ export interface Category {
   descriptionAr?: string;
   image?: string | null;
   sortOrder?: number;
+  isActive?: boolean;
   menuItems: MenuItem[];
 }
 

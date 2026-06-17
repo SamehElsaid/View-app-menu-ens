@@ -1,11 +1,14 @@
+import DevSubdomainPrompt from "@/components/Global/DevSubdomainPrompt";
+import DevSubdomainEditButton from "@/components/Global/DevSubdomainEditButton";
 import Header from "@/components/Global/Header";
 import UseDispatchMenu from "@/hooks/UseDispatchMenu";
+import { DEV_SUB_DOMAIN_COOKIE_KEY } from "@/lib/devSubDomainCookie";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { resolveMenuSlug } from "@/lib/menuSlug";
 import { serverGet } from "@/shared/serverApi";
 import { MenuItem, MenuInfo, MenuCustomizations, Category } from "@/types/menu";
 import { Ad } from "@/types/Ad";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { Metadata } from "next";
 import { cache } from "react";
 
@@ -74,7 +77,13 @@ const getMenuBySlug = cache((slug: string, locale: string) => {
 const getMenu = async (locale: string) => {
   const headersList = await headers();
   const host = headersList.get("host") || "";
-  const { slug } = resolveMenuSlug(host);
+  const cookieStore = await cookies();
+  const cookieSubdomain = cookieStore.get(DEV_SUB_DOMAIN_COOKIE_KEY)?.value;
+  const { slug, needsDevSubdomain } = resolveMenuSlug(host, cookieSubdomain);
+
+  if (needsDevSubdomain || !slug) {
+    return null;
+  }
 
   return getMenuBySlug(slug, locale);
 };
@@ -154,10 +163,21 @@ export default async function MainLayout({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  const headersList = await headers();
+  const host = headersList.get("host") || "";
+  const cookieStore = await cookies();
+  const cookieSubdomain = cookieStore.get(DEV_SUB_DOMAIN_COOKIE_KEY)?.value;
+  const { needsDevSubdomain, devMode } = resolveMenuSlug(host, cookieSubdomain);
   const data = await getMenu(locale);
+
+  console.log(data);
 
   return (
     <>
+      {needsDevSubdomain ? <DevSubdomainPrompt locale={locale} /> : null}
+      {devMode && !needsDevSubdomain ? (
+        <DevSubdomainEditButton locale={locale} />
+      ) : null}
       <UseDispatchMenu
         menu={(data?.items as MenuItem[]) ?? null}
         menuInfo={(data?.menu as MenuInfo) ?? null}

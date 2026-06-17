@@ -594,7 +594,7 @@ export default function OrderChatbot({
     candidateCart: AiOrderCart | undefined,
   ): boolean => {
     if (!candidateCart || typeof candidateCart !== "object") return false;
-    const next: Record<number, SkyCartItem> = {};
+    const next: Record<string, SkyCartItem> = {};
 
     for (const [key, value] of Object.entries(candidateCart)) {
       const id = Number(value?.id ?? key);
@@ -607,7 +607,8 @@ export default function OrderChatbot({
       const localItem = localMenuById.get(id);
       if (!localItem) continue;
 
-      next[id] = {
+      next[String(id)] = {
+        lineKey: String(id),
         id,
         quantity: Math.floor(quantity),
         name: displayNameForItem(localItem),

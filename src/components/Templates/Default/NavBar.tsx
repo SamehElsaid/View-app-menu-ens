@@ -19,6 +19,7 @@ function NavBar({
   menuName: string | null;
 }) {
   const t = useTranslations("nav");
+  const tMenu = useTranslations("menu");
   const locale = useLocale();
   const { showCategoryBurger, activeCategory, setActiveCategory } =
     useCategoryNav();
@@ -120,7 +121,23 @@ function NavBar({
           length={categories.length}
         >
           <ul className="flex flex-col gap-2 px-4 pb-4">
-            {categories.map((category) => (
+            <li>
+              <button
+                type="button"
+                onClick={() => pickCategory(0)}
+                className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-start text-base font-bold transition ${
+                  activeCategory === 0
+                    ? "border-(--bg-main) bg-(--bg-main)/10 text-(--bg-main)"
+                    : "border-zinc-100 bg-white text-zinc-600 hover:border-(--bg-main)/40"
+                }`}
+              >
+                <Icon name="grid-line" className="text-xl" />
+                <span className="flex-1 truncate">{tMenu("all")}</span>
+              </button>
+            </li>
+            {categories
+              .filter((category) => category.isActive !== false)
+              .map((category) => (
               <li key={category.id}>
                 <button
                   type="button"
@@ -131,14 +148,29 @@ function NavBar({
                       : "border-zinc-100 bg-white text-zinc-600 hover:border-(--bg-main)/40"
                   }`}
                 >
-                  <Icon
-                    name={getCategoryIconName(category as MenuCategoryLike)}
-                    className="text-xl"
-                  />
+                  {category.image?.trim() ? (
+                    <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-(--bg-main)/15">
+                      <LoadImage
+                        src={category.image}
+                        alt={
+                          locale === "ar"
+                            ? category.nameAr || category.name || ""
+                            : category.nameEn || category.name || ""
+                        }
+                        fill
+                        className="object-cover"
+                      />
+                    </span>
+                  ) : (
+                    <Icon
+                      name={getCategoryIconName(category as MenuCategoryLike)}
+                      className="text-xl"
+                    />
+                  )}
                   <span className="flex-1 truncate">
                     {locale === "ar"
                       ? category.nameAr || category.name
-                      : category.name}
+                      : category.nameEn || category.name}
                   </span>
                 </button>
               </li>

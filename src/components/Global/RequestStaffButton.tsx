@@ -22,7 +22,9 @@ import LoadImage from "@/components/ImageLoad";
 import {
   notifySkyCartUpdated,
   readSkyCartFromCookie,
+  updateSkyCartLineQuantity,
   writeSkyCartToCookie,
+  type SkyCart,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
@@ -49,6 +51,16 @@ type StaffCallPayload = {
   items: Array<{
     menuItemId: number;
     quantity: number;
+    size?: {
+      nameEn: string;
+      nameAr: string;
+      price: number;
+    } | null;
+    variant?: {
+      labelEn: string;
+      labelAr: string;
+      price: number;
+    } | null;
   }>;
 };
 
@@ -124,7 +136,7 @@ export default function RequestStaffButton() {
   const [step, setStep] = useState<1 | 2>(1);
   const [customerName, setCustomerName] = useState("");
   /** Empty initial state avoids SSR/client mismatch (cookies only exist on client). */
-  const [cart, setCart] = useState<Record<number, SkyCartItem>>({});
+  const [cart, setCart] = useState<SkyCart>({});
   const [isConfirming, setIsConfirming] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
   const tableCartAllowed = useTableCartAllowed();
@@ -292,25 +304,9 @@ export default function RequestStaffButton() {
     setStep(2);
   };
 
-  const updateItemQuantity = (itemId: number, delta: number) => {
-    const item = cart[itemId];
-    if (!item) return;
-
-    const nextQuantity = item.quantity + delta;
-    const next: Record<number, SkyCartItem> = { ...cart };
-
-    if (nextQuantity <= 0) {
-      delete next[itemId];
-    } else {
-      next[itemId] = {
-        ...item,
-        quantity: nextQuantity,
-      };
-    }
-
-    setCart(next);
-    writeSkyCartToCookie(next);
-    notifySkyCartUpdated();
+  const updateItemQuantity = (lineKey: string, delta: number) => {
+    updateSkyCartLineQuantity(lineKey, delta);
+    setCart(readSkyCartFromCookie());
   };
 
   const confirmOrder = async () => {
@@ -337,6 +333,8 @@ export default function RequestStaffButton() {
         items: cartItemsForOrder.map((item) => ({
           menuItemId: item.id,
           quantity: item.quantity,
+          size: item.size ?? null,
+          variant: item.variant ?? null,
         })),
       };
 
@@ -446,7 +444,7 @@ export default function RequestStaffButton() {
                       <ul className="space-y-2">
                         {cartItemsForOrder.map((item) => (
                           <li
-                            key={item.id}
+                            key={item.lineKey}
                             className="rounded-xl border border-(--bg-main)/15 bg-(--bg-main)/2 p-3"
                           >
                             <div className="flex items-start justify-between gap-3">
@@ -462,6 +460,26 @@ export default function RequestStaffButton() {
                                   <p className="line-clamp-1 text-base font-semibold text-zinc-900">
                                     {item.name}
                                   </p>
+                                  {item.size || item.variant ? (
+                                    <p className="mt-0.5 text-sm text-zinc-500">
+                                      {[
+                                        item.size
+                                          ? isArabic
+                                            ? item.size.nameAr || item.size.nameEn
+                                            : item.size.nameEn || item.size.nameAr
+                                          : null,
+                                        item.variant
+                                          ? isArabic
+                                            ? item.variant.labelAr ||
+                                              item.variant.labelEn
+                                            : item.variant.labelEn ||
+                                              item.variant.labelAr
+                                          : null,
+                                      ]
+                                        .filter(Boolean)
+                                        .join(" · ")}
+                                    </p>
+                                  ) : null}
                                   <p className="mt-1 text-base text-zinc-600">
                                     {item.price.toFixed(2)} {getCurrency()}
                                   </p>
@@ -472,7 +490,7 @@ export default function RequestStaffButton() {
                                   <button
                                     type="button"
                                     onClick={() =>
-                                      updateItemQuantity(item.id, -1)
+                                      updateItemQuantity(item.lineKey, -1)
                                     }
                                     className="h-7 w-7 rounded-md border border-(--bg-main)/20 text-(--bg-main) transition hover:bg-(--bg-main)/10"
                                     aria-label={labels.decrease}
@@ -485,7 +503,7 @@ export default function RequestStaffButton() {
                                   <button
                                     type="button"
                                     onClick={() =>
-                                      updateItemQuantity(item.id, 1)
+                                      updateItemQuantity(item.lineKey, 1)
                                     }
                                     className="h-7 w-7 rounded-md border border-(--bg-main)/20 text-(--bg-main) transition hover:bg-(--bg-main)/10"
                                     aria-label={labels.increase}

@@ -19,6 +19,7 @@ import {
   readSkyCartFromCookie,
   subscribeSkyCartUpdated,
   writeSkyCartToCookie,
+  type SkyCart,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
 
@@ -32,9 +33,7 @@ function SkyTemplate() {
 
   const locale = useLocale();
   const [activeCategory, setActiveCategory] = useState<number>(0);
-  const [cart, setCart] = useState<Record<number, SkyCartItem>>(() =>
-    readSkyCartFromCookie(),
-  );
+  const [cart, setCart] = useState<SkyCart>(() => readSkyCartFromCookie());
 
   const menuItems = useMemo(() => storeMenuItems ?? [], [storeMenuItems]);
 
@@ -68,11 +67,12 @@ function SkyTemplate() {
       const nextCart = { ...prevCart };
 
       if (nextQuantity <= 0) {
-        delete nextCart[item.id];
+        delete nextCart[String(item.id)];
         return nextCart;
       }
 
-      nextCart[item.id] = {
+      nextCart[String(item.id)] = {
+        lineKey: String(item.id),
         id: item.id,
         quantity: nextQuantity,
         name: item.name,

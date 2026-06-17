@@ -1,6 +1,8 @@
 import {
   notifySkyCartUpdated,
   readSkyCartFromCookie,
+  buildSkyCartLineKey,
+  type SkyCart,
   type SkyCartItem,
   writeSkyCartToCookie,
 } from "@/lib/skyTemplateCart";
@@ -21,9 +23,7 @@ const CART_ACTION_TYPES = new Set<AiCartActionType>([
   "set_quantity",
 ]);
 
-export function toRequestCartQuantities(
-  cart: Record<number, SkyCartItem>,
-): AiOrderCartQuantities {
+export function toRequestCartQuantities(cart: SkyCart): AiOrderCartQuantities {
   const out: AiOrderCartQuantities = {};
   for (const item of Object.values(cart)) {
     if (item.quantity > 0) {
@@ -39,6 +39,7 @@ function buildSkyCartLine(
   displayName: (item: MenuItem) => string,
 ): SkyCartItem {
   return {
+    lineKey: buildSkyCartLineKey(localItem.id, null, null),
     id: localItem.id,
     quantity: Math.min(999, Math.max(1, Math.floor(quantity))),
     name: displayName(localItem),

@@ -21,6 +21,8 @@ function SwiperCategory({
   isGray = false,
   sticky = true,
   showNavButtons = false,
+  filterMode = false,
+  viewAllSlide = false,
 }: {
   categories: Category[];
   activeCategory: number;
@@ -31,6 +33,10 @@ function SwiperCategory({
   sticky?: boolean;
   /** Show prev/next buttons when categories overflow horizontally. */
   showNavButtons?: boolean;
+  /** Filter menu items instead of scrolling to category sections. */
+  filterMode?: boolean;
+  /** First carousel slide is "View all" (id 0); category slides are offset by 1. */
+  viewAllSlide?: boolean;
 }) {
   const locale = useLocale();
   const t = useTranslations("menu");
@@ -104,16 +110,21 @@ function SwiperCategory({
   // Scroll embla carousel to active category
   useEffect(() => {
     if (!emblaApi || isCarouselNavRef.current) return;
+    if (filterMode && viewAllSlide && activeCategory === 0) {
+      emblaApi.scrollTo(0);
+      return;
+    }
     const activeIndex = categories.findIndex(
       (cat) => cat.id === activeCategory,
     );
     if (activeIndex !== -1) {
-      emblaApi.scrollTo(activeIndex);
+      emblaApi.scrollTo(filterMode && viewAllSlide ? activeIndex + 1 : activeIndex);
     }
-  }, [emblaApi, activeCategory, categories]);
+  }, [emblaApi, activeCategory, categories, filterMode, viewAllSlide]);
 
   // Scroll page to active category section (only on user click, not observer)
   useEffect(() => {
+    if (filterMode) return;
     if (isObserverUpdateRef.current) {
       isObserverUpdateRef.current = false;
       return;
@@ -138,10 +149,11 @@ function SwiperCategory({
     }, 1000);
 
     return () => clearTimeout(timeout);
-  }, [activeCategory]);
+  }, [activeCategory, filterMode]);
 
   // Intersection Observer for scroll spy
   useEffect(() => {
+    if (filterMode) return;
     if (observerRef.current) {
       observerRef.current.disconnect();
     }
@@ -192,20 +204,90 @@ function SwiperCategory({
         observerRef.current.disconnect();
       }
     };
-  }, [categories, activeCategory, setActiveCategory]);
+  }, [categories, activeCategory, setActiveCategory, filterMode]);
+
+  const filterShellClasses =
+    "relative z-10 mb-10 overflow-hidden rounded-[2rem] border border-(--bg-main)/12 bg-white/95 shadow-[0_22px_50px_-28px] shadow-(--bg-main)/30 backdrop-blur-xl";
 
   const stickyClasses = sticky
     ? `sticky z-50 ${isGray ? "bg-white/20 backdrop-blur-base lg:top-[100px] top-[60px]" : "bg-white lg:top-20 top-[60px]"}`
-    : `relative z-10 rounded-2xl ${isGray ? "bg-white/20 backdrop-blur-base" : "bg-white"}`;
+    : filterMode
+      ? filterShellClasses
+      : `relative z-10 rounded-3xl border border-(--bg-main)/8 bg-linear-to-b from-white to-(--bg-main)/3 shadow-sm ${isGray ? "backdrop-blur-base" : "bg-white"}`;
 
   const isScrollable = canScrollPrev || canScrollNext;
-  const showSideNav = showNavButtons && isScrollable;
+  const showSideNav = showNavButtons && isScrollable && !filterMode;
+  const mobileShowSideNav = showNavButtons && isScrollable;
   const navButtonClass =
-    "shrink-0 flex h-9 w-9 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-600 shadow-sm transition-all duration-300 hover:border-(--bg-main) hover:bg-(--bg-main)/10 hover:text-(--bg-main) active:scale-95 disabled:cursor-default disabled:border-zinc-100 disabled:bg-zinc-50 disabled:text-zinc-300 disabled:shadow-none";
+    "shrink-0 flex h-9 w-9 items-center justify-center rounded-full border border-(--bg-main)/15 bg-white text-(--bg-main) shadow-sm transition-all duration-300 hover:border-(--bg-main)/35 hover:bg-(--bg-main)/8 active:scale-95 disabled:cursor-default disabled:border-zinc-100 disabled:bg-zinc-50 disabled:text-zinc-300 disabled:shadow-none";
+
+  const carouselRowClass = [
+    "flex gap-3 sm:gap-4",
+    !isScrollable ? "w-full justify-center" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const carouselTrack = (
+    <>
+      {mobileShowSideNav ? (
+        <button
+          type="button"
+          aria-label={t("scrollCategoriesPrev")}
+          disabled={!canScrollPrev}
+          onClick={() => handleCarouselNav("prev")}
+          className={navButtonClass}
+        >
+          <FiChevronLeft className="text-lg rtl:rotate-180" aria-hidden />
+        </button>
+      ) : null}
+
+      <div className="min-w-0 flex-1 overflow-hidden" ref={emblaRef}>
+        <div className={carouselRowClass} style={{ direction: direction }}>
+          {children}
+        </div>
+      </div>
+
+      {mobileShowSideNav ? (
+        <button
+          type="button"
+          aria-label={t("scrollCategoriesNext")}
+          disabled={!canScrollNext}
+          onClick={() => handleCarouselNav("next")}
+          className={navButtonClass}
+        >
+          <FiChevronRight className="text-lg rtl:rotate-180" aria-hidden />
+        </button>
+      ) : null}
+    </>
+  );
+
+  if (filterMode) {
+    return (
+      <div className={stickyClasses}>
+        <div
+          className="pointer-events-none absolute -top-10 end-8 h-28 w-28 rounded-full bg-(--bg-main)/12 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="pointer-events-none absolute -bottom-8 start-6 h-24 w-24 rounded-full bg-(--bg-main)/8 blur-3xl"
+          aria-hidden
+        />
+
+        <div className="relative hidden lg:flex lg:flex-wrap lg:items-center lg:justify-center lg:gap-3 lg:p-5 xl:gap-4">
+          {children}
+        </div>
+
+        <div className="relative flex items-center gap-2 px-3 py-4 sm:gap-3 sm:px-4 sm:py-5 lg:hidden">
+          {carouselTrack}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`mb-10 text-black ${stickyClasses}`}>
-      <div className="flex items-center gap-2 px-3 py-5 sm:gap-3 sm:px-5">
+      <div className="flex items-center gap-2 px-3 py-4 sm:gap-3 sm:px-4 sm:py-5">
         {showSideNav ? (
           <button
             type="button"
@@ -219,7 +301,7 @@ function SwiperCategory({
         ) : null}
 
         <div className="min-w-0 flex-1 overflow-hidden" ref={emblaRef}>
-          <div className="flex gap-4" style={{ direction: direction }}>
+          <div className={carouselRowClass} style={{ direction: direction }}>
             {children}
           </div>
         </div>

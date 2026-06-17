@@ -1,33 +1,52 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { IoPricetagOutline } from "react-icons/io5";
 import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
-import { MenuItem } from "@/types/menu";
+import {
+  MenuItem,
+  MenuItemSizeOption,
+  MenuItemVariantOption,
+} from "@/types/menu";
 
 import { arabCurrencies, Currency } from "@/constants/currencies";
 import { useLocale } from "next-intl";
 import { Icon } from "../components/Icon";
 import LoadImage from "@/components/ImageLoad";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
+import {
+  computeMenuItemUnitPrice,
+  getMenuItemMinPrice,
+  getMenuItemSizes,
+  getMenuItemVariants,
+  hasMenuItemOptions,
+  pickSizeLabel,
+  pickVariantLabel,
+} from "@/lib/menuItemOptions";
 
 interface MenuCardProps {
   item: MenuItem;
   index: number;
   currency?: string;
   onClick: () => void;
-  isModalOpen: number;
-  setIsModalOpen: (isModalOpen: number) => void;
+  openItemId: number;
+  onOpenModal: (itemId: number) => void;
+  onCloseModal: () => void;
   /** Table URL (`?table=`) — show add-to-cart in modal (shared cookie with RequestStaffButton). */
   isTableOrder?: boolean;
   cartQuantity?: number;
-  onAddToCart?: (quantityToAdd: number) => void;
+  onAddToCart?: (payload: {
+    quantity: number;
+    size?: MenuItemSizeOption | null;
+    variant?: MenuItemVariantOption | null;
+  }) => void;
 }
 
 export const MenuCardDefault = ({
   item,
-  isModalOpen,
-  setIsModalOpen,
+  openItemId,
+  onOpenModal,
+  onCloseModal,
   currency = "AED",
   onClick,
   isTableOrder = false,
@@ -39,10 +58,20 @@ export const MenuCardDefault = ({
   const direction = locale === "ar" ? "rtl" : "ltr";
   const [isClosing, setIsClosing] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
-  /** Quantity picker on the grid card (table orders). */
   const [cardPickQty, setCardPickQty] = useState(1);
 
-  // Get translated name and description based on locale
+  const sizes = useMemo(() => getMenuItemSizes(item), [item]);
+  const variants = useMemo(() => getMenuItemVariants(item), [item]);
+  const itemHasOptions = hasMenuItemOptions(item);
+  const displayMinPrice = getMenuItemMinPrice(item);
+  const isOpen = openItemId === item.id;
+
+  const [selectedSize, setSelectedSize] = useState<MenuItemSizeOption | null>(
+    sizes[0] ?? null,
+  );
+  const [selectedVariant, setSelectedVariant] =
+    useState<MenuItemVariantOption | null>(null);
+
   const itemName =
     locale === "ar" ? item.nameAr || item.name : item.nameEn || item.name;
   const itemDescription =
@@ -53,6 +82,12 @@ export const MenuCardDefault = ({
     locale === "ar"
       ? item.categoryNameAr || item.categoryName
       : item.categoryNameEn || item.categoryName;
+
+  const selectedUnitPrice = computeMenuItemUnitPrice(
+    item,
+    selectedSize,
+    selectedVariant,
+  );
 
   const getCurrency = () => {
     let currencySymbol: string = currency;
@@ -68,7 +103,7 @@ export const MenuCardDefault = ({
   };
 
   useEffect(() => {
-    if (isModalOpen) {
+    if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -76,11 +111,23 @@ export const MenuCardDefault = ({
     return () => {
       document.body.style.overflow = "unset";
     };
-  }, [isModalOpen]);
+  }, [isOpen]);
+
+  useEffect(() => {
+    setSelectedSize(sizes[0] ?? null);
+    setSelectedVariant(null);
+    setSelectedQuantity(1);
+  }, [item.id, sizes]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setIsClosing(false);
+    }
+  }, [isOpen]);
 
   const handleCardClick = () => {
     trackItem(item.id);
-    setIsModalOpen(item.id);
+    onOpenModal(item.id);
     setIsClosing(false);
     onClick();
   };
@@ -88,12 +135,41 @@ export const MenuCardDefault = ({
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
-      setIsModalOpen(0);
+      onCloseModal();
       setIsClosing(false);
-    }, 300); // Match animation duration
+    }, 300);
+  };
+
+  const handleAddToCart = (quantity: number) => {
+    if (!onAddToCart) return;
+    if (sizes.length && !selectedSize) return;
+
+    onAddToCart({
+      quantity,
+      size: selectedSize,
+      variant: selectedVariant,
+    });
+    setSelectedQuantity(1);
+    setCardPickQty(1);
+    handleClose();
+  };
+
+  const handleCardAddClick = () => {
+    if (itemHasOptions) {
+      handleCardClick();
+      return;
+    }
+    onAddToCart?.({ quantity: cardPickQty });
+    setCardPickQty(1);
   };
 
   const ArrowIcon = locale === "ar" ? FiChevronLeft : FiChevronRight;
+
+  const priceLabel = itemHasOptions
+    ? locale === "ar"
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : String(item.price);
 
   return (
     <>
@@ -101,22 +177,17 @@ export const MenuCardDefault = ({
         onClick={handleCardClick}
         className="relative bg-white/95 backdrop-blur-base  rounded-[2.5rem] shadow-xl shadow-(--bg-main)/5 border border-(--bg-main)/10 flex flex-col items-center text-center group transition-shadow hover:shadow-(--bg-main)/15 overflow-hidden cursor-pointer"
       >
-        {/* FULL CARD SMOKE BACKGROUND */}
-
         <div className="relative w-full h-52 mb-6 flex items-center justify-center z-10">
-          {/* INNER SMOKE FOR THE IMAGE CIRCLE */}
-
-          {/* Circular image */}
           <div className="w-full h-full overflow-hidden  relative z-20 bg-white">
             <LoadImage
               src={item.image ?? ""}
               alt={item.name}
-              fill
+              height={400}
+              width={400}
               className="object-cover transition-transform duration-700 group-hover:scale-110"
             />
           </div>
 
-          {/* Subtle glow behind circle */}
           <div className="absolute inset-0 rounded-full bg-(--bg-main)/10 blur-3xl z-0 group-hover:bg-(--bg-main)/20 transition-colors" />
         </div>
 
@@ -129,24 +200,40 @@ export const MenuCardDefault = ({
             {itemDescription}
           </p>
 
-          <div className="w-full flex items-center justify-between mt-auto pt-6 border-t border-(--bg-main)/10">
-            <span className="text-(--bg-main) font-black text-lg flex items-end gap-1 ">
-              <span className="flex items-center gap-1">
-                <span
-                  style={{
-                    transform:
-                      locale === "ar" ? "rotateY(180deg)" : "rotateY(0deg)",
-                  }}
-                >
-                  <IoPricetagOutline className="text-lg text-gray-500 animate-bounce" />
+          <div className="w-full flex items-center justify-between mt-auto pt-6 border-t border-(--bg-main)/10 gap-2">
+            <div className="flex min-w-0 flex-wrap items-end gap-x-2 gap-y-1 text-start">
+              <span className="text-(--bg-main) font-black text-lg flex items-end gap-1 shrink-0">
+                <span className="flex items-center gap-1">
+                  <span
+                    style={{
+                      transform:
+                        locale === "ar" ? "rotateY(180deg)" : "rotateY(0deg)",
+                    }}
+                  >
+                    <IoPricetagOutline className="text-lg text-gray-500 animate-bounce" />
+                  </span>
+                  {priceLabel}
                 </span>
-                {item.price}
+                <span className="text-base font-medium text-(--bg-main)">
+                  {getCurrency()}
+                </span>
               </span>
 
-              <span className="text-base sm:text-base font-medium text-gray-500">
-                {getCurrency()}
-              </span>
-            </span>
+              {sizes.length > 0 ? (
+                <span className="text-sm font-medium text-[#6b7280]">
+                  {locale === "ar"
+                    ? `${sizes.length} أحجام`
+                    : `${sizes.length} sizes`}
+                </span>
+              ) : null}
+              {variants.length > 0 ? (
+                <span className="text-sm font-medium text-[#6b7280]">
+                  {locale === "ar"
+                    ? `${variants.length} إضافات`
+                    : `${variants.length} add-ons`}
+                </span>
+              ) : null}
+            </div>
 
             <button
               type="button"
@@ -190,10 +277,7 @@ export const MenuCardDefault = ({
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    onAddToCart(cardPickQty);
-                    setCardPickQty(1);
-                  }}
+                  onClick={handleCardAddClick}
                   className="rounded-2xl bg-(--bg-main) px-4 py-2 text-base font-black text-white shadow-md transition hover:opacity-90"
                 >
                   {locale === "ar" ? "أضف للسلة" : "Add to cart"}
@@ -211,30 +295,26 @@ export const MenuCardDefault = ({
         </div>
       </div>
 
-      {/* Popup Modal */}
-      {isModalOpen === item.id && (
+      {isOpen ? (
         <div
           className={`fixed inset-0 z-11111111111 flex items-center justify-center p-4 transition-opacity duration-300 ${
             isClosing ? "opacity-0" : "opacity-100"
           }`}
           onClick={handleClose}
         >
-          {/* Backdrop */}
           <div
             className={`absolute inset-0 bg-black/80  backdrop-blur-md transition-opacity duration-300 ${
               isClosing ? "opacity-0" : "opacity-100"
             }`}
           />
 
-          {/* Modal Content */}
           <div
             dir={direction}
-            className={`relative w-full max-w-2xl bg-white rounded-[2.5rem] overflow-hidden border border-(--bg-main)/20 shadow-2xl transition-all duration-300 ${
+            className={`relative flex w-full max-w-2xl max-h-[92dvh] flex-col overflow-hidden rounded-[2.5rem] border border-(--bg-main)/20 bg-white shadow-2xl transition-all duration-300 ${
               isClosing ? "animate-modal-out" : "animate-modal-in"
             }`}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Close Button */}
             <button
               onClick={handleClose}
               className={`absolute top-6 z-30 w-12 h-12 rounded-full bg-(--bg-main)/90 backdrop-blur-base flex items-center justify-center text-white hover:bg-(--bg-main) transition-all duration-300 shadow-lg ${
@@ -244,8 +324,7 @@ export const MenuCardDefault = ({
               <Icon name="close-line" className="text-xl" />
             </button>
 
-            {/* Image Section */}
-            <div className="relative h-80 sm:h-96 overflow-hidden">
+            <div className="relative h-80 shrink-0 overflow-hidden sm:h-96">
               <LoadImage
                 src={item.image ?? ""}
                 alt={itemName}
@@ -254,8 +333,7 @@ export const MenuCardDefault = ({
               />
               <div className="absolute inset-0 bg-linear-to-t from-white via-transparent to-transparent" />
 
-              {/* Category Badge */}
-              {itemCategoryName && (
+              {itemCategoryName ? (
                 <div
                   className={`absolute top-6 bg-(--bg-main)/90 backdrop-blur-md text-white text-base font-black px-4 py-2 rounded-full shadow-base tracking-widest uppercase border border-white/20 ${
                     direction === "rtl" ? "right-6" : "left-6"
@@ -263,23 +341,20 @@ export const MenuCardDefault = ({
                 >
                   {itemCategoryName}
                 </div>
-              )}
+              ) : null}
 
-              {/* Price Badge */}
               <div
                 className={`absolute bottom-6 bg-(--bg-main) text-white px-6 py-3 rounded-2xl shadow-xl border-4 border-white ${
                   direction === "rtl" ? "right-6" : "left-6"
                 }`}
               >
                 <span className="text-xl font-black tracking-tighter">
-                  {item.price} {getCurrency()}
+                  {selectedUnitPrice} {getCurrency()}
                 </span>
               </div>
             </div>
 
-            {/* Content Section */}
-            <div className="px-6 pb-8 pt-2 sm:px-8 sm:pb-8">
-              {/* Title */}
+            <div className="default-modal-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-8 pt-2 sm:px-8 sm:pb-8">
               <div className="mb-4">
                 <h2 className="!text-xl sm:!text-2xl font-black text-(--bg-main) mb-2 tracking-tight text-balance wrap-break-word">
                   {itemName}
@@ -287,7 +362,6 @@ export const MenuCardDefault = ({
                 <div className="w-10 h-1 bg-(--bg-main)/80 rounded-full" />
               </div>
 
-              {/* Description */}
               {itemDescription ? (
                 <div className="rounded-2xl bg-(--bg-main)/5 px-4 py-4 sm:px-5 sm:py-4 mb-6">
                   <p className="text-[#2b1d58] text-sm sm:text-[15px] leading-[1.75] font-normal text-balance wrap-break-word">
@@ -296,16 +370,121 @@ export const MenuCardDefault = ({
                 </div>
               ) : null}
 
-              {isTableOrder && onAddToCart && (
+              {sizes.length > 0 ? (
+                <div className="mb-5">
+                  <h3 className="mb-3 text-base font-black text-(--bg-main)">
+                    {locale === "ar" ? "الحجم" : "Size"}
+                  </h3>
+                  <div className="space-y-2">
+                    {sizes.map((size) => {
+                      const label = pickSizeLabel(size, locale);
+                      const checked = selectedSize?.nameEn === size.nameEn;
+                      return (
+                        <label
+                          key={`${size.nameEn}-${size.price}`}
+                          className={`flex cursor-pointer items-center justify-between gap-3 rounded-2xl border px-4 py-3 transition ${
+                            checked
+                              ? "border-(--bg-main) bg-(--bg-main)/8"
+                              : "border-(--bg-main)/15 bg-white hover:border-(--bg-main)/35"
+                          }`}
+                        >
+                          <span className="flex items-center gap-3">
+                            <input
+                              type="radio"
+                              name={`size-${item.id}`}
+                              checked={checked}
+                              onChange={() => setSelectedSize(size)}
+                              className="h-4 w-4 accent-(--bg-main)"
+                            />
+                            <span className="text-sm font-semibold text-zinc-800">
+                              {label}
+                            </span>
+                          </span>
+                          <span className="text-sm font-black text-(--bg-main)">
+                            {size.price} {getCurrency()}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+
+              {variants.length > 0 ? (
+                <div className="mb-5">
+                  <h3 className="mb-3 text-base font-black text-(--bg-main)">
+                    {locale === "ar" ? "الإضافات" : "Add-ons"}
+                  </h3>
+                  <div className="space-y-2">
+                    <label
+                      className={`flex cursor-pointer items-center justify-between gap-3 rounded-2xl border px-4 py-3 transition ${
+                        selectedVariant === null
+                          ? "border-(--bg-main) bg-(--bg-main)/8"
+                          : "border-(--bg-main)/15 bg-white hover:border-(--bg-main)/35"
+                      }`}
+                    >
+                      <span className="flex items-center gap-3">
+                        <input
+                          type="radio"
+                          name={`variant-${item.id}`}
+                          checked={selectedVariant === null}
+                          onChange={() => setSelectedVariant(null)}
+                          className="h-4 w-4 accent-(--bg-main)"
+                        />
+                        <span className="text-sm font-semibold text-zinc-800">
+                          {locale === "ar" ? "بدون إضافة" : "No add-on"}
+                        </span>
+                      </span>
+                    </label>
+                    {variants.map((variant) => {
+                      const label = pickVariantLabel(variant, locale);
+                      const checked =
+                        selectedVariant?.labelEn === variant.labelEn;
+                      return (
+                        <label
+                          key={`${variant.labelEn}-${variant.price}`}
+                          className={`flex cursor-pointer items-center justify-between gap-3 rounded-2xl border px-4 py-3 transition ${
+                            checked
+                              ? "border-(--bg-main) bg-(--bg-main)/8"
+                              : "border-(--bg-main)/15 bg-white hover:border-(--bg-main)/35"
+                          }`}
+                        >
+                          <span className="flex items-center gap-3">
+                            <input
+                              type="radio"
+                              name={`variant-${item.id}`}
+                              checked={checked}
+                              onChange={() => setSelectedVariant(variant)}
+                              className="h-4 w-4 accent-(--bg-main)"
+                            />
+                            <span className="text-sm font-semibold text-zinc-800">
+                              {label}
+                            </span>
+                          </span>
+                          <span className="text-sm font-black text-(--bg-main)">
+                            {variant.price > 0
+                              ? `+${variant.price} ${getCurrency()}`
+                              : locale === "ar"
+                                ? "مجاني"
+                                : "Free"}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+
+              {isTableOrder && onAddToCart ? (
                 <div className="mb-4 flex items-center justify-between gap-4 rounded-2xl border border-(--bg-main)/20 p-4">
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onAddToCart(selectedQuantity);
-                      setSelectedQuantity(1);
+                      handleAddToCart(selectedQuantity);
                     }}
-                    className="rounded-xl bg-(--bg-main) px-4 py-2 text-base font-semibold text-white transition-opacity hover:opacity-90"
+                    disabled={sizes.length > 0 && !selectedSize}
+                    className="rounded-xl bg-(--bg-main) px-4 py-2 text-base font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {locale === "ar" ? "أضف إلى السلة" : "Add to cart"}
                   </button>
@@ -338,21 +517,19 @@ export const MenuCardDefault = ({
                     </button>
                   </div>
                 </div>
-              )}
-              {isTableOrder && cartQuantity > 0 && (
+              ) : null}
+              {isTableOrder && cartQuantity > 0 ? (
                 <p className="text-base text-(--bg-main)/70">
                   {locale === "ar"
                     ? `في السلة: ${cartQuantity}`
                     : `In cart: ${cartQuantity}`}
                 </p>
-              )}
+              ) : null}
 
-              {/* Divider */}
               <div className="mt-2 h-px bg-(--bg-main)/10" />
 
-              {/* Additional Info */}
-              {item.originalPrice && item.discountPercent && (
-                <div className="flex items-center justify-between p-4 bg-(--bg-main)/5 rounded-2xl">
+              {item.originalPrice && item.discountPercent ? (
+                <div className="flex items-center justify-between p-4 bg-(--bg-main)/5 rounded-2xl mt-4">
                   <span className="text-(--bg-main)/70 font-medium">
                     {locale === "ar" ? "السعر الأصلي" : "Original Price"}
                   </span>
@@ -365,11 +542,11 @@ export const MenuCardDefault = ({
                     </span>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </>
   );
 };
