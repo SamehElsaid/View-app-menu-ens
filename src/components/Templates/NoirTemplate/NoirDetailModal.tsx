@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import type { MenuItem } from "@/types/menu";
 import LoadImage from "@/components/ImageLoad";
 import { useNoirTheme, hexToRgba, shadowGlow } from "./NoirThemeContext";
@@ -12,7 +12,6 @@ import {
   subscribeSkyCartUpdated,
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
 type NoirDetailModalProps = {
   item: MenuItem;
@@ -27,10 +26,7 @@ export default function NoirDetailModal({
 }: NoirDetailModalProps) {
   const locale = useLocale();
   const direction = locale === "ar" ? "rtl" : "ltr";
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const [isClosing, setIsClosing] = useState(false);
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);

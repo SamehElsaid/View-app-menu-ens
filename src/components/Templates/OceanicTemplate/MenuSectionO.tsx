@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { motion, AnimatePresence } from "framer-motion";
 import CategoryTabs from "./CategoryTabs";
 import MenuItemO from "./MenuItemO";
@@ -16,7 +16,6 @@ import {
   upsertSkyCartQuantityFromMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
 const EMPTY_MENU: MenuItem[] = [];
@@ -24,10 +23,7 @@ const EMPTY_MENU: MenuItem[] = [];
 const MenuSectionO = () => {
   const locale = useLocale();
   const isAr = locale === "ar";
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const [activeCategory, setActiveCategory] = useState("0");
   const [searchQuery, setSearchQuery] = useState("");
   const [isSticky, setIsSticky] = useState(false);

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { IoCartOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { useLocale } from "next-intl";
 import type { MenuItem } from "@/types/menu";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
@@ -15,7 +15,6 @@ import {
   readSkyCartFromCookie,
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
 type DishModalProps = {
   dish: MenuItem | null;
@@ -30,10 +29,7 @@ export default function DishModal({
 }: DishModalProps) {
   const locale = useLocale() as "ar" | "en";
   const { primary, secondary } = useArcaneTheme();
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
 

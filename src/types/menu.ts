@@ -105,6 +105,24 @@ export interface Category {
   menuItems: MenuItem[];
 }
 
+export interface DeliveryGovernorate {
+  id: number;
+  nameAr: string;
+  nameEn: string;
+  price: number;
+  lat: number;
+  lan: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Delivery {
+  deliveryOn: boolean;
+  deliveryPhone: string;
+  phoneNumber: string;
+  governorates: DeliveryGovernorate[];
+}
+
 export interface FooterProps {
   menuName: string;
   menuLogo?: string;

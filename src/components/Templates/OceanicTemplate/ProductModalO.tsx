@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiArrowLeft, FiArrowRight } from "react-icons/fi";
 import { useLocale } from "next-intl";
@@ -12,7 +12,6 @@ import {
   subscribeSkyCartUpdated,
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import LoadImage from "@/components/ImageLoad";
 
 interface ProductModalProps {
@@ -24,10 +23,7 @@ interface ProductModalProps {
 const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
   const locale = useLocale();
   const isAr = locale === "ar";
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import {
   Category,
   MenuItem,
@@ -23,7 +23,6 @@ import { useAppSelector } from "@/store/hooks";
 import { Icon } from "../components/Icon";
 import { useCategoryNav } from "./CategoryNavContext";
 import { getCategoryIconName, type MenuCategoryLike } from "./categoryIconMap";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import {
   buildCategorySections,
   sortMenuItems,
@@ -176,10 +175,7 @@ function CategorySectionHeader({
 export default function MenuSection({ currency }: { currency: string }) {
   const locale = useLocale();
   const t = useTranslations("menu");
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const [cart, setCart] = useState<SkyCart>({});
   const { openItemId, isModalOpen, openModal, closeModal } = useProductModalUrl();
   const menuTitleRef = useRef<HTMLDivElement>(null);

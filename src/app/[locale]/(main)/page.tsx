@@ -13,6 +13,7 @@ import PharaonicTemplate from "@/components/Templates/PharaonicTemplate";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
+import DeliveryLocationModal from "@/components/Global/DeliveryLocationModal";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import MusicTemplate from "@/components/Templates/MusicTemplate";
@@ -30,6 +31,7 @@ export default function Page() {
   const locale = useLocale();
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
+  const delivery = useAppSelector((s) => s.menu.delivery);
 
   const showTemplates =
     menu.menuInfo?.isActive !== false && Boolean(menu.theme);
@@ -94,6 +96,11 @@ export default function Page() {
           {tableCartAllowed ? (
             <Suspense fallback={null}>
               <RequestStaffButton />
+            </Suspense>
+          ) : null}
+          {delivery?.deliveryOn && !searchParams.get("table")?.trim() ? (
+            <Suspense fallback={null}>
+              <DeliveryLocationModal />
             </Suspense>
           ) : null}
           <OrderChatbotGate />

@@ -1,4 +1,4 @@
-import { MenuItem, MenuInfo, MenuCustomizations, Category } from "@/types/menu";
+import { MenuItem, MenuInfo, MenuCustomizations, Category, Delivery } from "@/types/menu";
 import { Ad } from "@/types/Ad";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
@@ -9,6 +9,7 @@ type MenuState = {
   ads: Ad[] | null;
   menuCustomizations: MenuCustomizations | null;
   categories: Category[] | null;
+  delivery: Delivery | null;
 };
 const initialState: MenuState = {
   menu: null,
@@ -17,6 +18,7 @@ const initialState: MenuState = {
   ads: null,
   menuCustomizations: null,
   categories: null,
+  delivery: null,
 };
 
 const menuSlice = createSlice({
@@ -45,6 +47,9 @@ const menuSlice = createSlice({
     SET_CATEGORIES: (state, action: PayloadAction<Category[]>) => {
       state.categories = action.payload;
     },
+    SET_DELIVERY: (state, action: PayloadAction<Delivery | null>) => {
+      state.delivery = action.payload;
+    },
     REMOVE_MENU: (state) => {
       state.menu = null;
       state.menuInfo = null;
@@ -52,6 +57,7 @@ const menuSlice = createSlice({
       state.ads = null;
       state.menuCustomizations = null;
       state.categories = null;
+      state.delivery = null;
     },
   },
 });
@@ -63,6 +69,7 @@ export const {
   SET_THEME,
   SET_MENU_CUSTOMIZATIONS,
   SET_CATEGORIES,
+  SET_DELIVERY,
   REMOVE_MENU,
 } = menuSlice.actions;
 

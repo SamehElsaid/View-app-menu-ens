@@ -7,7 +7,7 @@ import React, {
   useRef,
   useCallback,
 } from "react";
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { useLocale } from "next-intl";
 import type {
   Category,
@@ -24,7 +24,6 @@ import {
   readSkyCartFromCookie,
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import {
   sortCategories,
@@ -212,10 +211,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   customizations = {},
 }) => {
   const locale = useLocale();
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const [selectedFoodItem, setSelectedFoodItem] = useState<MenuItem | null>(
     null,
   );

@@ -3,9 +3,8 @@ import { MenuItem } from "@/types/menu";
 import SkyDetailModal from "./SkyDetailModal";
 import { arabCurrencies, Currency } from "@/constants/currencies";
 import { useLocale } from "next-intl";
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import LoadImage from "@/components/ImageLoad";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
 interface MenuCardProps {
@@ -31,10 +30,7 @@ export default function MenuCard({
 }: MenuCardProps) {
   const { trackItem } = useTrackMenuItemClick();
   const locale = useLocale();
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
 

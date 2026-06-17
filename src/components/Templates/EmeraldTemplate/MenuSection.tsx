@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
@@ -14,7 +14,6 @@ import {
   upsertSkyCartQuantityFromMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { useAppSelector } from "@/store/hooks";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
@@ -289,10 +288,7 @@ function EmeraldDishModal({
   currencyLabel: string;
 }) {
   const locale = useLocale() as "ar" | "en";
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
   const { primary, secondary } = useEmeraldTheme();
@@ -515,10 +511,7 @@ export default function MenuSection({
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
   const siteName = menuInfo?.name?.trim();
   const displayName = siteName || (locale === "ar" ? "زُمُرُّد" : "Emerald");
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const { primary, secondary } = useEmeraldTheme();
   const currencyLabel = useCurrencyLabel()(currency);
 

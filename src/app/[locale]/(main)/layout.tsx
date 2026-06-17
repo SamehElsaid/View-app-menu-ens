@@ -6,7 +6,7 @@ import { DEV_SUB_DOMAIN_COOKIE_KEY } from "@/lib/devSubDomainCookie";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { resolveMenuSlug } from "@/lib/menuSlug";
 import { serverGet } from "@/shared/serverApi";
-import { MenuItem, MenuInfo, MenuCustomizations, Category } from "@/types/menu";
+import { MenuItem, MenuInfo, MenuCustomizations, Category, Delivery } from "@/types/menu";
 import { Ad } from "@/types/Ad";
 import { cookies, headers } from "next/headers";
 import { Metadata } from "next";
@@ -18,6 +18,7 @@ type MenuResponse = {
   ads: Ad[];
   customizations: MenuCustomizations | null;
   categories: Category[];
+  delivery: Delivery | null;
 };
 
 type MenuCacheEntry = {
@@ -123,9 +124,6 @@ export async function generateMetadata({
   const iconUrl = resolveMenuIconUrl(data?.menu?.logo);
   const title = data?.menu?.name;
   const description = data?.menu?.description;
-  
-
-  console.log(title, description);
 
   return {
     title: title ?? defaults.title,
@@ -170,8 +168,6 @@ export default async function MainLayout({
   const { needsDevSubdomain, devMode } = resolveMenuSlug(host, cookieSubdomain);
   const data = await getMenu(locale);
 
-  console.log(data);
-
   return (
     <>
       {needsDevSubdomain ? <DevSubdomainPrompt locale={locale} /> : null}
@@ -186,6 +182,7 @@ export default async function MainLayout({
           (data?.customizations as MenuCustomizations) ?? null
         }
         categories={(data?.categories as Category[]) ?? null}
+        delivery={(data?.delivery as Delivery) ?? null}
       />
       <Header />
       {children}

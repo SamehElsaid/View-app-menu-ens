@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { FiX } from "react-icons/fi";
 import LoadImage from "@/components/ImageLoad";
 import { arabCurrencies, type Currency } from "@/constants/currencies";
@@ -13,7 +13,6 @@ import {
   readSkyCartFromCookie,
   upsertSkyCartQuantityFromMenuItem,
 } from "@/lib/skyTemplateCart";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
 function currencyLabel(code: string, locale: string): string {
@@ -56,10 +55,7 @@ const MenuItem = ({
   currency = "AED",
 }: MenuItemProps) => {
   const locale = useLocale();
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const titleId = useId();
   const { trackItem } = useTrackMenuItemClick();
   const [open, setOpen] = useState(false);

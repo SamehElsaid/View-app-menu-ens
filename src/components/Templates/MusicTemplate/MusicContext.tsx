@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { useLocale } from "next-intl";
 import { toast } from "react-toastify";
 import type { MenuItem } from "@/types/menu";
@@ -19,7 +19,6 @@ import {
   upsertSkyCartQuantityFromMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
 type MusicContextValue = {
   activeCategoryId: number | null;
@@ -40,10 +39,7 @@ const MusicContext = createContext<MusicContextValue | null>(null);
 
 export function MusicProvider({ children }: { children: ReactNode }) {
   const locale = useLocale() as "ar" | "en";
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
 
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [activeItem, setActiveItem] = useState<MenuItem | null>(null);

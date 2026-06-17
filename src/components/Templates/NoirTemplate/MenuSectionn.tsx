@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
@@ -18,7 +18,6 @@ import {
   upsertSkyCartQuantityFromMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import NoirDetailModal from "./NoirDetailModal";
 
@@ -250,10 +249,7 @@ export default function MenuSectionn({
   const [activeCategory, setActiveCategory] = useState(0);
   const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
   const locale = useLocale();
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const currencyLabel = useCurrencyLabel()(currency);
 
   useEffect(() => {

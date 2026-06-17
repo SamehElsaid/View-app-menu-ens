@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { useLocale } from "next-intl";
 import { toast } from "react-toastify";
 import type { MenuItem } from "@/types/menu";
@@ -19,7 +19,6 @@ import {
   upsertSkyCartQuantityFromMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 
 type CoffeeContextValue = {
   activeCategoryId: number | null;
@@ -36,10 +35,7 @@ const CoffeeContext = createContext<CoffeeContextValue | null>(null);
 
 export function CoffeeProvider({ children }: { children: ReactNode }) {
   const locale = useLocale() as "ar" | "en";
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
 
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [modalItem, setModalItem] = useState<MenuItem | null>(null);

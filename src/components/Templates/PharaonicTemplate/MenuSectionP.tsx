@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import type { Category, MenuItem } from "@/types/menu";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 import { LotusDivider } from "./PharaonicDecor";
@@ -11,7 +11,6 @@ import {
   upsertSkyCartQuantityFromMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import { pharaonicHaptic } from "./usePharaonicTouchDevice";
 import PharaonicCategoryTabs from "./PharaonicCategoryTabs";
@@ -31,10 +30,7 @@ export default function MenuSectionP({
   const { openItem } = useTrackMenuItemClick();
   const [activeCategory, setActiveCategory] = useState(0);
   const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const currencyLabel = useCurrencyLabel()(currency);
 
   useEffect(() => {

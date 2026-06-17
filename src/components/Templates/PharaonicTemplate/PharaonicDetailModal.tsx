@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type MouseEvent } from "react";
 import { useLocale } from "next-intl";
-import { useSearchParams } from "next/navigation";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { IoCartOutline } from "react-icons/io5";
 import type { MenuItem } from "@/types/menu";
 import LoadImage from "@/components/ImageLoad";
@@ -16,7 +16,6 @@ import {
   usePharaonicTouchDevice,
   pharaonicHaptic,
 } from "./usePharaonicTouchDevice";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import {
   subscribeSkyCartUpdated,
   readSkyCartFromCookie,
@@ -35,10 +34,7 @@ export default function PharaonicDetailModal({
   currencyLabel,
 }: PharaonicDetailModalProps) {
   const locale = useLocale();
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
   const { primary, secondary } = usePharaonicTheme();

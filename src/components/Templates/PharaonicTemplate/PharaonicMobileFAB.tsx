@@ -3,16 +3,12 @@
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import { usePharaonicTheme, PharaonicChevron } from "./PharaonicThemeContext";
-import { useSearchParams } from "next/navigation";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { usePharaonicTouchDevice, pharaonicHaptic } from "./usePharaonicTouchDevice";
 
 export default function PharaonicMobileFAB() {
   const locale = useLocale();
-  const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
-  const isTableOrder =
-    Boolean(searchParams.get("table")?.trim()) && tableCartAllowed;
+  const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const isTouch = usePharaonicTouchDevice();
   const { primary, secondary } = usePharaonicTheme();
   const [visible, setVisible] = useState(false);
