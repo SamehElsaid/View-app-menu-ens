@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useTableCartAllowed } from "./useTableCartAllowed";
 import { useAppSelector } from "@/store/hooks";
+import { isValidTableParam } from "@/lib/menuTable";
 
 export const DELIVERY_ZONE_PARAM = "deliveryZone";
 
@@ -22,11 +23,18 @@ export function useIsOrderingEnabled(): {
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
+  const menuInfo = useAppSelector((s) => s.menu.menuInfo);
 
   const tableNumber = searchParams.get("table")?.trim() ?? "";
   const deliveryZoneParam = searchParams.get(DELIVERY_ZONE_PARAM)?.trim() ?? "";
+  const tableValidity = tableNumber
+    ? isValidTableParam(menuInfo, tableNumber)
+    : null;
 
-  const isTableOrder = Boolean(tableNumber) && tableCartAllowed;
+  const isTableOrder =
+    Boolean(tableNumber) &&
+    tableCartAllowed &&
+    tableValidity !== false;
   const isDeliveryOrder =
     !tableNumber &&
     Boolean(delivery?.deliveryOn) &&

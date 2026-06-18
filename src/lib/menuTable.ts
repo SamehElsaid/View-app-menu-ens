@@ -1,0 +1,93 @@
+export type MenuTableRef = {
+  id?: number | string;
+  Id?: number | string;
+  tableNumber?: string | null;
+  TableNumber?: string | null;
+};
+
+export function tableRowId(table: unknown): number | null {
+  if (!table || typeof table !== "object") return null;
+  const row = table as MenuTableRef;
+  const raw = row.id ?? row.Id;
+  if (raw === undefined || raw === null) return null;
+  const n = typeof raw === "number" ? raw : Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+export function isRegisteredMenuTable(table: unknown): boolean {
+  return tableRowId(table) !== null;
+}
+
+export function readMenuTableRef(menuInfo: unknown): MenuTableRef | null {
+  if (!menuInfo || typeof menuInfo !== "object") return null;
+  const table = (menuInfo as { table?: unknown }).table;
+  if (!table || typeof table !== "object") return null;
+  return table as MenuTableRef;
+}
+
+export function readMenuTableNumber(table: unknown): string | null {
+  if (!table || typeof table !== "object") return null;
+  const row = table as MenuTableRef;
+  const raw = row.tableNumber ?? row.TableNumber;
+  if (raw === undefined || raw === null) return null;
+  const value = String(raw).trim();
+  return value || null;
+}
+
+export function tableMatchesParam(table: unknown, param: string): boolean {
+  const needle = param.trim();
+  if (!needle) return false;
+
+  const label = readMenuTableNumber(table);
+  if (label !== null && label === needle) return true;
+
+  const id = tableRowId(table);
+  return id !== null && String(id) === needle;
+}
+
+export function readMenuTables(menuInfo: unknown): MenuTableRef[] | null {
+  if (!menuInfo || typeof menuInfo !== "object") return null;
+  const tables = (menuInfo as { tables?: unknown }).tables;
+  if (!Array.isArray(tables)) return null;
+  return tables as MenuTableRef[];
+}
+
+function isUnresolvedTableStub(table: unknown, param: string): boolean {
+  if (!table || typeof table !== "object") return false;
+  if (isRegisteredMenuTable(table)) return false;
+  const label = readMenuTableNumber(table);
+  return label === param.trim();
+}
+
+/**
+ * `true` = registered table for this param.
+ * `false` = confirmed invalid (unknown number or unresolved stub).
+ * `null` = cannot tell yet (no tables list on menu) — do not strip URL.
+ */
+export function isValidTableParam(
+  menuInfo: unknown,
+  param: string,
+): boolean | null {
+  const needle = param.trim();
+  if (!needle) return false;
+
+  const resolved = readMenuTableRef(menuInfo);
+  if (
+    isRegisteredMenuTable(resolved) &&
+    tableMatchesParam(resolved, needle)
+  ) {
+    return true;
+  }
+
+  if (isUnresolvedTableStub(resolved, needle)) {
+    return false;
+  }
+
+  const tables = readMenuTables(menuInfo);
+  if (tables === null) return null;
+  if (tables.length === 0) return false;
+
+  return tables.some(
+    (row) => tableMatchesParam(row, needle) && isRegisteredMenuTable(row),
+  );
+}

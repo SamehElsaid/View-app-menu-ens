@@ -29,9 +29,11 @@ type MenuCacheEntry = {
 const MENU_BOOTSTRAP_CACHE_TTL_MS = 15_000;
 const menuRequests = new Map<string, MenuCacheEntry>();
 
-async function fetchMenu(slug: string, locale: string) {
-  const headersList = await headers();
-  const forwardQuery = headersList.get("x-menu-forward-query") ?? "";
+async function fetchMenu(
+  slug: string,
+  locale: string,
+  forwardQuery: string,
+) {
   const menuApiPath = forwardQuery
     ? `/public/menu/${slug}?${forwardQuery}`
     : `/public/menu/${slug}`;
@@ -41,8 +43,9 @@ async function fetchMenu(slug: string, locale: string) {
   return response.status ? (response?.data?.data ?? null) : null;
 }
 
-const getMenuBySlug = cache((slug: string, locale: string) => {
-  const cacheKey = `${locale}:${slug}`;
+const getMenuBySlug = cache(
+  (slug: string, locale: string, forwardQuery: string) => {
+    const cacheKey = `${locale}:${slug}:${forwardQuery}`;
   const cached = menuRequests.get(cacheKey);
   const now = Date.now();
 
@@ -50,7 +53,7 @@ const getMenuBySlug = cache((slug: string, locale: string) => {
     return cached.promise;
   }
 
-  const promise = fetchMenu(slug, locale)
+    const promise = fetchMenu(slug, locale, forwardQuery)
     .then((data) => {
       if (!data) {
         menuRequests.delete(cacheKey);
@@ -72,8 +75,9 @@ const getMenuBySlug = cache((slug: string, locale: string) => {
     promise,
   });
 
-  return promise;
-});
+    return promise;
+  },
+);
 
 const getMenu = async (locale: string) => {
   const headersList = await headers();
@@ -81,12 +85,13 @@ const getMenu = async (locale: string) => {
   const cookieStore = await cookies();
   const cookieSubdomain = cookieStore.get(DEV_SUB_DOMAIN_COOKIE_KEY)?.value;
   const { slug, needsDevSubdomain } = resolveMenuSlug(host, cookieSubdomain);
+  const forwardQuery = headersList.get("x-menu-forward-query") ?? "";
 
   if (needsDevSubdomain || !slug) {
     return null;
   }
 
-  return getMenuBySlug(slug, locale);
+  return getMenuBySlug(slug, locale, forwardQuery);
 };
 
 const defaultMetadata: Record<string, { title: string; description: string }> =

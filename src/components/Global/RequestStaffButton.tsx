@@ -45,6 +45,7 @@ const THEME_BG_MAIN_FALLBACK: Record<string, string> = {
   noir: "#7c3aed",
   oceanic: "#0ea5e9",
   pharaonic: "#C9A227",
+  onecard: "#9333EA",
 };
 
 type StaffCallPayload = {

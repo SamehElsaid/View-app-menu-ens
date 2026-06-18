@@ -150,6 +150,7 @@ export default function DeliveryLocationModal() {
       noir: "#7c3aed",
       oceanic: "#0ea5e9",
       pharaonic: "#C9A227",
+      onecard: "#9333EA",
     };
     return fallbacks[theme] ?? fallbacks.default;
   }, [menuInfo?.theme]);
@@ -198,7 +199,7 @@ export default function DeliveryLocationModal() {
 
   return createPortal(
     <div
-      className="fixed inset-0 z-999999 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-999999 flex  items-center justify-center bg-black/50 backdrop-blur-sm"
       dir={isArabic ? "rtl" : "ltr"}
     >
       <div
@@ -252,7 +253,9 @@ export default function DeliveryLocationModal() {
             <div className="flex flex-col items-center gap-3 py-4">
               <div
                 className="h-10 w-10 rounded-full border-4 border-t-transparent animate-spin"
-                style={{ borderColor: `${accentColor} transparent ${accentColor} ${accentColor}` }}
+                style={{
+                  borderColor: `${accentColor} transparent ${accentColor} ${accentColor}`,
+                }}
               />
               <p className="text-base text-zinc-600">{labels.requesting}</p>
             </div>
@@ -270,10 +273,7 @@ export default function DeliveryLocationModal() {
                     style={{ color: accentColor }}
                   />
                 </div>
-                <p
-                  className="text-lg font-bold"
-                  style={{ color: accentColor }}
-                >
+                <p className="text-lg font-bold" style={{ color: accentColor }}>
                   {labels.foundTitle}
                 </p>
                 <p className="text-base text-zinc-600 text-center">

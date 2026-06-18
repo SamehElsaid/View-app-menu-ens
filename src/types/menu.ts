@@ -42,6 +42,15 @@ export interface MenuInfo {
   socialInstagram: string | null;
   socialTwitter: string | null;
   workingHours: WorkingHours | null;
+  /** Resolved from `?table=` on public menu bootstrap */
+  table?: {
+    id?: number;
+    tableNumber?: string | null;
+  } | null;
+  tables?: Array<{
+    id?: number;
+    tableNumber?: string | null;
+  }>;
 }
 
 export interface MenuCustomizations {
