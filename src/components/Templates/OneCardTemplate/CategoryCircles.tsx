@@ -68,9 +68,8 @@ export default function CategoryCircles({
                 aria-pressed={isActive}
               >
                 <div
-                  className="relative h-[4.5rem] w-[4.5rem] overflow-hidden rounded-full border-[3px] bg-white shadow-md transition-transform duration-300 group-active:scale-95 sm:h-20 sm:w-20"
+                  className="relative h-[4.5rem] w-[4.5rem] overflow-hidden rounded-full bg-white shadow-md transition-transform duration-300 group-active:scale-95 sm:h-20 sm:w-20"
                   style={{
-                    borderColor: isActive ? primary : `${primary}99`,
                     boxShadow: isActive
                       ? `0 8px 24px -8px ${primary}88`
                       : undefined,
@@ -96,8 +95,13 @@ export default function CategoryCircles({
                   )}
                 </div>
                 <span
-                  className="line-clamp-2 text-center text-[11px] font-bold leading-tight sm:text-xs"
-                  style={{ color: primary }}
+                  className={`line-clamp-2 text-center text-[11px] font-bold leading-tight sm:text-xs ${
+                    isActive ? "border-b-2 pb-0.5" : ""
+                  }`}
+                  style={{
+                    color: primary,
+                    borderColor: isActive ? primary : undefined,
+                  }}
                 >
                   {label}
                 </span>

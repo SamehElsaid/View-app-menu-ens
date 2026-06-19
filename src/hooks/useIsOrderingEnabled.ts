@@ -25,21 +25,22 @@ export function useIsOrderingEnabled(): {
   const delivery = useAppSelector((s) => s.menu.delivery);
   const menuInfo = useAppSelector((s) => s.menu.menuInfo);
 
-  const tableNumber = searchParams.get("table")?.trim() ?? "";
   const deliveryZoneParam = searchParams.get(DELIVERY_ZONE_PARAM)?.trim() ?? "";
+  const tableNumber = searchParams.get("table")?.trim() ?? "";
   const tableValidity = tableNumber
     ? isValidTableParam(menuInfo, tableNumber)
     : null;
 
+  const isDeliveryOrder =
+    Boolean(deliveryZoneParam) &&
+    Boolean(delivery?.deliveryOn) &&
+    tableCartAllowed;
+
   const isTableOrder =
     Boolean(tableNumber) &&
+    !isDeliveryOrder &&
     tableCartAllowed &&
     tableValidity !== false;
-  const isDeliveryOrder =
-    !tableNumber &&
-    Boolean(delivery?.deliveryOn) &&
-    Boolean(deliveryZoneParam) &&
-    tableCartAllowed;
 
   return {
     isOrderingEnabled: isTableOrder || isDeliveryOrder,

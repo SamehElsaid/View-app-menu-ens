@@ -13,10 +13,7 @@ export default function HeaderLogo() {
 
   return (
     <div className="relative z-20 -mb-14 flex justify-center sm:-mb-16">
-      <div
-        className="relative -mt-8 h-28 w-28 overflow-hidden rounded-full border-[3px] shadow-[0_16px_40px_-12px_rgba(0,0,0,0.45)] sm:h-32 sm:w-32"
-        style={{ borderColor: primary }}
-      >
+      <div className="relative -mt-8 h-40 w-40 overflow-hidden rounded-full  shadow-[0_16px_40px_-12px_rgba(0,0,0,0.45)] ">
         {menuInfo?.logo ? (
           <LoadImage
             src={menuInfo.logo}

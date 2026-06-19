@@ -25,6 +25,25 @@ export function useStripInvalidTableParam(): void {
 
     if (!tableParam || !menuInfo) return;
 
+    const deliveryZone = searchParams.get("deliveryZone")?.trim();
+    if (deliveryZone) {
+      const params = new URLSearchParams(searchParams.toString());
+      if (
+        params.has("table") ||
+        params.has("tableNumber") ||
+        params.has("tableId")
+      ) {
+        params.delete("table");
+        params.delete("tableNumber");
+        params.delete("tableId");
+        const nextQuery = params.toString();
+        router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+          scroll: false,
+        });
+      }
+      return;
+    }
+
     function stripTableParams() {
       const params = new URLSearchParams(searchParams.toString());
       params.delete("table");

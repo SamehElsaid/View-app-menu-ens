@@ -52,7 +52,7 @@ export default function Footer() {
 
   return (
     <footer
-      className="mt-3 rounded-tr-[8rem] rounded-tl-[8rem] bg-white px-4 pb-5 pt-8 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.4)] sm:px-6"
+      className="mt-3 rounded-tr-[6rem] rounded-tl-[6rem] bg-white px-4 pb-5 pt-8 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.4)] sm:px-6"
       aria-label="Footer"
     >
       <div className="mx-auto  text-center">

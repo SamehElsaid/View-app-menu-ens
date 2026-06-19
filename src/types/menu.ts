@@ -127,6 +127,7 @@ export interface DeliveryGovernorate {
 
 export interface Delivery {
   deliveryOn: boolean;
+  deliveryWhatsAppOn?: boolean;
   deliveryPhone: string;
   phoneNumber: string;
   governorates: DeliveryGovernorate[];
