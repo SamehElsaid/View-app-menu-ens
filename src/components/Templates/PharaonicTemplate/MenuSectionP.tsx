@@ -8,10 +8,13 @@ import { LotusDivider } from "./PharaonicDecor";
 import {
   subscribeSkyCartUpdated,
   readSkyCartFromCookie,
-  upsertSkyCartQuantityFromMenuItem,
+  upsertSkyCartFromMenuItemWithOptions,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
+import { hasMenuItemOptions } from "@/lib/menuItemOptions";
+import { toast } from "react-toastify";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
+import { useLocale } from "next-intl";
 import { pharaonicHaptic } from "./usePharaonicTouchDevice";
 import PharaonicCategoryTabs from "./PharaonicCategoryTabs";
 import PharaonicMenuCard from "./PharaonicMenuCard";
@@ -26,6 +29,7 @@ export default function MenuSectionP({
   categories: Category[];
   currency: string;
 }) {
+  const locale = useLocale();
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
   const { openItem } = useTrackMenuItemClick();
   const [activeCategory, setActiveCategory] = useState(0);
@@ -95,8 +99,18 @@ export default function MenuSectionP({
             isTableOrder={isTableOrder}
             cartQuantity={cartById[item.id]?.quantity ?? 0}
             onAddToCart={(item, qty) => {
-              upsertSkyCartQuantityFromMenuItem(item, qty);
+              if (hasMenuItemOptions(item)) {
+                openItem(item, setSelectedDish);
+                return;
+              }
+              upsertSkyCartFromMenuItemWithOptions(item, qty, { locale });
               setCartById(readSkyCartFromCookie());
+              toast.success(
+                locale === "ar"
+                  ? `تمت إضافة ${qty} إلى السلة`
+                  : `Added ${qty} to cart`,
+              );
+              pharaonicHaptic([10, 28, 10]);
             }}
           />
         ))}

@@ -1,17 +1,29 @@
 "use client";
 
-import { useEffect, useId, useState, type MouseEvent } from "react";
+import { useEffect, useId, useMemo, useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
 import { FiX } from "react-icons/fi";
+import { toast } from "react-toastify";
 import { IoCartOutline } from "react-icons/io5";
 import LoadImage from "@/components/ImageLoad";
-import type { MenuItem } from "@/types/menu";
+import type { MenuItem, MenuItemSizeOption, MenuItemVariantOption } from "@/types/menu";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import {
+  getCartQuantityForMenuItem,
   readSkyCartFromCookie,
   subscribeSkyCartUpdated,
+  upsertSkyCartFromMenuItemWithOptions,
 } from "@/lib/skyTemplateCart";
+import {
+  computeMenuItemUnitPrice,
+  getMenuItemMinPrice,
+  getMenuItemSizes,
+  getMenuItemVariants,
+  hasMenuItemOptions,
+  pickSizeLabel,
+  pickVariantLabel,
+} from "@/lib/menuItemOptions";
 import { useCoffeeTheme, hexToRgba } from "./CoffeeThemeContext";
 
 export type MenuCardProps = {
@@ -58,6 +70,29 @@ export default function MenuCard({
   const hasDiscount =
     item.originalPrice != null && item.originalPrice > item.price;
 
+  const sizes = useMemo(() => getMenuItemSizes(item), [item]);
+  const variants = useMemo(() => getMenuItemVariants(item), [item]);
+  const itemHasOptions = hasMenuItemOptions(item);
+  const displayMinPrice = getMenuItemMinPrice(item);
+
+  const [selectedSize, setSelectedSize] = useState<MenuItemSizeOption | null>(
+    null,
+  );
+  const [selectedVariant, setSelectedVariant] =
+    useState<MenuItemVariantOption | null>(null);
+
+  const selectedUnitPrice = computeMenuItemUnitPrice(
+    item,
+    selectedSize,
+    selectedVariant,
+  );
+
+  const priceDisplay = itemHasOptions
+    ? isAr
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : String(item.price);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -74,13 +109,16 @@ export default function MenuCard({
 
   useEffect(() => {
     if (!open || item.id == null) return;
+    setSelectedSize(sizes[0] ?? null);
+    setSelectedVariant(null);
+    setModalQty(1);
     const sync = () => {
       const c = readSkyCartFromCookie();
-      setModalInCart(c[item.id]?.quantity ?? 0);
+      setModalInCart(getCartQuantityForMenuItem(c, item.id));
     };
     sync();
     return subscribeSkyCartUpdated(sync);
-  }, [open, item.id]);
+  }, [open, item.id, sizes]);
 
   const openModal = () => {
     if (item.id) trackItem(item.id);
@@ -88,8 +126,28 @@ export default function MenuCard({
     setOpen(true);
   };
 
+  const handleModalAdd = (e: MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    upsertSkyCartFromMenuItemWithOptions(item, modalQty, {
+      locale,
+      size: selectedSize,
+      variant: selectedVariant,
+    });
+    toast.success(
+      locale === "ar"
+        ? `تمت إضافة ${modalQty} إلى السلة`
+        : `Added ${modalQty} to cart`,
+    );
+    setModalQty(1);
+    setOpen(false);
+  };
+
   const handleAdd = (e: MouseEvent<HTMLButtonElement>, qty: number) => {
     e.stopPropagation();
+    if (itemHasOptions) {
+      openModal();
+      return;
+    }
     onAddToCart(item, qty);
     setPickQty(1);
   };
@@ -139,7 +197,7 @@ export default function MenuCard({
             style={{ backgroundColor: primary }}
           >
             <span className="tabular-nums text-xs leading-none">
-              {item.price}
+              {itemHasOptions ? `${displayMinPrice}+` : item.price}
             </span>
             <span className="mt-0.5 text-[8px] font-medium uppercase opacity-90">
               {currencyLabel}
@@ -156,8 +214,8 @@ export default function MenuCard({
           ) : null}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5 text-center flex flex-col items-center justify-between min-h-[180px]">
-          <div className="w-full space-y-2">
+        <div className="flex-1 overflow-y-auto p-5 text-center flex flex-col items-center min-h-[180px]">
+          <div className="w-full space-y-2 mb-4">
             <h3
               id={titleId}
               className="font-serif text-xl font-bold leading-snug sm:text-2xl"
@@ -188,10 +246,113 @@ export default function MenuCard({
                 {item.originalPrice} {currencyLabel}
               </span>
             ) : null}
+
+            <p className="text-base font-bold" style={{ color: primary }}>
+              {itemHasOptions ? priceDisplay : `${selectedUnitPrice} ${currencyLabel}`}
+            </p>
           </div>
 
+          {sizes.length > 0 ? (
+            <div className="w-full mb-4 text-start">
+              <p className="mb-1.5 text-xs font-bold uppercase tracking-wider" style={{ color: primary }}>
+                {isAr ? "الحجم" : "Size"}
+              </p>
+              <div className="space-y-1.5">
+                {sizes.map((size) => {
+                  const label = pickSizeLabel(size, locale);
+                  const checked = selectedSize?.nameEn === size.nameEn;
+                  return (
+                    <label
+                      key={`${size.nameEn}-${size.price}`}
+                      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2 transition"
+                      style={{
+                        borderColor: checked ? primary : hexToRgba(primary, 0.25),
+                        backgroundColor: checked ? hexToRgba(primary, 0.08) : "transparent",
+                      }}
+                    >
+                      <span className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name={`retro-size-${item.id}`}
+                          checked={checked}
+                          onChange={() => setSelectedSize(size)}
+                          className="h-3.5 w-3.5"
+                          style={{ accentColor: primary }}
+                        />
+                        <span className="text-xs font-semibold text-zinc-700">{label}</span>
+                      </span>
+                      <span className="text-xs font-bold" style={{ color: primary }}>
+                        {size.price} {currencyLabel}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {variants.length > 0 ? (
+            <div className="w-full mb-4 text-start">
+              <p className="mb-1.5 text-xs font-bold uppercase tracking-wider" style={{ color: primary }}>
+                {isAr ? "الإضافات" : "Add-ons"}
+              </p>
+              <div className="space-y-1.5">
+                <label
+                  className="flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 transition"
+                  style={{
+                    borderColor: selectedVariant === null ? primary : hexToRgba(primary, 0.25),
+                    backgroundColor: selectedVariant === null ? hexToRgba(primary, 0.08) : "transparent",
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`retro-variant-${item.id}`}
+                    checked={selectedVariant === null}
+                    onChange={() => setSelectedVariant(null)}
+                    className="h-3.5 w-3.5"
+                    style={{ accentColor: primary }}
+                  />
+                  <span className="text-xs font-semibold text-zinc-700">
+                    {isAr ? "بدون إضافة" : "No add-on"}
+                  </span>
+                </label>
+                {variants.map((variant) => {
+                  const label = pickVariantLabel(variant, locale);
+                  const checked = selectedVariant?.labelEn === variant.labelEn;
+                  return (
+                    <label
+                      key={`${variant.labelEn}-${variant.price}`}
+                      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2 transition"
+                      style={{
+                        borderColor: checked ? primary : hexToRgba(primary, 0.25),
+                        backgroundColor: checked ? hexToRgba(primary, 0.08) : "transparent",
+                      }}
+                    >
+                      <span className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name={`retro-variant-${item.id}`}
+                          checked={checked}
+                          onChange={() => setSelectedVariant(variant)}
+                          className="h-3.5 w-3.5"
+                          style={{ accentColor: primary }}
+                        />
+                        <span className="text-xs font-semibold text-zinc-700">{label}</span>
+                      </span>
+                      <span className="text-xs font-bold" style={{ color: primary }}>
+                        {variant.price > 0
+                          ? `+${variant.price} ${currencyLabel}`
+                          : isAr ? "مجاني" : "Free"}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
           {isTableOrder && item.available ? (
-            <div className="mt-4 w-full max-w-[240px] space-y-2">
+            <div className="w-full max-w-[240px] space-y-2">
               <div className="flex items-center justify-between gap-1 rounded-full border border-zinc-200 bg-white p-1 shadow-sm">
                 <div className="flex items-center gap-1">
                   <button
@@ -218,10 +379,7 @@ export default function MenuCard({
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    onAddToCart(item, modalQty);
-                    setOpen(false);
-                  }}
+                  onClick={handleModalAdd}
                   className="inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-1 text-xs font-bold text-white transition hover:brightness-110 active:scale-95"
                   style={{ backgroundColor: primary }}
                 >

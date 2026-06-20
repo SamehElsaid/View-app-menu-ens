@@ -18,6 +18,43 @@ import {
   sortMenuItemsForDisplay,
 } from "@/lib/menuCategoryOrder";
 
+function normalizePrice(val: unknown): number {
+  const n = Number(val);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function normalizeMenuItem(item: MenuItem): MenuItem {
+  return {
+    ...item,
+    price: normalizePrice(item.price),
+    originalPrice:
+      item.originalPrice != null ? normalizePrice(item.originalPrice) : null,
+    sizes: Array.isArray(item.sizes)
+      ? item.sizes
+          .filter(Boolean)
+          .map((s) => ({ ...s, price: normalizePrice(s.price) }))
+      : null,
+    variants: Array.isArray(item.variants)
+      ? item.variants
+          .filter(Boolean)
+          .map((v) => ({ ...v, price: normalizePrice(v.price) }))
+      : null,
+  };
+}
+
+function normalizeMenuItems(items: MenuItem[]): MenuItem[] {
+  return items.map(normalizeMenuItem);
+}
+
+function normalizeCategories(cats: Category[]): Category[] {
+  return cats.map((cat) => ({
+    ...cat,
+    menuItems: Array.isArray(cat.menuItems)
+      ? normalizeMenuItems(cat.menuItems)
+      : cat.menuItems,
+  }));
+}
+
 type Props = {
   menu: MenuItem[] | null;
   menuInfo: MenuInfo | null;
@@ -38,11 +75,15 @@ export default function UseDispatchMenu({
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    const sortedCategories = categories ? sortCategories(categories) : null;
+    const sortedCategories = categories
+      ? normalizeCategories(sortCategories(categories))
+      : null;
     if (menu) {
       dispatch(
         SET_ACTIVE_MENU(
-          sortMenuItemsForDisplay(menu, sortedCategories ?? undefined),
+          normalizeMenuItems(
+            sortMenuItemsForDisplay(menu, sortedCategories ?? undefined),
+          ),
         ),
       );
     }

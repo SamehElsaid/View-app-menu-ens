@@ -12,12 +12,13 @@ import {
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { useLocale } from "next-intl";
 import { toast } from "react-toastify";
-import type { MenuItem } from "@/types/menu";
+import type { MenuItem, MenuItemSizeOption, MenuItemVariantOption } from "@/types/menu";
 import {
+  getCartQuantityForMenuItem,
   readSkyCartFromCookie,
   subscribeSkyCartUpdated,
-  upsertSkyCartQuantityFromMenuItem,
-  type SkyCartItem,
+  upsertSkyCartFromMenuItemWithOptions,
+  type SkyCart,
 } from "@/lib/skyTemplateCart";
 
 type MusicContextValue = {
@@ -31,8 +32,14 @@ type MusicContextValue = {
   activateItem: (item: MenuItem) => void;
   setActiveItemForce: (item: MenuItem | null) => void;
   isTableOrder: boolean;
-  cartById: Record<number, SkyCartItem>;
-  addToCart: (item: MenuItem, quantity: number) => void;
+  cart: SkyCart;
+  getItemCartQty: (itemId: number) => number;
+  addToCart: (
+    item: MenuItem,
+    quantity: number,
+    size?: MenuItemSizeOption | null,
+    variant?: MenuItemVariantOption | null,
+  ) => void;
 };
 
 const MusicContext = createContext<MusicContextValue | null>(null);
@@ -44,18 +51,32 @@ export function MusicProvider({ children }: { children: ReactNode }) {
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [activeItem, setActiveItem] = useState<MenuItem | null>(null);
   const [modalItem, setModalItem] = useState<MenuItem | null>(null);
-  const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
+  const [cart, setCart] = useState<SkyCart>({});
 
   useEffect(() => {
-    const sync = () => setCartById(readSkyCartFromCookie());
+    const sync = () => setCart(readSkyCartFromCookie());
     sync();
     return subscribeSkyCartUpdated(sync);
   }, []);
 
+  const getItemCartQty = useCallback(
+    (itemId: number) => getCartQuantityForMenuItem(cart, itemId),
+    [cart],
+  );
+
   const addToCart = useCallback(
-    (item: MenuItem, quantity: number) => {
-      upsertSkyCartQuantityFromMenuItem(item, quantity);
-      setCartById(readSkyCartFromCookie());
+    (
+      item: MenuItem,
+      quantity: number,
+      size?: MenuItemSizeOption | null,
+      variant?: MenuItemVariantOption | null,
+    ) => {
+      upsertSkyCartFromMenuItemWithOptions(item, quantity, {
+        locale,
+        size,
+        variant,
+      });
+      setCart(readSkyCartFromCookie());
       toast.success(
         locale === "ar"
           ? `تمت إضافة ${quantity} إلى السلة`
@@ -93,7 +114,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       activateItem,
       setActiveItemForce,
       isTableOrder,
-      cartById,
+      cart,
+      getItemCartQty,
       addToCart,
     }),
     [
@@ -105,7 +127,8 @@ export function MusicProvider({ children }: { children: ReactNode }) {
       activateItem,
       setActiveItemForce,
       isTableOrder,
-      cartById,
+      cart,
+      getItemCartQty,
       addToCart,
     ],
   );

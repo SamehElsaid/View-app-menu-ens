@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useState, type MouseEvent } from "react";
 import { useLocale } from "next-intl";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { IoCartOutline } from "react-icons/io5";
-import type { MenuItem } from "@/types/menu";
+import { toast } from "react-toastify";
+import type { MenuItem, MenuItemSizeOption, MenuItemVariantOption } from "@/types/menu";
 import LoadImage from "@/components/ImageLoad";
 import {
   usePharaonicTheme,
@@ -17,10 +18,20 @@ import {
   pharaonicHaptic,
 } from "./usePharaonicTouchDevice";
 import {
-  subscribeSkyCartUpdated,
+  getCartQuantityForMenuItem,
   readSkyCartFromCookie,
-  upsertSkyCartQuantityFromMenuItem,
+  subscribeSkyCartUpdated,
+  upsertSkyCartFromMenuItemWithOptions,
 } from "@/lib/skyTemplateCart";
+import {
+  computeMenuItemUnitPrice,
+  getMenuItemMinPrice,
+  getMenuItemSizes,
+  getMenuItemVariants,
+  hasMenuItemOptions,
+  pickSizeLabel,
+  pickVariantLabel,
+} from "@/lib/menuItemOptions";
 
 type PharaonicDetailModalProps = {
   item: MenuItem;
@@ -41,6 +52,23 @@ export default function PharaonicDetailModal({
   const isTouch = usePharaonicTouchDevice();
   const displayFont = pharaonicDisplayFont(locale);
 
+  const sizes = useMemo(() => getMenuItemSizes(item), [item]);
+  const variants = useMemo(() => getMenuItemVariants(item), [item]);
+  const itemHasOptions = hasMenuItemOptions(item);
+  const displayMinPrice = getMenuItemMinPrice(item);
+
+  const [selectedSize, setSelectedSize] = useState<MenuItemSizeOption | null>(
+    sizes[0] ?? null,
+  );
+  const [selectedVariant, setSelectedVariant] =
+    useState<MenuItemVariantOption | null>(null);
+
+  const selectedUnitPrice = computeMenuItemUnitPrice(
+    item,
+    selectedSize,
+    selectedVariant,
+  );
+
   const name = locale === "ar" ? item.nameAr : item.nameEn;
   const desc = locale === "ar" ? item.descriptionAr : item.descriptionEn;
   const catLabel = locale === "ar" ? item.categoryNameAr : item.categoryNameEn;
@@ -60,24 +88,41 @@ export default function PharaonicDetailModal({
   }, [onClose]);
 
   useEffect(() => {
+    setSelectedSize(sizes[0] ?? null);
+    setSelectedVariant(null);
     setSelectedQty(1);
     const sync = () => {
       const c = readSkyCartFromCookie();
-      setInCartQty(c[item.id]?.quantity ?? 0);
+      setInCartQty(getCartQuantityForMenuItem(c, item.id));
     };
     sync();
     return subscribeSkyCartUpdated(sync);
-  }, [item.id]);
+  }, [item.id, sizes]);
 
   const handleAdd = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    upsertSkyCartQuantityFromMenuItem(item, selectedQty);
+    upsertSkyCartFromMenuItemWithOptions(item, selectedQty, {
+      locale,
+      size: selectedSize,
+      variant: selectedVariant,
+    });
+    toast.success(
+      locale === "ar"
+        ? `تمت إضافة ${selectedQty} إلى السلة`
+        : `Added ${selectedQty} to cart`,
+    );
     setSelectedQty(1);
     if (isTouch) pharaonicHaptic([10, 28, 10]);
     onClose();
   };
 
   const closeModal = () => onClose();
+
+  const priceDisplay = itemHasOptions
+    ? locale === "ar"
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : String(item.price);
 
   const priceBlock = (
     <div className="flex flex-wrap items-end justify-between gap-2">
@@ -86,7 +131,7 @@ export default function PharaonicDetailModal({
           className="block text-xl font-bold leading-none"
           style={{ color: primary }}
         >
-          {item.price}
+          {itemHasOptions ? priceDisplay : selectedUnitPrice}
         </span>
         <span className="mt-0.5 block text-xs tracking-wide text-[#a89880]">
           {currencyLabel}
@@ -111,6 +156,135 @@ export default function PharaonicDetailModal({
       ) : null}
     </div>
   );
+
+  const sizesBlock =
+    sizes.length > 0 ? (
+      <div
+        className="mt-3 border-t pt-3"
+        style={{ borderColor: hexToRgba(primary, 0.2) }}
+      >
+        <p
+          className="mb-2 text-[9px] uppercase tracking-[0.2em]"
+          style={{ color: secondary }}
+        >
+          {locale === "ar" ? "الحجم" : "Size"}
+        </p>
+        <div className="space-y-1.5">
+          {sizes.map((size) => {
+            const label = pickSizeLabel(size, locale);
+            const checked = selectedSize?.nameEn === size.nameEn;
+            return (
+              <label
+                key={`${size.nameEn}-${size.price}`}
+                className="flex cursor-pointer items-center justify-between gap-3 rounded-sm border px-2.5 py-1.5 transition"
+                style={{
+                  borderColor: checked
+                    ? hexToRgba(primary, 0.6)
+                    : hexToRgba(primary, 0.18),
+                  backgroundColor: checked
+                    ? hexToRgba(primary, 0.08)
+                    : "transparent",
+                }}
+              >
+                <span className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={`ph-size-${item.id}`}
+                    checked={checked}
+                    onChange={() => setSelectedSize(size)}
+                    className="h-3.5 w-3.5"
+                    style={{ accentColor: primary }}
+                  />
+                  <span className="text-sm text-[#e8dcc8]">{label}</span>
+                </span>
+                <span className="text-xs font-semibold text-[#f5e6c8]">
+                  {size.price} {currencyLabel}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+    ) : null;
+
+  const variantsBlock =
+    variants.length > 0 ? (
+      <div
+        className="mt-3 border-t pt-3"
+        style={{ borderColor: hexToRgba(primary, 0.2) }}
+      >
+        <p
+          className="mb-2 text-[9px] uppercase tracking-[0.2em]"
+          style={{ color: secondary }}
+        >
+          {locale === "ar" ? "الإضافات" : "Add-ons"}
+        </p>
+        <div className="space-y-1.5">
+          <label
+            className="flex cursor-pointer items-center gap-3 rounded-sm border px-2.5 py-1.5 transition"
+            style={{
+              borderColor:
+                selectedVariant === null
+                  ? hexToRgba(primary, 0.6)
+                  : hexToRgba(primary, 0.18),
+              backgroundColor:
+                selectedVariant === null
+                  ? hexToRgba(primary, 0.08)
+                  : "transparent",
+            }}
+          >
+            <input
+              type="radio"
+              name={`ph-variant-${item.id}`}
+              checked={selectedVariant === null}
+              onChange={() => setSelectedVariant(null)}
+              className="h-3.5 w-3.5"
+              style={{ accentColor: primary }}
+            />
+            <span className="text-sm text-[#e8dcc8]">
+              {locale === "ar" ? "بدون إضافة" : "No add-on"}
+            </span>
+          </label>
+          {variants.map((variant) => {
+            const label = pickVariantLabel(variant, locale);
+            const checked = selectedVariant?.labelEn === variant.labelEn;
+            return (
+              <label
+                key={`${variant.labelEn}-${variant.price}`}
+                className="flex cursor-pointer items-center justify-between gap-3 rounded-sm border px-2.5 py-1.5 transition"
+                style={{
+                  borderColor: checked
+                    ? hexToRgba(primary, 0.6)
+                    : hexToRgba(primary, 0.18),
+                  backgroundColor: checked
+                    ? hexToRgba(primary, 0.08)
+                    : "transparent",
+                }}
+              >
+                <span className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name={`ph-variant-${item.id}`}
+                    checked={checked}
+                    onChange={() => setSelectedVariant(variant)}
+                    className="h-3.5 w-3.5"
+                    style={{ accentColor: primary }}
+                  />
+                  <span className="text-sm text-[#e8dcc8]">{label}</span>
+                </span>
+                <span className="text-xs font-semibold text-[#f5e6c8]">
+                  {variant.price > 0
+                    ? `+${variant.price} ${currencyLabel}`
+                    : locale === "ar"
+                      ? "مجاني"
+                      : "Free"}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+    ) : null;
 
   const cartBlock = isTableOrder ? (
     <div
@@ -181,8 +355,8 @@ export default function PharaonicDetailModal({
       <div
         className={`mx-auto flex w-full max-w-[min(100%,400px)] flex-col overflow-hidden rounded-xl border motion-reduce:animate-none ${
           isTouch
-            ? "ph-modal-sheet-up mb-2 max-h-[min(72dvh,480px)] w-[calc(100%-1.25rem)] rounded-b-xl rounded-t-xl"
-            : "ph-modal-emerge max-h-[min(80vh,520px)]"
+            ? "ph-modal-sheet-up mb-2 max-h-[min(80dvh,560px)] w-[calc(100%-1.25rem)] rounded-b-xl rounded-t-xl"
+            : "ph-modal-emerge max-h-[min(86vh,580px)]"
         }`}
         style={{
           borderColor: hexToRgba(primary, 0.4),
@@ -251,6 +425,8 @@ export default function PharaonicDetailModal({
             </p>
           ) : null}
           {priceBlock}
+          {sizesBlock}
+          {variantsBlock}
           {cartBlock}
         </div>
       </div>

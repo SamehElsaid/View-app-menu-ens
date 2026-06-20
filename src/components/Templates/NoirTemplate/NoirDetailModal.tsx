@@ -1,17 +1,28 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
+import { toast } from "react-toastify";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
-import type { MenuItem } from "@/types/menu";
+import type { MenuItem, MenuItemSizeOption, MenuItemVariantOption } from "@/types/menu";
 import LoadImage from "@/components/ImageLoad";
 import { useNoirTheme, hexToRgba, shadowGlow } from "./NoirThemeContext";
 import {
+  getCartQuantityForMenuItem,
   readSkyCartFromCookie,
   subscribeSkyCartUpdated,
-  upsertSkyCartQuantityFromMenuItem,
+  upsertSkyCartFromMenuItemWithOptions,
 } from "@/lib/skyTemplateCart";
+import {
+  computeMenuItemUnitPrice,
+  getMenuItemMinPrice,
+  getMenuItemSizes,
+  getMenuItemVariants,
+  hasMenuItemOptions,
+  pickSizeLabel,
+  pickVariantLabel,
+} from "@/lib/menuItemOptions";
 
 type NoirDetailModalProps = {
   item: MenuItem;
@@ -31,6 +42,23 @@ export default function NoirDetailModal({
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
   const { primary } = useNoirTheme();
+
+  const sizes = useMemo(() => getMenuItemSizes(item), [item]);
+  const variants = useMemo(() => getMenuItemVariants(item), [item]);
+  const itemHasOptions = hasMenuItemOptions(item);
+  const displayMinPrice = getMenuItemMinPrice(item);
+
+  const [selectedSize, setSelectedSize] = useState<MenuItemSizeOption | null>(
+    sizes[0] ?? null,
+  );
+  const [selectedVariant, setSelectedVariant] =
+    useState<MenuItemVariantOption | null>(null);
+
+  const selectedUnitPrice = computeMenuItemUnitPrice(
+    item,
+    selectedSize,
+    selectedVariant,
+  );
 
   const name = locale === "ar" ? item.nameAr : item.nameEn;
   const desc = locale === "ar" ? item.descriptionAr : item.descriptionEn;
@@ -64,14 +92,37 @@ export default function NoirDetailModal({
   }, [onClose]);
 
   useEffect(() => {
+    setSelectedSize(sizes[0] ?? null);
+    setSelectedVariant(null);
     setSelectedQty(1);
     const sync = () => {
       const c = readSkyCartFromCookie();
-      setInCartQty(c[item.id]?.quantity ?? 0);
+      setInCartQty(getCartQuantityForMenuItem(c, item.id));
     };
     sync();
     return subscribeSkyCartUpdated(sync);
-  }, [item.id]);
+  }, [item.id, sizes]);
+
+  const handleAddToCart = () => {
+    upsertSkyCartFromMenuItemWithOptions(item, selectedQty, {
+      locale,
+      size: selectedSize,
+      variant: selectedVariant,
+    });
+    toast.success(
+      locale === "ar"
+        ? `تمت إضافة ${selectedQty} إلى السلة`
+        : `Added ${selectedQty} to cart`,
+    );
+    setSelectedQty(1);
+    onClose();
+  };
+
+  const priceDisplay = itemHasOptions
+    ? locale === "ar"
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : String(item.price);
 
   const modal = (
     <div
@@ -91,7 +142,7 @@ export default function NoirDetailModal({
 
       <div
         dir={direction}
-        className={`relative flex max-h-[min(82dvh,520px)] w-full max-w-md flex-col overflow-hidden rounded-lg border border-violet/20 bg-charcoal/95 transition-all duration-300 sm:max-h-[min(78dvh,480px)] ${
+        className={`relative flex max-h-[min(88dvh,560px)] w-full max-w-md flex-col overflow-hidden rounded-lg border border-violet/20 bg-charcoal/95 transition-all duration-300 ${
           isClosing
             ? "translate-y-5 scale-[0.98] opacity-0 sm:translate-y-0"
             : "translate-y-0 scale-100 opacity-100 animate-scale-in motion-reduce:animate-none"
@@ -162,7 +213,9 @@ export default function NoirDetailModal({
               <span className="text-xs tracking-wide text-cyan">
                 {currencyLabel}
               </span>
-              <span className="text-lavender">{item.price}</span>
+              <span className="text-lavender">
+                {itemHasOptions ? priceDisplay : selectedUnitPrice}
+              </span>
             </p>
             {hasDiscount ? (
               <div className="flex items-center gap-2">
@@ -170,13 +223,132 @@ export default function NoirDetailModal({
                   {item.originalPrice} {currencyLabel}
                 </span>
                 <span className="rounded-full bg-linear-to-br from-violet to-cyan px-2 py-0.5 text-[10px] font-medium text-white">
-                  {locale === "ar"
-                    ? `-${item.discountPercent}%`
-                    : `-${item.discountPercent}%`}
+                  -{item.discountPercent}%
                 </span>
               </div>
             ) : null}
           </div>
+
+          {sizes.length > 0 ? (
+            <div className="mb-4">
+              <h4
+                className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan"
+              >
+                {locale === "ar" ? "الحجم" : "Size"}
+              </h4>
+              <div className="space-y-1.5">
+                {sizes.map((size) => {
+                  const label = pickSizeLabel(size, locale);
+                  const checked = selectedSize?.nameEn === size.nameEn;
+                  return (
+                    <label
+                      key={`${size.nameEn}-${size.price}`}
+                      className="flex cursor-pointer items-center justify-between gap-3 rounded-md border px-3 py-2 transition"
+                      style={{
+                        borderColor: checked
+                          ? hexToRgba(primary, 0.6)
+                          : hexToRgba(primary, 0.15),
+                        backgroundColor: checked
+                          ? hexToRgba(primary, 0.08)
+                          : "transparent",
+                      }}
+                    >
+                      <span className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name={`noir-size-${item.id}`}
+                          checked={checked}
+                          onChange={() => setSelectedSize(size)}
+                          className="h-3.5 w-3.5"
+                          style={{ accentColor: primary }}
+                        />
+                        <span className="font-body text-sm font-light text-text-primary">
+                          {label}
+                        </span>
+                      </span>
+                      <span className="font-body text-xs text-lavender">
+                        {size.price} {currencyLabel}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {variants.length > 0 ? (
+            <div className="mb-4">
+              <h4 className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan">
+                {locale === "ar" ? "الإضافات" : "Add-ons"}
+              </h4>
+              <div className="space-y-1.5">
+                <label
+                  className="flex cursor-pointer items-center gap-3 rounded-md border px-3 py-2 transition"
+                  style={{
+                    borderColor:
+                      selectedVariant === null
+                        ? hexToRgba(primary, 0.6)
+                        : hexToRgba(primary, 0.15),
+                    backgroundColor:
+                      selectedVariant === null
+                        ? hexToRgba(primary, 0.08)
+                        : "transparent",
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`noir-variant-${item.id}`}
+                    checked={selectedVariant === null}
+                    onChange={() => setSelectedVariant(null)}
+                    className="h-3.5 w-3.5"
+                    style={{ accentColor: primary }}
+                  />
+                  <span className="font-body text-sm font-light text-text-primary">
+                    {locale === "ar" ? "بدون إضافة" : "No add-on"}
+                  </span>
+                </label>
+                {variants.map((variant) => {
+                  const label = pickVariantLabel(variant, locale);
+                  const checked = selectedVariant?.labelEn === variant.labelEn;
+                  return (
+                    <label
+                      key={`${variant.labelEn}-${variant.price}`}
+                      className="flex cursor-pointer items-center justify-between gap-3 rounded-md border px-3 py-2 transition"
+                      style={{
+                        borderColor: checked
+                          ? hexToRgba(primary, 0.6)
+                          : hexToRgba(primary, 0.15),
+                        backgroundColor: checked
+                          ? hexToRgba(primary, 0.08)
+                          : "transparent",
+                      }}
+                    >
+                      <span className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name={`noir-variant-${item.id}`}
+                          checked={checked}
+                          onChange={() => setSelectedVariant(variant)}
+                          className="h-3.5 w-3.5"
+                          style={{ accentColor: primary }}
+                        />
+                        <span className="font-body text-sm font-light text-text-primary">
+                          {label}
+                        </span>
+                      </span>
+                      <span className="font-body text-xs text-lavender">
+                        {variant.price > 0
+                          ? `+${variant.price} ${currencyLabel}`
+                          : locale === "ar"
+                            ? "مجاني"
+                            : "Free"}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
 
           {isTableOrder ? (
             <div className="space-y-2 rounded-lg border border-violet/15 bg-black/20 p-3">
@@ -204,10 +376,7 @@ export default function NoirDetailModal({
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    upsertSkyCartQuantityFromMenuItem(item, selectedQty);
-                    setSelectedQty(1);
-                  }}
+                  onClick={handleAddToCart}
                   className="min-w-32 flex-1 rounded-full border border-violet/40 bg-linear-to-br from-violet to-cyan px-4 py-2 text-xs font-medium uppercase tracking-wide text-white transition hover:opacity-90 sm:flex-none sm:text-sm"
                 >
                   {locale === "ar" ? "أضف إلى السلة" : "Add to cart"}

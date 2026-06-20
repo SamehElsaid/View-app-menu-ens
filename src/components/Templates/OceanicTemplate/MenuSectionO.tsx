@@ -13,9 +13,11 @@ import type { MenuItem } from "@/types/menu";
 import {
   readSkyCartFromCookie,
   subscribeSkyCartUpdated,
-  upsertSkyCartQuantityFromMenuItem,
+  upsertSkyCartFromMenuItemWithOptions,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
+import { hasMenuItemOptions } from "@/lib/menuItemOptions";
+import { toast } from "react-toastify";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
 const EMPTY_MENU: MenuItem[] = [];
@@ -83,8 +85,17 @@ const MenuSectionO = () => {
   }, []);
 
   const handleAddToCart = (item: MenuItem, quantity: number) => {
-    upsertSkyCartQuantityFromMenuItem(item, quantity);
+    if (hasMenuItemOptions(item)) {
+      openItem(item, setSelectedItem);
+      return;
+    }
+    upsertSkyCartFromMenuItemWithOptions(item, quantity, { locale });
     setCartById(readSkyCartFromCookie());
+    toast.success(
+      locale === "ar"
+        ? `تمت إضافة ${quantity} إلى السلة`
+        : `Added ${quantity} to cart`,
+    );
   };
 
   const filteredItems = useMemo(() => {

@@ -93,9 +93,18 @@ export default function DeliveryLocationModal() {
     [pathname, router, searchParams],
   );
 
+  const handleDismiss = useCallback(() => {
+    const nextParams = new URLSearchParams(searchParams.toString());
+    nextParams.set(DELIVERY_ZONE_PARAM, "0");
+    const path = nextParams.toString()
+      ? `${pathname}?${nextParams.toString()}`
+      : pathname;
+    router.replace(path, { scroll: false });
+  }, [pathname, router, searchParams]);
+
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      setModalState("denied");
+      handleDismiss();
       return;
     }
     setModalState("requesting");
@@ -111,30 +120,21 @@ export default function DeliveryLocationModal() {
           setFoundGovernorate(result.governorate);
           setModalState("found");
         } else {
-          setModalState("not_found");
+          handleDismiss();
         }
       },
       () => {
-        setModalState("denied");
+        handleDismiss();
       },
       { enableHighAccuracy: true, timeout: 10_000 },
     );
-  }, [delivery?.governorates]);
+  }, [delivery?.governorates, handleDismiss]);
 
   const handleConfirm = useCallback(() => {
     if (foundGovernorate) {
       confirmGovernorate(foundGovernorate);
     }
   }, [confirmGovernorate, foundGovernorate]);
-
-  const handleDismiss = useCallback(() => {
-    const nextParams = new URLSearchParams(searchParams.toString());
-    nextParams.set(DELIVERY_ZONE_PARAM, "0");
-    const path = nextParams.toString()
-      ? `${pathname}?${nextParams.toString()}`
-      : pathname;
-    router.replace(path, { scroll: false });
-  }, [pathname, router, searchParams]);
 
   const accentColor = useMemo(() => {
     const theme = (menuInfo?.theme ?? "default").toLowerCase();

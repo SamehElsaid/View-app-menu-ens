@@ -27,6 +27,8 @@ export type SkyCartItem = {
   id: number;
   quantity: number;
   name: string;
+  nameAr?: string;
+  nameEn?: string;
   price: number;
   image: string;
   size?: MenuItemSizeOption | null;
@@ -126,6 +128,8 @@ export function sanitizeSkyCart(raw: unknown): SkyCart {
       id,
       quantity: Math.min(999, Math.floor(qty)),
       name: String(o.name ?? ""),
+      nameAr: typeof o.nameAr === "string" ? o.nameAr : undefined,
+      nameEn: typeof o.nameEn === "string" ? o.nameEn : undefined,
       price,
       image: String(o.image ?? ""),
       size,
@@ -221,6 +225,8 @@ export function upsertSkyCartFromMenuItemWithOptions(
       id: item.id,
       quantity: Math.min(999, nextQty),
       name: buildCartDisplayName(item, locale, size, variant),
+      nameAr: buildCartDisplayName(item, "ar", size, variant),
+      nameEn: buildCartDisplayName(item, "en", size, variant),
       price: computeMenuItemUnitPrice(item, size, variant),
       image: resolveMenuItemImageSrc(item.image),
       size,

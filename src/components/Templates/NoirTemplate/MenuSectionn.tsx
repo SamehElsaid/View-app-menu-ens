@@ -15,9 +15,12 @@ import {
 import {
   subscribeSkyCartUpdated,
   readSkyCartFromCookie,
-  upsertSkyCartQuantityFromMenuItem,
+  upsertSkyCartFromMenuItemWithOptions,
+  getCartQuantityForMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
+import { hasMenuItemOptions } from "@/lib/menuItemOptions";
+import { toast } from "react-toastify";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import NoirDetailModal from "./NoirDetailModal";
 
@@ -259,8 +262,17 @@ export default function MenuSectionn({
   }, []);
 
   const handleAddToCartCard = (item: MenuItem, quantity: number) => {
-    upsertSkyCartQuantityFromMenuItem(item, quantity);
+    if (hasMenuItemOptions(item)) {
+      openItem(item, setSelectedDish);
+      return;
+    }
+    upsertSkyCartFromMenuItemWithOptions(item, quantity, { locale });
     setCartById(readSkyCartFromCookie());
+    toast.success(
+      locale === "ar"
+        ? `تمت إضافة ${quantity} إلى السلة`
+        : `Added ${quantity} to cart`,
+    );
   };
 
   const filteredItems =

@@ -1,19 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { useLocale } from "next-intl";
-import type { Category, MenuItem } from "@/types/menu";
+import { toast } from "react-toastify";
+import type { Category, MenuItem, MenuItemSizeOption, MenuItemVariantOption } from "@/types/menu";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
 import LoadImage from "@/components/ImageLoad";
 import {
+  getCartQuantityForMenuItem,
   subscribeSkyCartUpdated,
   readSkyCartFromCookie,
-  upsertSkyCartQuantityFromMenuItem,
-  type SkyCartItem,
+  upsertSkyCartFromMenuItemWithOptions,
+  type SkyCart,
 } from "@/lib/skyTemplateCart";
+import {
+  computeMenuItemUnitPrice,
+  getMenuItemMinPrice,
+  getMenuItemSizes,
+  getMenuItemVariants,
+  hasMenuItemOptions,
+  pickSizeLabel,
+  pickVariantLabel,
+} from "@/lib/menuItemOptions";
 import { useAppSelector } from "@/store/hooks";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
@@ -117,6 +128,13 @@ function EmeraldMenuCard({
   const locale = useLocale();
   const { primary, secondary } = useEmeraldTheme();
   const [cardPickQty, setCardPickQty] = useState(1);
+  const itemHasOptions = hasMenuItemOptions(dish);
+  const displayMinPrice = getMenuItemMinPrice(dish);
+  const priceDisplay = itemHasOptions
+    ? locale === "ar"
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : String(dish.price);
   const badgeText = dish.discountPercent
     ? `${dish.discountPercent}% off`
     : null;
@@ -169,7 +187,7 @@ function EmeraldMenuCard({
             className="font-sans font-700 text-base"
             style={{ color: primary }}
           >
-            {currencyLabel} {dish.price}
+            {currencyLabel} {priceDisplay}
           </span>
         </div>
       </div>
@@ -203,32 +221,39 @@ function EmeraldMenuCard({
             role="presentation"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-1 rounded-xl border border-stone-200 bg-stone-50/80 px-1 py-0.5">
-                <button
-                  type="button"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-600"
-                  onClick={() => setCardPickQty((q) => Math.max(1, q - 1))}
-                  aria-label={locale === "ar" ? "تقليل" : "Decrease"}
-                >
-                  −
-                </button>
-                <span className="min-w-7 text-center text-base font-semibold text-stone-800">
-                  {cardPickQty}
-                </span>
-                <button
-                  type="button"
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-600"
-                  onClick={() => setCardPickQty((q) => q + 1)}
-                  aria-label={locale === "ar" ? "زيادة" : "Increase"}
-                >
-                  +
-                </button>
-              </div>
+              {!itemHasOptions ? (
+                <div className="flex items-center gap-1 rounded-xl border border-stone-200 bg-stone-50/80 px-1 py-0.5">
+                  <button
+                    type="button"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-600"
+                    onClick={() => setCardPickQty((q) => Math.max(1, q - 1))}
+                    aria-label={locale === "ar" ? "تقليل" : "Decrease"}
+                  >
+                    −
+                  </button>
+                  <span className="min-w-7 text-center text-base font-semibold text-stone-800">
+                    {cardPickQty}
+                  </span>
+                  <button
+                    type="button"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-stone-600"
+                    onClick={() => setCardPickQty((q) => q + 1)}
+                    aria-label={locale === "ar" ? "زيادة" : "Increase"}
+                  >
+                    +
+                  </button>
+                </div>
+              ) : null}
               <button
                 type="button"
-                onClick={() => {
-                  onAddToCart(dish, cardPickQty);
-                  setCardPickQty(1);
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (itemHasOptions) {
+                    onClick(dish);
+                  } else {
+                    onAddToCart(dish, cardPickQty);
+                    setCardPickQty(1);
+                  }
                 }}
                 className="rounded-full px-3 py-1.5 text-base font-semibold text-white"
                 style={{
@@ -293,6 +318,24 @@ function EmeraldDishModal({
   const [inCartQty, setInCartQty] = useState(0);
   const { primary, secondary } = useEmeraldTheme();
 
+  const sizes = useMemo(() => (dish ? getMenuItemSizes(dish) : []), [dish]);
+  const variants = useMemo(
+    () => (dish ? getMenuItemVariants(dish) : []),
+    [dish],
+  );
+  const itemHasOptions = dish ? hasMenuItemOptions(dish) : false;
+  const displayMinPrice = dish ? getMenuItemMinPrice(dish) : 0;
+
+  const [selectedSize, setSelectedSize] = useState<MenuItemSizeOption | null>(
+    null,
+  );
+  const [selectedVariant, setSelectedVariant] =
+    useState<MenuItemVariantOption | null>(null);
+
+  const selectedUnitPrice = dish
+    ? computeMenuItemUnitPrice(dish, selectedSize, selectedVariant)
+    : 0;
+
   useEffect(() => {
     if (dish) {
       document.body.style.overflow = "hidden";
@@ -314,19 +357,27 @@ function EmeraldDishModal({
 
   useEffect(() => {
     if (!dish) return;
+    setSelectedSize(sizes[0] ?? null);
+    setSelectedVariant(null);
     setSelectedQty(1);
     const sync = () => {
       const c = readSkyCartFromCookie();
-      setInCartQty(c[dish.id]?.quantity ?? 0);
+      setInCartQty(getCartQuantityForMenuItem(c, dish.id));
     };
     sync();
     return subscribeSkyCartUpdated(sync);
-  }, [dish]);
+  }, [dish, sizes]);
 
   const backdrop = hexToRgba(primary, 0.45);
   const modalShadow = `0 24px 80px ${hexToRgba(primary, 0.2)}, 0 8px 24px rgba(0,0,0,0.12)`;
   const imageBg = hexToRgba(primary, 0.06);
   const divider = hexToRgba(secondary, 0.55);
+
+  const priceDisplay = itemHasOptions
+    ? locale === "ar"
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : String(dish?.price ?? 0);
 
   if (!dish) return null;
 
@@ -392,14 +443,16 @@ function EmeraldDishModal({
               className="font-sans font-800 text-3xl tracking-tight tabular-nums"
               style={{ color: primary }}
             >
-              {dish.price}
+              {itemHasOptions ? priceDisplay : selectedUnitPrice}
             </span>
-            <span
-              className="font-sans font-600 text-base opacity-70"
-              style={{ color: primary }}
-            >
-              {currencyLabel}
-            </span>
+            {!itemHasOptions && (
+              <span
+                className="font-sans font-600 text-base opacity-70"
+                style={{ color: primary }}
+              >
+                {currencyLabel}
+              </span>
+            )}
           </div>
         </div>
 
@@ -432,14 +485,151 @@ function EmeraldDishModal({
             </div>
           ) : null}
 
+          {sizes.length > 0 ? (
+            <div className="mb-5">
+              <h5
+                className="mb-2 text-sm font-semibold"
+                style={{ color: primary }}
+              >
+                {locale === "ar" ? "الحجم" : "Size"}
+              </h5>
+              <div className="space-y-2">
+                {sizes.map((size) => {
+                  const label = pickSizeLabel(size, locale);
+                  const checked = selectedSize?.nameEn === size.nameEn;
+                  return (
+                    <label
+                      key={`${size.nameEn}-${size.price}`}
+                      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 transition"
+                      style={{
+                        borderColor: checked
+                          ? primary
+                          : "#e7e5e4",
+                        backgroundColor: checked
+                          ? hexToRgba(primary, 0.06)
+                          : "transparent",
+                      }}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <input
+                          type="radio"
+                          name={`emerald-size-${dish.id}`}
+                          checked={checked}
+                          onChange={() => setSelectedSize(size)}
+                          className="h-4 w-4"
+                          style={{ accentColor: primary }}
+                        />
+                        <span className="text-sm font-semibold text-stone-700">
+                          {label}
+                        </span>
+                      </span>
+                      <span
+                        className="text-sm font-bold"
+                        style={{ color: primary }}
+                      >
+                        {size.price} {currencyLabel}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {variants.length > 0 ? (
+            <div className="mb-5">
+              <h5
+                className="mb-2 text-sm font-semibold"
+                style={{ color: primary }}
+              >
+                {locale === "ar" ? "الإضافات" : "Add-ons"}
+              </h5>
+              <div className="space-y-2">
+                <label
+                  className="flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition"
+                  style={{
+                    borderColor:
+                      selectedVariant === null ? primary : "#e7e5e4",
+                    backgroundColor:
+                      selectedVariant === null
+                        ? hexToRgba(primary, 0.06)
+                        : "transparent",
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`emerald-variant-${dish.id}`}
+                    checked={selectedVariant === null}
+                    onChange={() => setSelectedVariant(null)}
+                    className="h-4 w-4"
+                    style={{ accentColor: primary }}
+                  />
+                  <span className="text-sm font-semibold text-stone-700">
+                    {locale === "ar" ? "بدون إضافة" : "No add-on"}
+                  </span>
+                </label>
+                {variants.map((variant) => {
+                  const label = pickVariantLabel(variant, locale);
+                  const checked = selectedVariant?.labelEn === variant.labelEn;
+                  return (
+                    <label
+                      key={`${variant.labelEn}-${variant.price}`}
+                      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 transition"
+                      style={{
+                        borderColor: checked ? primary : "#e7e5e4",
+                        backgroundColor: checked
+                          ? hexToRgba(primary, 0.06)
+                          : "transparent",
+                      }}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <input
+                          type="radio"
+                          name={`emerald-variant-${dish.id}`}
+                          checked={checked}
+                          onChange={() => setSelectedVariant(variant)}
+                          className="h-4 w-4"
+                          style={{ accentColor: primary }}
+                        />
+                        <span className="text-sm font-semibold text-stone-700">
+                          {label}
+                        </span>
+                      </span>
+                      <span
+                        className="text-sm font-bold"
+                        style={{ color: primary }}
+                      >
+                        {variant.price > 0
+                          ? `+${variant.price} ${currencyLabel}`
+                          : locale === "ar"
+                            ? "مجاني"
+                            : "Free"}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
           {isTableOrder && dish ? (
             <div className="mb-6 space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-stone-50/80 p-4">
                 <button
                   type="button"
                   onClick={() => {
-                    upsertSkyCartQuantityFromMenuItem(dish, selectedQty);
+                    upsertSkyCartFromMenuItemWithOptions(dish, selectedQty, {
+                      locale,
+                      size: selectedSize,
+                      variant: selectedVariant,
+                    });
+                    toast.success(
+                      locale === "ar"
+                        ? `تمت إضافة ${selectedQty} إلى السلة`
+                        : `Added ${selectedQty} to cart`,
+                    );
                     setSelectedQty(1);
+                    onClose();
                   }}
                   className="rounded-xl px-4 py-2.5 text-base font-semibold text-white transition-opacity hover:opacity-90"
                   style={{
@@ -506,7 +696,7 @@ export default function MenuSection({
   const [selectedDish, setSelectedDish] = useState<MenuItem | null>(null);
   const { openItem } = useTrackMenuItemClick();
   const [activeCategory, setActiveCategory] = useState(0);
-  const [cartById, setCartById] = useState<Record<number, SkyCartItem>>({});
+  const [cart, setCart] = useState<SkyCart>({});
   const locale = useLocale();
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
   const siteName = menuInfo?.name?.trim();
@@ -516,14 +706,19 @@ export default function MenuSection({
   const currencyLabel = useCurrencyLabel()(currency);
 
   useEffect(() => {
-    const sync = () => setCartById(readSkyCartFromCookie());
+    const sync = () => setCart(readSkyCartFromCookie());
     sync();
     return subscribeSkyCartUpdated(sync);
   }, []);
 
   const handleAddToCartCard = (dish: MenuItem, quantity: number) => {
-    upsertSkyCartQuantityFromMenuItem(dish, quantity);
-    setCartById(readSkyCartFromCookie());
+    upsertSkyCartFromMenuItemWithOptions(dish, quantity, { locale });
+    setCart(readSkyCartFromCookie());
+    toast.success(
+      locale === "ar"
+        ? `تمت إضافة ${quantity} إلى السلة`
+        : `Added ${quantity} to cart`,
+    );
   };
 
   const filteredItems =
@@ -593,7 +788,7 @@ export default function MenuSection({
             onClick={(dish) => openItem(dish, setSelectedDish)}
             currencyLabel={currencyLabel}
             isTableOrder={isTableOrder}
-            cartQuantity={cartById[dish.id]?.quantity ?? 0}
+            cartQuantity={getCartQuantityForMenuItem(cart, dish.id)}
             onAddToCart={handleAddToCartCard}
           />
         ))}

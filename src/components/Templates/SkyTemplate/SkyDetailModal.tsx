@@ -1,23 +1,42 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
-import type { MenuItem } from "@/types/menu";
+import { toast } from "react-toastify";
+import type { MenuItem, MenuItemSizeOption, MenuItemVariantOption } from "@/types/menu";
 import LoadImage from "@/components/ImageLoad";
 import { Icon } from "../components/Icon";
 import { arabCurrencies, type Currency } from "@/constants/currencies";
+import {
+  getCartQuantityForMenuItem,
+  readSkyCartFromCookie,
+  subscribeSkyCartUpdated,
+  upsertSkyCartFromMenuItemWithOptions,
+} from "@/lib/skyTemplateCart";
+import {
+  computeMenuItemUnitPrice,
+  getMenuItemMinPrice,
+  getMenuItemSizes,
+  getMenuItemVariants,
+  hasMenuItemOptions,
+  pickSizeLabel,
+  pickVariantLabel,
+} from "@/lib/menuItemOptions";
 
 type SkyDetailModalProps = {
   item: MenuItem;
   onClose: () => void;
   currency: string;
   isTableOrder: boolean;
-  quantity: number;
-  addToCartLabel: string;
-  increaseLabel: string;
-  decreaseLabel: string;
-  onAddToCart: (quantity: number) => void;
+  /** @deprecated quantity is now read from cart internally */
+  quantity?: number;
+  /** @deprecated labels are now handled internally */
+  addToCartLabel?: string;
+  increaseLabel?: string;
+  decreaseLabel?: string;
+  /** @deprecated cart is now handled internally; keep for external card-level usage */
+  onAddToCart?: (quantity: number) => void;
 };
 
 export default function SkyDetailModal({
@@ -25,16 +44,31 @@ export default function SkyDetailModal({
   onClose,
   currency,
   isTableOrder,
-  quantity,
-  addToCartLabel,
-  increaseLabel,
   decreaseLabel,
-  onAddToCart,
+  increaseLabel,
 }: SkyDetailModalProps) {
   const locale = useLocale();
   const direction = locale === "ar" ? "rtl" : "ltr";
   const [isClosing, setIsClosing] = useState(false);
   const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [inCartQty, setInCartQty] = useState(0);
+
+  const sizes = useMemo(() => getMenuItemSizes(item), [item]);
+  const variants = useMemo(() => getMenuItemVariants(item), [item]);
+  const itemHasOptions = hasMenuItemOptions(item);
+  const displayMinPrice = getMenuItemMinPrice(item);
+
+  const [selectedSize, setSelectedSize] = useState<MenuItemSizeOption | null>(
+    sizes[0] ?? null,
+  );
+  const [selectedVariant, setSelectedVariant] =
+    useState<MenuItemVariantOption | null>(null);
+
+  const selectedUnitPrice = computeMenuItemUnitPrice(
+    item,
+    selectedSize,
+    selectedVariant,
+  );
 
   const itemName =
     locale === "ar" ? item.nameAr || item.name : item.nameEn || item.name;
@@ -78,8 +112,37 @@ export default function SkyDetailModal({
   }, [onClose]);
 
   useEffect(() => {
+    setSelectedSize(sizes[0] ?? null);
+    setSelectedVariant(null);
     setSelectedQuantity(1);
-  }, [item.id]);
+    const sync = () => {
+      const cart = readSkyCartFromCookie();
+      setInCartQty(getCartQuantityForMenuItem(cart, item.id));
+    };
+    sync();
+    return subscribeSkyCartUpdated(sync);
+  }, [item.id, sizes]);
+
+  const handleAddToCart = () => {
+    upsertSkyCartFromMenuItemWithOptions(item, selectedQuantity, {
+      locale,
+      size: selectedSize,
+      variant: selectedVariant,
+    });
+    toast.success(
+      locale === "ar"
+        ? `تمت إضافة ${selectedQuantity} إلى السلة`
+        : `Added ${selectedQuantity} to cart`,
+    );
+    setSelectedQuantity(1);
+    onClose();
+  };
+
+  const priceDisplay = itemHasOptions
+    ? locale === "ar"
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : `${selectedUnitPrice}`;
 
   const modal = (
     <div
@@ -99,7 +162,7 @@ export default function SkyDetailModal({
 
       <div
         dir={direction}
-        className={`relative flex max-h-[min(82dvh,520px)] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-(--bg-main)/15 bg-white shadow-[0_24px_60px_-20px_rgba(14,165,233,0.4)] transition-all duration-300 sm:max-h-[min(78dvh,480px)] sm:rounded-3xl ${
+        className={`relative flex max-h-[min(90dvh,600px)] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-(--bg-main)/15 bg-white shadow-[0_24px_60px_-20px_rgba(14,165,233,0.4)] transition-all duration-300 sm:max-h-[min(88dvh,560px)] sm:rounded-3xl ${
           isClosing
             ? "translate-y-6 scale-[0.98] opacity-0 sm:translate-y-0"
             : "translate-y-0 scale-100 opacity-100 animate-modal-in"
@@ -172,8 +235,10 @@ export default function SkyDetailModal({
 
           <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg border border-(--bg-main)/10 bg-(--bg-main)/5 px-3 py-2">
             <p className="text-base font-bold text-(--bg-main)">
-              {item.price}{" "}
-              <span className="text-xs font-semibold">{getCurrency()}</span>
+              {priceDisplay}{" "}
+              {!itemHasOptions && (
+                <span className="text-xs font-semibold">{getCurrency()}</span>
+              )}
             </p>
             {hasDiscount ? (
               <div className="flex items-center gap-2">
@@ -187,6 +252,108 @@ export default function SkyDetailModal({
             ) : null}
           </div>
 
+          {sizes.length > 0 ? (
+            <div className="mb-4">
+              <h4 className="mb-2 text-xs font-black uppercase tracking-wider text-(--bg-main)">
+                {locale === "ar" ? "الحجم" : "Size"}
+              </h4>
+              <div className="space-y-1.5">
+                {sizes.map((size) => {
+                  const label = pickSizeLabel(size, locale);
+                  const checked = selectedSize?.nameEn === size.nameEn;
+                  return (
+                    <label
+                      key={`${size.nameEn}-${size.price}`}
+                      className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2 transition ${
+                        checked
+                          ? "border-(--bg-main) bg-(--bg-main)/8"
+                          : "border-(--bg-main)/15 bg-white hover:border-(--bg-main)/35"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <input
+                          type="radio"
+                          name={`sky-size-${item.id}`}
+                          checked={checked}
+                          onChange={() => setSelectedSize(size)}
+                          className="h-4 w-4 accent-(--bg-main)"
+                        />
+                        <span className="text-sm font-semibold text-slate-700">
+                          {label}
+                        </span>
+                      </span>
+                      <span className="text-sm font-bold text-(--bg-main)">
+                        {size.price} {getCurrency()}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {variants.length > 0 ? (
+            <div className="mb-4">
+              <h4 className="mb-2 text-xs font-black uppercase tracking-wider text-(--bg-main)">
+                {locale === "ar" ? "الإضافات" : "Add-ons"}
+              </h4>
+              <div className="space-y-1.5">
+                <label
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 transition ${
+                    selectedVariant === null
+                      ? "border-(--bg-main) bg-(--bg-main)/8"
+                      : "border-(--bg-main)/15 bg-white hover:border-(--bg-main)/35"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name={`sky-variant-${item.id}`}
+                    checked={selectedVariant === null}
+                    onChange={() => setSelectedVariant(null)}
+                    className="h-4 w-4 accent-(--bg-main)"
+                  />
+                  <span className="text-sm font-semibold text-slate-700">
+                    {locale === "ar" ? "بدون إضافة" : "No add-on"}
+                  </span>
+                </label>
+                {variants.map((variant) => {
+                  const label = pickVariantLabel(variant, locale);
+                  const checked = selectedVariant?.labelEn === variant.labelEn;
+                  return (
+                    <label
+                      key={`${variant.labelEn}-${variant.price}`}
+                      className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2 transition ${
+                        checked
+                          ? "border-(--bg-main) bg-(--bg-main)/8"
+                          : "border-(--bg-main)/15 bg-white hover:border-(--bg-main)/35"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <input
+                          type="radio"
+                          name={`sky-variant-${item.id}`}
+                          checked={checked}
+                          onChange={() => setSelectedVariant(variant)}
+                          className="h-4 w-4 accent-(--bg-main)"
+                        />
+                        <span className="text-sm font-semibold text-slate-700">
+                          {label}
+                        </span>
+                      </span>
+                      <span className="text-sm font-bold text-(--bg-main)">
+                        {variant.price > 0
+                          ? `+${variant.price} ${getCurrency()}`
+                          : locale === "ar"
+                            ? "مجاني"
+                            : "Free"}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
           {isTableOrder ? (
             <div className="space-y-2 rounded-xl border border-(--bg-main)/15 bg-(--bg-main)/3 p-3">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -196,7 +363,7 @@ export default function SkyDetailModal({
                     onClick={() =>
                       setSelectedQuantity((q) => Math.max(1, q - 1))
                     }
-                    aria-label={decreaseLabel}
+                    aria-label={decreaseLabel ?? (locale === "ar" ? "تقليل" : "Decrease")}
                     className="flex h-9 w-9 items-center justify-center rounded-full text-lg font-bold text-(--bg-main) transition hover:bg-(--bg-main)/10"
                   >
                     −
@@ -207,7 +374,7 @@ export default function SkyDetailModal({
                   <button
                     type="button"
                     onClick={() => setSelectedQuantity((q) => q + 1)}
-                    aria-label={increaseLabel}
+                    aria-label={increaseLabel ?? (locale === "ar" ? "زيادة" : "Increase")}
                     className="flex h-9 w-9 items-center justify-center rounded-full text-lg font-bold text-(--bg-main) transition hover:bg-(--bg-main)/10"
                   >
                     +
@@ -215,20 +382,17 @@ export default function SkyDetailModal({
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    onAddToCart(selectedQuantity);
-                    setSelectedQuantity(1);
-                  }}
+                  onClick={handleAddToCart}
                   className="min-w-32 flex-1 rounded-lg bg-(--bg-main) px-4 py-2.5 text-sm font-bold text-white shadow-md transition hover:opacity-90 sm:flex-none"
                 >
-                  {addToCartLabel}
+                  {locale === "ar" ? "أضف للسلة" : "Add to cart"}
                 </button>
               </div>
-              {quantity > 0 ? (
+              {inCartQty > 0 ? (
                 <p className="text-center text-sm font-medium text-(--bg-main)/65">
                   {locale === "ar"
-                    ? `في السلة: ${quantity}`
-                    : `In cart: ${quantity}`}
+                    ? `في السلة: ${inCartQty}`
+                    : `In cart: ${inCartQty}`}
                 </p>
               ) : null}
             </div>

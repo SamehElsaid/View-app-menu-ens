@@ -22,8 +22,14 @@ import PromoBanner from "../CoffeeTemplate/PromoBanner";
 import {
   subscribeSkyCartUpdated,
   readSkyCartFromCookie,
-  upsertSkyCartQuantityFromMenuItem,
+  upsertSkyCartFromMenuItemWithOptions,
+  getCartQuantityForMenuItem,
 } from "@/lib/skyTemplateCart";
+import {
+  getMenuItemMinPrice,
+  hasMenuItemOptions,
+} from "@/lib/menuItemOptions";
+import { toast } from "react-toastify";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import {
   sortCategories,
@@ -57,11 +63,18 @@ function NeonMenuItemCard({
 }) {
   const [pickQty, setPickQty] = useState(1);
   const [inCart, setInCart] = useState(0);
+  const itemHasOptions = hasMenuItemOptions(item);
+  const displayMinPrice = getMenuItemMinPrice(item);
+  const priceLabel = itemHasOptions
+    ? locale === "ar"
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : String(item.price);
 
   useEffect(() => {
     const sync = () => {
       const c = readSkyCartFromCookie();
-      setInCart(c[item.id]?.quantity ?? 0);
+      setInCart(getCartQuantityForMenuItem(c, item.id));
     };
     sync();
     return subscribeSkyCartUpdated(sync);
@@ -117,7 +130,7 @@ function NeonMenuItemCard({
               {categoryName}
             </span>
             <div className="flex flex-wrap items-center justify-end gap-2">
-              {item.originalPrice && item.originalPrice > item.price && (
+              {!itemHasOptions && item.originalPrice && item.originalPrice > item.price && (
                 <span className="text-slate-400 line-through text-base">
                   {item.originalPrice} {currency}
                 </span>
@@ -126,7 +139,7 @@ function NeonMenuItemCard({
                 className="font-bold text-base"
                 style={{ color: primaryColor }}
               >
-                {item.price} {currency}
+                {priceLabel} {!itemHasOptions ? currency : ""}
               </span>
             </div>
           </div>
@@ -166,7 +179,16 @@ function NeonMenuItemCard({
                 <button
                   type="button"
                   onClick={() => {
-                    upsertSkyCartQuantityFromMenuItem(item, pickQty);
+                    if (itemHasOptions) {
+                      onOpen(item);
+                      return;
+                    }
+                    upsertSkyCartFromMenuItemWithOptions(item, pickQty, { locale });
+                    toast.success(
+                      locale === "ar"
+                        ? `تمت إضافة ${pickQty} إلى السلة`
+                        : `Added ${pickQty} to cart`,
+                    );
                     setPickQty(1);
                   }}
                   className="shrink-0 rounded-full px-4 py-2 text-base font-bold text-white shadow-md transition hover:opacity-90"
@@ -260,6 +282,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       id: "all",
       name: locale === "ar" ? "الكل" : "All",
       icon: "🍽️",
+      image: null as string | null,
     };
 
     const dbCategories = sortCategories(
@@ -268,10 +291,36 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       id: cat.id.toString(),
       name: locale === "ar" ? cat.nameAr || cat.name : cat.nameEn || cat.name,
       icon: "🍽️",
+      image: cat.image ?? null,
     }));
 
     return [allCategory, ...dbCategories];
   }, [menuCategories, locale]);
+
+  // Group items by category (for "All" view section headers)
+  const groupedItems = useMemo(() => {
+    if (selectedCategory !== "all") return null;
+    const sorted = sortMenuItemsForDisplay(menuItems, menuCategories);
+    const groups: { catId: number; catName: string; catImage: string | null; items: typeof sorted }[] = [];
+    const seen = new Set<number>();
+    for (const item of sorted) {
+      const cid = item.categoryId;
+      if (!seen.has(cid)) {
+        seen.add(cid);
+        const cat = menuCategories.find((c) => c.id === cid);
+        const catName = cat
+          ? locale === "ar"
+            ? cat.nameAr || cat.name
+            : cat.nameEn || cat.name
+          : locale === "ar"
+            ? item.categoryNameAr || item.categoryName
+            : item.categoryNameEn || item.categoryName;
+        groups.push({ catId: cid, catName: catName || "", catImage: cat?.image ?? null, items: [] });
+      }
+      groups[groups.length - 1].items.push(item);
+    }
+    return groups;
+  }, [selectedCategory, menuItems, menuCategories, locale]);
 
   // Filter items based on selected category
   const filteredItems = useMemo(() => {
@@ -388,7 +437,20 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                     } as React.CSSProperties
                   }
                 >
-                  <span className="text-xl md:text-2xl">{category.icon}</span>
+                  <span className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full md:h-8 md:w-8">
+                    {category.image ? (
+                      <LoadImage
+                        src={category.image}
+                        alt={category.name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center text-base md:text-lg">
+                        {category.icon}
+                      </span>
+                    )}
+                  </span>
                   <span className="whitespace-nowrap">{category.name}</span>
                 </button>
               );
@@ -400,56 +462,128 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           <PromoBanner />
         </div>
         {/* Menu Items Grid */}
-        <div
-          id="neon-menu-products"
-          ref={productsRef}
-          className="scroll-mt-28 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-        >
-          {filteredItems.length === 0 ? (
-            <div className="col-span-full text-center py-12">
-              <p className="text-slate-600 dark:text-slate-400 text-base">
-                {locale === "ar"
-                  ? "لا توجد عناصر في هذه الفئة"
-                  : "No items in this category"}
-              </p>
-            </div>
+        <div id="neon-menu-products" ref={productsRef} className="scroll-mt-28 space-y-10">
+          {groupedItems ? (
+            /* ── All categories view: grouped with section headers ── */
+            groupedItems.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-slate-600 dark:text-slate-400 text-base">
+                  {locale === "ar" ? "لا توجد عناصر" : "No items available"}
+                </p>
+              </div>
+            ) : (
+              groupedItems.map((group) => (
+                <div key={group.catId}>
+                  {/* Category section header */}
+                  <div className="mb-6 flex items-center gap-3">
+                    {group.catImage ? (
+                      <span
+                        className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 shadow-sm"
+                        style={{ borderColor: `${primaryColor}50` }}
+                      >
+                        <LoadImage
+                          src={group.catImage}
+                          alt={group.catName}
+                          fill
+                          className="object-cover"
+                        />
+                      </span>
+                    ) : (
+                      <span
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg"
+                        style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}
+                      >
+                        🍽️
+                      </span>
+                    )}
+                    <div className="flex flex-1 items-center gap-3">
+                      <h3
+                        className="text-xl font-black tracking-tight md:text-2xl"
+                        style={{ color: primaryColor }}
+                      >
+                        {group.catName}
+                      </h3>
+                      <div
+                        className="h-px flex-1 rounded-full opacity-30"
+                        style={{ backgroundColor: primaryColor }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Items grid for this category */}
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {group.items.map((item) => {
+                      const itemName =
+                        locale === "ar" ? item.nameAr || item.name : item.nameEn || item.name;
+                      const itemDescription =
+                        locale === "ar"
+                          ? item.descriptionAr || item.description
+                          : item.descriptionEn || item.description;
+                      return (
+                        <NeonMenuItemCard
+                          key={item.id}
+                          item={item}
+                          currency={currency}
+                          primaryColor={primaryColor}
+                          locale={locale}
+                          isTableOrder={isTableOrder}
+                          isProPlan={isProPlan}
+                          itemName={itemName}
+                          itemDescription={itemDescription ?? ""}
+                          categoryName={group.catName}
+                          onOpen={(it) => openItem(it, setSelectedFoodItem)}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              ))
+            )
           ) : (
-            filteredItems.map((item) => {
-              const itemName =
-                locale === "ar"
-                  ? item.nameAr || item.name
-                  : item.nameEn || item.name;
-              const itemDescription =
-                locale === "ar"
-                  ? item.descriptionAr || item.description
-                  : item.descriptionEn || item.description;
-              const itemCategoryName =
-                locale === "ar"
-                  ? item.categoryNameAr || item.categoryName
-                  : item.categoryNameEn || item.categoryName;
-
-              const categoryName =
-                categories.find((cat) => cat.id === item.categoryId?.toString())
-                  ?.name ||
-                itemCategoryName ||
-                "";
-
-              return (
-                <NeonMenuItemCard
-                  key={item.id}
-                  item={item}
-                  currency={currency}
-                  primaryColor={primaryColor}
-                  locale={locale}
-                  isTableOrder={isTableOrder}
-                  isProPlan={isProPlan}
-                  itemName={itemName}
-                  itemDescription={itemDescription ?? ""}
-                  categoryName={categoryName}
-                  onOpen={(item) => openItem(item, setSelectedFoodItem)}
-                />
-              );
-            })
+            /* ── Single category view ── */
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredItems.length === 0 ? (
+                <div className="col-span-full text-center py-12">
+                  <p className="text-slate-600 dark:text-slate-400 text-base">
+                    {locale === "ar"
+                      ? "لا توجد عناصر في هذه الفئة"
+                      : "No items in this category"}
+                  </p>
+                </div>
+              ) : (
+                filteredItems.map((item) => {
+                  const itemName =
+                    locale === "ar" ? item.nameAr || item.name : item.nameEn || item.name;
+                  const itemDescription =
+                    locale === "ar"
+                      ? item.descriptionAr || item.description
+                      : item.descriptionEn || item.description;
+                  const itemCategoryName =
+                    locale === "ar"
+                      ? item.categoryNameAr || item.categoryName
+                      : item.categoryNameEn || item.categoryName;
+                  const categoryName =
+                    categories.find((cat) => cat.id === item.categoryId?.toString())?.name ||
+                    itemCategoryName ||
+                    "";
+                  return (
+                    <NeonMenuItemCard
+                      key={item.id}
+                      item={item}
+                      currency={currency}
+                      primaryColor={primaryColor}
+                      locale={locale}
+                      isTableOrder={isTableOrder}
+                      isProPlan={isProPlan}
+                      itemName={itemName}
+                      itemDescription={itemDescription ?? ""}
+                      categoryName={categoryName}
+                      onOpen={(it) => openItem(it, setSelectedFoodItem)}
+                    />
+                  );
+                })
+              )}
+            </div>
           )}
         </div>
       </div>

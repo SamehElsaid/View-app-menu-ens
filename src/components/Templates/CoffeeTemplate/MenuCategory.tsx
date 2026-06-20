@@ -1,5 +1,6 @@
 import { useLocale } from "next-intl";
 import MenuItem from "./MenuItem";
+import type { MenuItemSizeOption, MenuItemVariantOption } from "@/types/menu";
 
 interface MenuItemType {
   id?: number;
@@ -14,6 +15,8 @@ interface MenuItemType {
   delay?: number;
   originalPrice?: number | null;
   discountPercent?: number | null;
+  sizes?: MenuItemSizeOption[] | null;
+  variants?: MenuItemVariantOption[] | null;
 }
 
 interface MenuCategoryProps {

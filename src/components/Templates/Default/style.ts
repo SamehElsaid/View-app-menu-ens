@@ -167,23 +167,6 @@ export const globalStyles = `
   .line-clamp-2 {
     -webkit-line-clamp: 2;
   }
-
-  /* ============================
-   Scrollbar
-   ============================ */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background: var(--bg-main);
-  }
-  ::-webkit-scrollbar-thumb {
-    background: var(--border-main);
-    border-radius: 6px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--accent);
-  }
 `;
 
 export const globalStylesSky = `
@@ -350,22 +333,5 @@ export const globalStylesSky = `
   }
   .line-clamp-2 {
     -webkit-line-clamp: 2;
-  }
-
-  /* ============================
-   Scrollbar
-   ============================ */
-  ::-webkit-scrollbar {
-    width: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background: var(--bg-main);
-  }
-  ::-webkit-scrollbar-thumb {
-    background: var(--border-main);
-    border-radius: 6px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: var(--accent);
   }
 `;

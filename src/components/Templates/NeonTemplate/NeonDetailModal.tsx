@@ -1,16 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale } from "next-intl";
 import { FiX } from "react-icons/fi";
-import type { MenuItem } from "@/types/menu";
+import { toast } from "react-toastify";
+import type { MenuItem, MenuItemSizeOption, MenuItemVariantOption } from "@/types/menu";
 import LoadImage from "@/components/ImageLoad";
 import { arabCurrencies, type Currency } from "@/constants/currencies";
 import {
+  getCartQuantityForMenuItem,
   readSkyCartFromCookie,
   subscribeSkyCartUpdated,
-  upsertSkyCartQuantityFromMenuItem,
+  upsertSkyCartFromMenuItemWithOptions,
 } from "@/lib/skyTemplateCart";
+import {
+  computeMenuItemUnitPrice,
+  getMenuItemMinPrice,
+  getMenuItemSizes,
+  getMenuItemVariants,
+  hasMenuItemOptions,
+  pickSizeLabel,
+  pickVariantLabel,
+} from "@/lib/menuItemOptions";
 
 type NeonDetailModalProps = {
   item: MenuItem;
@@ -38,6 +49,23 @@ export default function NeonDetailModal({
   const [isClosing, setIsClosing] = useState(false);
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
+
+  const sizes = useMemo(() => getMenuItemSizes(item), [item]);
+  const variants = useMemo(() => getMenuItemVariants(item), [item]);
+  const itemHasOptions = hasMenuItemOptions(item);
+  const displayMinPrice = getMenuItemMinPrice(item);
+
+  const [selectedSize, setSelectedSize] = useState<MenuItemSizeOption | null>(
+    sizes[0] ?? null,
+  );
+  const [selectedVariant, setSelectedVariant] =
+    useState<MenuItemVariantOption | null>(null);
+
+  const selectedUnitPrice = computeMenuItemUnitPrice(
+    item,
+    selectedSize,
+    selectedVariant,
+  );
 
   const itemName =
     locale === "ar" ? item.nameAr || item.name : item.nameEn || item.name;
@@ -73,14 +101,37 @@ export default function NeonDetailModal({
   }, [onClose]);
 
   useEffect(() => {
+    setSelectedSize(sizes[0] ?? null);
+    setSelectedVariant(null);
     setSelectedQty(1);
     const sync = () => {
       const cart = readSkyCartFromCookie();
-      setInCartQty(cart[item.id]?.quantity ?? 0);
+      setInCartQty(getCartQuantityForMenuItem(cart, item.id));
     };
     sync();
     return subscribeSkyCartUpdated(sync);
-  }, [item.id]);
+  }, [item.id, sizes]);
+
+  const handleAddToCart = () => {
+    upsertSkyCartFromMenuItemWithOptions(item, selectedQty, {
+      locale,
+      size: selectedSize,
+      variant: selectedVariant,
+    });
+    toast.success(
+      locale === "ar"
+        ? `تمت إضافة ${selectedQty} إلى السلة`
+        : `Added ${selectedQty} to cart`,
+    );
+    setSelectedQty(1);
+    onClose();
+  };
+
+  const priceDisplay = itemHasOptions
+    ? locale === "ar"
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : String(item.price);
 
   return (
     <div
@@ -100,7 +151,7 @@ export default function NeonDetailModal({
 
       <div
         dir={direction}
-        className={`relative w-full max-w-2xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl transition-all duration-300 dark:border-slate-700 dark:bg-slate-900 ${
+        className={`relative w-full max-w-2xl max-h-[90dvh] overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl transition-all duration-300 dark:border-slate-700 dark:bg-slate-900 flex flex-col ${
           isClosing
             ? "scale-95 opacity-0"
             : "scale-100 opacity-100 animate-scale-in"
@@ -121,7 +172,7 @@ export default function NeonDetailModal({
           <FiX className="text-xl" />
         </button>
 
-        <div className="relative h-72 overflow-hidden leading-none sm:h-80">
+        <div className="relative h-72 shrink-0 overflow-hidden leading-none sm:h-80">
           <LoadImage
             src={item.image}
             alt={itemName}
@@ -159,12 +210,12 @@ export default function NeonDetailModal({
             }}
           >
             <span className="text-xl font-bold">
-              {item.price} {getCurrency()}
+              {itemHasOptions ? priceDisplay : `${selectedUnitPrice} ${getCurrency()}`}
             </span>
           </div>
         </div>
 
-        <div className="p-6 sm:p-8">
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8">
           <h2
             id="neon-detail-title"
             className="mb-3 text-2xl font-bold text-slate-900 dark:text-white"
@@ -193,6 +244,123 @@ export default function NeonDetailModal({
               <span className="text-base text-slate-400 line-through">
                 {item.originalPrice} {getCurrency()}
               </span>
+            </div>
+          ) : null}
+
+          {sizes.length > 0 ? (
+            <div className="mb-5">
+              <h3
+                className="mb-3 text-sm font-bold"
+                style={{ color: primaryColor }}
+              >
+                {locale === "ar" ? "الحجم" : "Size"}
+              </h3>
+              <div className="space-y-2">
+                {sizes.map((size) => {
+                  const label = pickSizeLabel(size, locale);
+                  const checked = selectedSize?.nameEn === size.nameEn;
+                  return (
+                    <label
+                      key={`${size.nameEn}-${size.price}`}
+                      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 transition"
+                      style={{
+                        borderColor: checked ? primaryColor : "#e2e8f0",
+                        backgroundColor: checked ? `${primaryColor}12` : "transparent",
+                      }}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <input
+                          type="radio"
+                          name={`neon-size-${item.id}`}
+                          checked={checked}
+                          onChange={() => setSelectedSize(size)}
+                          className="h-4 w-4"
+                          style={{ accentColor: primaryColor }}
+                        />
+                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                          {label}
+                        </span>
+                      </span>
+                      <span
+                        className="text-sm font-bold"
+                        style={{ color: primaryColor }}
+                      >
+                        {size.price} {getCurrency()}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {variants.length > 0 ? (
+            <div className="mb-5">
+              <h3
+                className="mb-3 text-sm font-bold"
+                style={{ color: primaryColor }}
+              >
+                {locale === "ar" ? "الإضافات" : "Add-ons"}
+              </h3>
+              <div className="space-y-2">
+                <label
+                  className="flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition"
+                  style={{
+                    borderColor: selectedVariant === null ? primaryColor : "#e2e8f0",
+                    backgroundColor: selectedVariant === null ? `${primaryColor}12` : "transparent",
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`neon-variant-${item.id}`}
+                    checked={selectedVariant === null}
+                    onChange={() => setSelectedVariant(null)}
+                    className="h-4 w-4"
+                    style={{ accentColor: primaryColor }}
+                  />
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    {locale === "ar" ? "بدون إضافة" : "No add-on"}
+                  </span>
+                </label>
+                {variants.map((variant) => {
+                  const label = pickVariantLabel(variant, locale);
+                  const checked = selectedVariant?.labelEn === variant.labelEn;
+                  return (
+                    <label
+                      key={`${variant.labelEn}-${variant.price}`}
+                      className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 transition"
+                      style={{
+                        borderColor: checked ? primaryColor : "#e2e8f0",
+                        backgroundColor: checked ? `${primaryColor}12` : "transparent",
+                      }}
+                    >
+                      <span className="flex items-center gap-2.5">
+                        <input
+                          type="radio"
+                          name={`neon-variant-${item.id}`}
+                          checked={checked}
+                          onChange={() => setSelectedVariant(variant)}
+                          className="h-4 w-4"
+                          style={{ accentColor: primaryColor }}
+                        />
+                        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                          {label}
+                        </span>
+                      </span>
+                      <span
+                        className="text-sm font-bold"
+                        style={{ color: primaryColor }}
+                      >
+                        {variant.price > 0
+                          ? `+${variant.price} ${getCurrency()}`
+                          : locale === "ar"
+                            ? "مجاني"
+                            : "Free"}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
             </div>
           ) : null}
 
@@ -227,10 +395,7 @@ export default function NeonDetailModal({
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    upsertSkyCartQuantityFromMenuItem(item, selectedQty);
-                    setSelectedQty(1);
-                  }}
+                  onClick={handleAddToCart}
                   className="rounded-full px-5 py-2.5 text-sm font-bold text-white shadow-md transition hover:opacity-90"
                   style={{
                     background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,

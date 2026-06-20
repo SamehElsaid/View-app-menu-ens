@@ -1,20 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { IoCartOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { useLocale } from "next-intl";
-import type { MenuItem } from "@/types/menu";
+import type { MenuItem, MenuItemSizeOption, MenuItemVariantOption } from "@/types/menu";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { useArcaneTheme, hexToRgba } from "./ArcaneThemeContext";
 import LoadImage from "@/components/ImageLoad";
 import {
   SKY_CART_UPDATED_EVENT,
+  getCartQuantityForMenuItem,
   readSkyCartFromCookie,
-  upsertSkyCartQuantityFromMenuItem,
+  upsertSkyCartFromMenuItemWithOptions,
 } from "@/lib/skyTemplateCart";
+import {
+  computeMenuItemUnitPrice,
+  getMenuItemMinPrice,
+  getMenuItemSizes,
+  getMenuItemVariants,
+  hasMenuItemOptions,
+  pickSizeLabel,
+  pickVariantLabel,
+} from "@/lib/menuItemOptions";
 
 type DishModalProps = {
   dish: MenuItem | null;
@@ -33,6 +43,24 @@ export default function DishModal({
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
 
+  const sizes = useMemo(() => (dish ? getMenuItemSizes(dish) : []), [dish]);
+  const variants = useMemo(
+    () => (dish ? getMenuItemVariants(dish) : []),
+    [dish],
+  );
+  const itemHasOptions = dish ? hasMenuItemOptions(dish) : false;
+  const displayMinPrice = dish ? getMenuItemMinPrice(dish) : 0;
+
+  const [selectedSize, setSelectedSize] = useState<MenuItemSizeOption | null>(
+    null,
+  );
+  const [selectedVariant, setSelectedVariant] =
+    useState<MenuItemVariantOption | null>(null);
+
+  const selectedUnitPrice = dish
+    ? computeMenuItemUnitPrice(dish, selectedSize, selectedVariant)
+    : 0;
+
   useEffect(() => {
     document.body.style.overflow = dish ? "hidden" : "";
     return () => {
@@ -50,15 +78,17 @@ export default function DishModal({
 
   useEffect(() => {
     if (!dish) return;
+    setSelectedSize(sizes[0] ?? null);
+    setSelectedVariant(null);
     setSelectedQty(1);
     const sync = () => {
       const c = readSkyCartFromCookie();
-      setInCartQty(c[dish.id]?.quantity ?? 0);
+      setInCartQty(getCartQuantityForMenuItem(c, dish.id));
     };
     sync();
     window.addEventListener(SKY_CART_UPDATED_EVENT, sync);
     return () => window.removeEventListener(SKY_CART_UPDATED_EVENT, sync);
-  }, [dish]);
+  }, [dish, sizes]);
 
   if (!dish) return null;
 
@@ -73,14 +103,25 @@ export default function DishModal({
   const imageBg = hexToRgba(primary, 0.06);
   const divider = hexToRgba(secondary, 0.55);
 
+  const priceDisplay = itemHasOptions
+    ? isAr
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : String(dish.price);
+
   const handleAddToCart = () => {
-    upsertSkyCartQuantityFromMenuItem(dish, selectedQty);
-    setSelectedQty(1);
+    upsertSkyCartFromMenuItemWithOptions(dish, selectedQty, {
+      locale,
+      size: selectedSize,
+      variant: selectedVariant,
+    });
     toast.success(
       isAr
         ? `تمت إضافة ${selectedQty} إلى السلة`
         : `Added ${selectedQty} to cart`,
     );
+    setSelectedQty(1);
+    onClose();
   };
 
   const modal = (
@@ -98,7 +139,7 @@ export default function DishModal({
       />
 
       <div
-        className="relative flex max-h-[min(90dvh,680px)] w-full max-w-[600px] animate-scale-in flex-col overflow-hidden rounded-t-[1.35rem] bg-white motion-reduce:animate-none sm:max-h-[min(86dvh,640px)] sm:rounded-3xl"
+        className="relative flex max-h-[min(92dvh,720px)] w-full max-w-[600px] animate-scale-in flex-col overflow-hidden rounded-t-[1.35rem] bg-white motion-reduce:animate-none sm:max-h-[min(88dvh,680px)] sm:rounded-3xl"
         style={{ boxShadow: modalShadow }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -159,7 +200,7 @@ export default function DishModal({
               className="text-2xl font-extrabold tracking-tight tabular-nums sm:text-3xl"
               style={{ color: primary }}
             >
-              {dish.price}
+              {itemHasOptions ? priceDisplay : selectedUnitPrice}
             </span>
             <span
               className="text-sm font-semibold opacity-70 sm:text-base"
@@ -190,7 +231,7 @@ export default function DishModal({
                   className="text-xl font-extrabold tabular-nums"
                   style={{ color: primary }}
                 >
-                  {dish.price}
+                  {itemHasOptions ? priceDisplay : selectedUnitPrice}
                 </span>
                 <span
                   className="text-xs font-semibold opacity-70"
@@ -222,6 +263,133 @@ export default function DishModal({
                     {a}
                   </span>
                 ))}
+              </div>
+            ) : null}
+
+            {sizes.length > 0 ? (
+              <div className="mb-4">
+                <h5
+                  className="mb-2 text-xs font-semibold uppercase tracking-wider"
+                  style={{ color: primary }}
+                >
+                  {isAr ? "الحجم" : "Size"}
+                </h5>
+                <div className="space-y-1.5">
+                  {sizes.map((size) => {
+                    const label = pickSizeLabel(size, locale);
+                    const checked = selectedSize?.nameEn === size.nameEn;
+                    return (
+                      <label
+                        key={`${size.nameEn}-${size.price}`}
+                        className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2 transition"
+                        style={{
+                          borderColor: checked
+                            ? primary
+                            : "#e7e5e4",
+                          backgroundColor: checked
+                            ? hexToRgba(primary, 0.06)
+                            : "transparent",
+                        }}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <input
+                            type="radio"
+                            name={`arcane-size-${dish.id}`}
+                            checked={checked}
+                            onChange={() => setSelectedSize(size)}
+                            className="h-4 w-4"
+                            style={{ accentColor: primary }}
+                          />
+                          <span className="text-sm font-medium text-stone-700">
+                            {label}
+                          </span>
+                        </span>
+                        <span
+                          className="text-sm font-bold"
+                          style={{ color: primary }}
+                        >
+                          {size.price} {currencyLabel}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
+
+            {variants.length > 0 ? (
+              <div className="mb-4">
+                <h5
+                  className="mb-2 text-xs font-semibold uppercase tracking-wider"
+                  style={{ color: primary }}
+                >
+                  {isAr ? "الإضافات" : "Add-ons"}
+                </h5>
+                <div className="space-y-1.5">
+                  <label
+                    className="flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2 transition"
+                    style={{
+                      borderColor:
+                        selectedVariant === null ? primary : "#e7e5e4",
+                      backgroundColor:
+                        selectedVariant === null
+                          ? hexToRgba(primary, 0.06)
+                          : "transparent",
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name={`arcane-variant-${dish.id}`}
+                      checked={selectedVariant === null}
+                      onChange={() => setSelectedVariant(null)}
+                      className="h-4 w-4"
+                      style={{ accentColor: primary }}
+                    />
+                    <span className="text-sm font-medium text-stone-700">
+                      {isAr ? "بدون إضافة" : "No add-on"}
+                    </span>
+                  </label>
+                  {variants.map((variant) => {
+                    const label = pickVariantLabel(variant, locale);
+                    const checked = selectedVariant?.labelEn === variant.labelEn;
+                    return (
+                      <label
+                        key={`${variant.labelEn}-${variant.price}`}
+                        className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2 transition"
+                        style={{
+                          borderColor: checked ? primary : "#e7e5e4",
+                          backgroundColor: checked
+                            ? hexToRgba(primary, 0.06)
+                            : "transparent",
+                        }}
+                      >
+                        <span className="flex items-center gap-2.5">
+                          <input
+                            type="radio"
+                            name={`arcane-variant-${dish.id}`}
+                            checked={checked}
+                            onChange={() => setSelectedVariant(variant)}
+                            className="h-4 w-4"
+                            style={{ accentColor: primary }}
+                          />
+                          <span className="text-sm font-medium text-stone-700">
+                            {label}
+                          </span>
+                        </span>
+                        <span
+                          className="text-sm font-bold"
+                          style={{ color: primary }}
+                        >
+                          {variant.price > 0
+                            ? `+${variant.price} ${currencyLabel}`
+                            : isAr
+                              ? "مجاني"
+                              : "Free"}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
             ) : null}
 

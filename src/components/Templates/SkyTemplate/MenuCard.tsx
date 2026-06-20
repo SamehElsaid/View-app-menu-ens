@@ -6,6 +6,10 @@ import { useLocale } from "next-intl";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import LoadImage from "@/components/ImageLoad";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
+import {
+  getMenuItemMinPrice,
+  hasMenuItemOptions,
+} from "@/lib/menuItemOptions";
 
 interface MenuCardProps {
   item: MenuItem;
@@ -59,6 +63,14 @@ export default function MenuCard({
     return currencySymbol;
   };
 
+  const itemHasOptions = hasMenuItemOptions(item);
+  const displayMinPrice = getMenuItemMinPrice(item);
+  const priceDisplay = itemHasOptions
+    ? locale === "ar"
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : `${item.price}`;
+
   const handleCardClick = () => {
     trackItem(item.id);
     setIsModalOpen(true);
@@ -98,7 +110,7 @@ export default function MenuCard({
           {/* Price Tag - Sky Blue */}
           <div className="absolute bottom-4 left-8 z-20 bg-(--bg-main) text-white px-5 py-2 rounded-2xl shadow-xl border-4 border-white">
             <span className="text-lg font-black tracking-tighter">
-              {item.price} {getCurrency()}
+              {priceDisplay} {!itemHasOptions ? getCurrency() : ""}
             </span>
             {item.originalPrice && item.discountPercent && (
               <div className="flex items-center gap-2 mt-1">
@@ -128,45 +140,60 @@ export default function MenuCard({
 
           {isTableOrder && (
             <div className="flex items-center justify-between gap-4">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddToCart(selectedQuantity);
-                  setSelectedQuantity(1);
-                }}
-                className="rounded-xl bg-(--bg-main) px-4 py-2 text-base font-semibold text-white transition-opacity hover:opacity-90"
-              >
-                {addToCartLabel}
-              </button>
+              {itemHasOptions ? (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCardClick();
+                  }}
+                  className="rounded-xl bg-(--bg-main) px-4 py-2 text-base font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  {locale === "ar" ? "أضف للسلة" : "Add to cart"}
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddToCart(selectedQuantity);
+                      setSelectedQuantity(1);
+                    }}
+                    className="rounded-xl bg-(--bg-main) px-4 py-2 text-base font-semibold text-white transition-opacity hover:opacity-90"
+                  >
+                    {addToCartLabel}
+                  </button>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedQuantity((prev) => Math.max(1, prev - 1));
-                  }}
-                  aria-label={decreaseLabel}
-                  className="h-8 w-8 rounded-lg border border-(--bg-main)/40 text-(--bg-main)"
-                >
-                  -
-                </button>
-                <span className="min-w-6 text-center text-base font-semibold text-(--bg-main)">
-                  {selectedQuantity}
-                </span>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedQuantity((prev) => prev + 1);
-                  }}
-                  aria-label={increaseLabel}
-                  className="h-8 w-8 rounded-lg border border-(--bg-main)/40 text-(--bg-main)"
-                >
-                  +
-                </button>
-              </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedQuantity((prev) => Math.max(1, prev - 1));
+                      }}
+                      aria-label={decreaseLabel}
+                      className="h-8 w-8 rounded-lg border border-(--bg-main)/40 text-(--bg-main)"
+                    >
+                      -
+                    </button>
+                    <span className="min-w-6 text-center text-base font-semibold text-(--bg-main)">
+                      {selectedQuantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedQuantity((prev) => prev + 1);
+                      }}
+                      aria-label={increaseLabel}
+                      className="h-8 w-8 rounded-lg border border-(--bg-main)/40 text-(--bg-main)"
+                    >
+                      +
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           )}
           {isTableOrder && quantity > 0 && (

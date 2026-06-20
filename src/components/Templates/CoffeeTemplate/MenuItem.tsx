@@ -1,18 +1,29 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { FiX } from "react-icons/fi";
+import { toast } from "react-toastify";
 import LoadImage from "@/components/ImageLoad";
 import { arabCurrencies, type Currency } from "@/constants/currencies";
 import { useLocale } from "next-intl";
-import type { MenuItem } from "@/types/menu";
+import type { MenuItem, MenuItemSizeOption, MenuItemVariantOption } from "@/types/menu";
 import {
+  getCartQuantityForMenuItem,
   subscribeSkyCartUpdated,
   readSkyCartFromCookie,
-  upsertSkyCartQuantityFromMenuItem,
+  upsertSkyCartFromMenuItemWithOptions,
 } from "@/lib/skyTemplateCart";
+import {
+  computeMenuItemUnitPrice,
+  getMenuItemMinPrice,
+  getMenuItemSizes,
+  getMenuItemVariants,
+  hasMenuItemOptions,
+  pickSizeLabel,
+  pickVariantLabel,
+} from "@/lib/menuItemOptions";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
 function currencyLabel(code: string, locale: string): string {
@@ -37,6 +48,8 @@ interface MenuItemProps {
   originalPrice?: number | null;
   discountPercent?: number | null;
   currency?: string;
+  sizes?: MenuItemSizeOption[] | null;
+  variants?: MenuItemVariantOption[] | null;
 }
 
 const MenuItem = ({
@@ -53,6 +66,8 @@ const MenuItem = ({
   originalPrice,
   discountPercent,
   currency = "AED",
+  sizes: sizesProp,
+  variants: variantsProp,
 }: MenuItemProps) => {
   const locale = useLocale();
   const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
@@ -61,30 +76,6 @@ const MenuItem = ({
   const [open, setOpen] = useState(false);
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
-
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
-
-  useEffect(() => {
-    if (!open || id == null) return;
-    const sync = () => {
-      const c = readSkyCartFromCookie();
-      setInCartQty(c[id]?.quantity ?? 0);
-    };
-    sync();
-    return subscribeSkyCartUpdated(sync);
-  }, [open, id]);
 
   const displayNameAr = nameAr || name;
   const displayDescription = description || "";
@@ -105,10 +96,9 @@ const MenuItem = ({
       ? price
       : parseFloat(normalizedPrice.replace(/[^0-9.]/g, "") || "0");
 
-  const addTableLineToCart = () => {
-    if (id == null) return;
-    const stub: MenuItem = {
-      id,
+  const stubItem: MenuItem = useMemo(
+    () => ({
+      id: id ?? 0,
       name,
       nameAr: nameAr ?? "",
       nameEn: name,
@@ -126,9 +116,77 @@ const MenuItem = ({
       discountPercent: discountPercent ?? null,
       available: true,
       sortOrder: 0,
+      sizes: sizesProp ?? null,
+      variants: variantsProp ?? null,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [id, priceNum, sizesProp, variantsProp],
+  );
+
+  const sizes = useMemo(() => getMenuItemSizes(stubItem), [stubItem]);
+  const variants = useMemo(() => getMenuItemVariants(stubItem), [stubItem]);
+  const itemHasOptions = hasMenuItemOptions(stubItem);
+  const displayMinPrice = getMenuItemMinPrice(stubItem);
+
+  const [selectedSize, setSelectedSize] = useState<MenuItemSizeOption | null>(
+    null,
+  );
+  const [selectedVariant, setSelectedVariant] =
+    useState<MenuItemVariantOption | null>(null);
+
+  const selectedUnitPrice = computeMenuItemUnitPrice(
+    stubItem,
+    selectedSize,
+    selectedVariant,
+  );
+
+  const priceDisplay = itemHasOptions
+    ? locale === "ar"
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : normalizedPrice;
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
     };
-    upsertSkyCartQuantityFromMenuItem(stub, selectedQty);
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || id == null) return;
+    setSelectedSize(sizes[0] ?? null);
+    setSelectedVariant(null);
     setSelectedQty(1);
+    const sync = () => {
+      const c = readSkyCartFromCookie();
+      setInCartQty(getCartQuantityForMenuItem(c, id));
+    };
+    sync();
+    return subscribeSkyCartUpdated(sync);
+  }, [open, id, sizes]);
+
+  const addTableLineToCart = () => {
+    if (id == null) return;
+    upsertSkyCartFromMenuItemWithOptions(stubItem, selectedQty, {
+      locale,
+      size: selectedSize,
+      variant: selectedVariant,
+    });
+    toast.success(
+      locale === "ar"
+        ? `تمت إضافة ${selectedQty} إلى السلة`
+        : `Added ${selectedQty} to cart`,
+    );
+    setSelectedQty(1);
+    setOpen(false);
   };
 
   const [cardPickQty, setCardPickQty] = useState(1);
@@ -138,7 +196,7 @@ const MenuItem = ({
     if (id == null) return;
     const sync = () => {
       const c = readSkyCartFromCookie();
-      setCardInCart(c[id]?.quantity ?? 0);
+      setCardInCart(getCartQuantityForMenuItem(c, id));
     };
     sync();
     return subscribeSkyCartUpdated(sync);
@@ -146,29 +204,18 @@ const MenuItem = ({
 
   const addCardLine = () => {
     if (id == null) return;
-    const stub: MenuItem = {
-      id,
-      name,
-      nameAr: nameAr ?? "",
-      nameEn: name,
-      description: description ?? null,
-      descriptionAr: descriptionAr ?? null,
-      descriptionEn: null,
-      price: priceNum,
-      image: image ?? "",
-      category: "",
-      categoryId: 0,
-      categoryName: "",
-      categoryNameAr: "",
-      categoryNameEn: "",
-      originalPrice: originalPrice ?? null,
-      discountPercent: discountPercent ?? null,
-      available: true,
-      sortOrder: 0,
-    };
-    upsertSkyCartQuantityFromMenuItem(stub, cardPickQty);
+    if (itemHasOptions) {
+      setOpen(true);
+      return;
+    }
+    upsertSkyCartFromMenuItemWithOptions(stubItem, cardPickQty, { locale });
+    toast.success(
+      locale === "ar"
+        ? `تمت إضافة ${cardPickQty} إلى السلة`
+        : `Added ${cardPickQty} to cart`,
+    );
     setCardPickQty(1);
-    setCardInCart(readSkyCartFromCookie()[id]?.quantity ?? 0);
+    setCardInCart(getCartQuantityForMenuItem(readSkyCartFromCookie(), id));
   };
 
   const modal = (
@@ -236,9 +283,10 @@ const MenuItem = ({
               </span>
             ) : null}
             <span className="flex flex-wrap items-baseline justify-end gap-x-1.5 gap-y-0.5 font-body text-xl font-semibold tabular-nums tracking-tight text-[#F2B705] sm:text-2xl">
-              <span>{normalizedPrice}</span>
-              <span className="text-base font-medium text-[#d4a846] sm:text-base">
-                {curr}
+              <span>
+                {itemHasOptions
+                  ? priceDisplay
+                  : `${selectedUnitPrice} ${curr}`}
               </span>
               {hasDiscount ? (
                 <span className="text-base font-medium text-[#8a8278]">
@@ -247,6 +295,102 @@ const MenuItem = ({
               ) : null}
             </span>
           </div>
+
+          {sizes.length > 0 ? (
+            <div className="mt-4 border-t border-[#3B332E]/80 pt-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#F2B705]">
+                {locale === "ar" ? "الحجم" : "Size"}
+              </p>
+              <div className="space-y-1.5">
+                {sizes.map((size) => {
+                  const label = pickSizeLabel(size, locale);
+                  const checked = selectedSize?.nameEn === size.nameEn;
+                  return (
+                    <label
+                      key={`${size.nameEn}-${size.price}`}
+                      className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border px-3 py-2 transition"
+                      style={{
+                        borderColor: checked ? "#F2B705" : "#3B332E",
+                        backgroundColor: checked ? "rgba(242,183,5,0.08)" : "transparent",
+                      }}
+                    >
+                      <span className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name={`coffee-size-${id}`}
+                          checked={checked}
+                          onChange={() => setSelectedSize(size)}
+                          className="h-3.5 w-3.5 accent-[#F2B705]"
+                        />
+                        <span className="text-sm font-semibold text-[#F4EEE7]">{label}</span>
+                      </span>
+                      <span className="text-sm font-bold text-[#F2B705]">
+                        {size.price} {curr}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
+          {variants.length > 0 ? (
+            <div className="mt-4 border-t border-[#3B332E]/80 pt-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#F2B705]">
+                {locale === "ar" ? "الإضافات" : "Add-ons"}
+              </p>
+              <div className="space-y-1.5">
+                <label
+                  className="flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition"
+                  style={{
+                    borderColor: selectedVariant === null ? "#F2B705" : "#3B332E",
+                    backgroundColor: selectedVariant === null ? "rgba(242,183,5,0.08)" : "transparent",
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name={`coffee-variant-${id}`}
+                    checked={selectedVariant === null}
+                    onChange={() => setSelectedVariant(null)}
+                    className="h-3.5 w-3.5 accent-[#F2B705]"
+                  />
+                  <span className="text-sm font-semibold text-[#F4EEE7]">
+                    {locale === "ar" ? "بدون إضافة" : "No add-on"}
+                  </span>
+                </label>
+                {variants.map((variant) => {
+                  const label = pickVariantLabel(variant, locale);
+                  const checked = selectedVariant?.labelEn === variant.labelEn;
+                  return (
+                    <label
+                      key={`${variant.labelEn}-${variant.price}`}
+                      className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border px-3 py-2 transition"
+                      style={{
+                        borderColor: checked ? "#F2B705" : "#3B332E",
+                        backgroundColor: checked ? "rgba(242,183,5,0.08)" : "transparent",
+                      }}
+                    >
+                      <span className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name={`coffee-variant-${id}`}
+                          checked={checked}
+                          onChange={() => setSelectedVariant(variant)}
+                          className="h-3.5 w-3.5 accent-[#F2B705]"
+                        />
+                        <span className="text-sm font-semibold text-[#F4EEE7]">{label}</span>
+                      </span>
+                      <span className="text-sm font-bold text-[#F2B705]">
+                        {variant.price > 0
+                          ? `+${variant.price} ${curr}`
+                          : locale === "ar" ? "مجاني" : "Free"}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
 
           {isTableOrder && id != null ? (
             <div className="mt-6 space-y-3 border-t border-[#3B332E]/80 pt-5">
@@ -340,10 +484,12 @@ const MenuItem = ({
                 </span>
               )}
               <span className="flex flex-wrap items-baseline justify-end gap-x-1 font-body text-base font-semibold tabular-nums tracking-tight text-[#F2B705] sm:text-lg md:text-xl">
-                <span>{normalizedPrice}</span>
-                <span className="text-base font-medium text-[#c9a227] sm:text-base">
-                  {curr}
-                </span>
+                <span>{priceDisplay}</span>
+                {!itemHasOptions && (
+                  <span className="text-base font-medium text-[#c9a227] sm:text-base">
+                    {curr}
+                  </span>
+                )}
                 {hasDiscount ? (
                   <span className="whitespace-nowrap text-[10px] font-medium text-[#7d756a] sm:text-base">
                     ({discountPercent}% off)

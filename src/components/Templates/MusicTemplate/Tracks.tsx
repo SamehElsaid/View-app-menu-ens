@@ -10,11 +10,20 @@ import {
 import { createPortal } from "react-dom";
 import { IoCartOutline } from "react-icons/io5";
 import { useLocale } from "next-intl";
-import type { Category, MenuItem } from "@/types/menu";
+import type { Category, MenuItem, MenuItemSizeOption, MenuItemVariantOption } from "@/types/menu";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 import LoadImage from "@/components/ImageLoad";
 import { useAppSelector } from "@/store/hooks";
 import { useMusic } from "./MusicContext";
+import {
+  computeMenuItemUnitPrice,
+  getMenuItemMinPrice,
+  getMenuItemSizes,
+  getMenuItemVariants,
+  hasMenuItemOptions,
+  pickSizeLabel,
+  pickVariantLabel,
+} from "@/lib/menuItemOptions";
 import {
   getProductMood,
   getProductTheme,
@@ -166,7 +175,12 @@ function ProductDetailModal({
   locale: "ar" | "en";
   isTableOrder: boolean;
   cartQuantity: number;
-  onAddToCart: (item: MenuItem, quantity: number) => void;
+  onAddToCart: (
+    item: MenuItem,
+    quantity: number,
+    size?: MenuItemSizeOption | null,
+    variant?: MenuItemVariantOption | null,
+  ) => void;
   onClose: () => void;
 }) {
   const isAr = locale === "ar";
@@ -179,9 +193,34 @@ function ProductDetailModal({
   const { hasDiscount, discountPercent } = getItemDiscount(item);
   const brandStyle = useMusicBrandStyle();
 
+  const sizes = useMemo(() => getMenuItemSizes(item), [item]);
+  const variants = useMemo(() => getMenuItemVariants(item), [item]);
+  const itemHasOptions = hasMenuItemOptions(item);
+  const displayMinPrice = getMenuItemMinPrice(item);
+
+  const [selectedSize, setSelectedSize] = useState<MenuItemSizeOption | null>(
+    null,
+  );
+  const [selectedVariant, setSelectedVariant] =
+    useState<MenuItemVariantOption | null>(null);
+
+  const selectedUnitPrice = computeMenuItemUnitPrice(
+    item,
+    selectedSize,
+    selectedVariant,
+  );
+
+  const priceDisplay = itemHasOptions
+    ? isAr
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : String(item.price);
+
   useEffect(() => {
+    setSelectedSize(sizes[0] ?? null);
+    setSelectedVariant(null);
     setSelectedQty(1);
-  }, [item.id]);
+  }, [item.id, sizes]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -288,12 +327,68 @@ function ProductDetailModal({
                       </span>
                     ) : null}
                     <span className="music-feed__price font-bold transition-colors duration-300">
-                      {currencyLabel} {item.price}
+                      {itemHasOptions
+                        ? `${currencyLabel} ${priceDisplay}`
+                        : `${currencyLabel} ${selectedUnitPrice}`}
                     </span>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Sizes */}
+            {sizes.length > 0 && (
+              <div className="mt-3 w-full px-1">
+                <p className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--music-text-muted)]">
+                  {isAr ? "الحجم" : "Size"}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {sizes.map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setSelectedSize(s)}
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
+                        selectedSize?.id === s.id
+                          ? "border-brand-coral bg-brand-coral text-white"
+                          : "border-brand-sky/30 bg-brand-sky/10 text-[color:var(--music-text)]"
+                      }`}
+                    >
+                      {pickSizeLabel(s, locale)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Variants */}
+            {variants.length > 0 && (
+              <div className="mt-3 w-full px-1">
+                <p className="mb-1.5 text-xs font-semibold uppercase tracking-widest text-[color:var(--music-text-muted)]">
+                  {isAr ? "الإضافات" : "Add-ons"}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {variants.map((v) => (
+                    <button
+                      key={v.id}
+                      type="button"
+                      onClick={() =>
+                        setSelectedVariant(
+                          selectedVariant?.id === v.id ? null : v,
+                        )
+                      }
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
+                        selectedVariant?.id === v.id
+                          ? "border-brand-coral bg-brand-coral text-white"
+                          : "border-brand-sky/30 bg-brand-sky/10 text-[color:var(--music-text)]"
+                      }`}
+                    >
+                      {pickVariantLabel(v, locale)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {isTableOrder ? (
               <div className="mt-4 space-y-2 border-t border-brand-sky/20 pt-4">
@@ -322,8 +417,9 @@ function ProductDetailModal({
                   <button
                     type="button"
                     onClick={() => {
-                      onAddToCart(item, selectedQty);
+                      onAddToCart(item, selectedQty, selectedSize, selectedVariant);
                       setSelectedQty(1);
+                      onClose();
                     }}
                     className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full bg-brand-coral px-5 text-xs font-semibold uppercase tracking-widest text-brand-honeydew transition-all duration-300 ease-out hover:bg-brand-tomato sm:flex-none sm:px-6 sm:text-sm"
                   >
@@ -373,6 +469,8 @@ function ProductMenuCard({
   const [pickQty, setPickQty] = useState(1);
   const inCart = cartQuantity > 0;
   const isHighlighted = isActive || inCart;
+  const itemHasOpts = hasMenuItemOptions(item);
+  const displayMinPriceCard = getMenuItemMinPrice(item);
 
   const handleAdd = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -425,7 +523,9 @@ function ProductMenuCard({
               </span>
             ) : null}
             <span className="text-xs font-bold tabular-nums text-brand-coral sm:text-sm">
-              {currencyLabel} {item.price}
+              {itemHasOpts
+                ? `${currencyLabel} ${isAr ? `من ${displayMinPriceCard}` : `From ${displayMinPriceCard}`}`
+                : `${currencyLabel} ${item.price}`}
             </span>
           </div>
         </div>
@@ -463,7 +563,7 @@ function ProductMenuCard({
             className="inline-flex flex-1 items-center justify-center gap-1 rounded-full bg-brand-coral px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-brand-honeydew transition-all duration-200 hover:bg-brand-tomato active:scale-[0.98] sm:px-3 sm:py-2 sm:text-[11px]"
           >
             <IoCartOutline className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            {isAr ? "أضف" : "Add"}
+            {isAr ? "أضف للسلة" : "Add to cart"}
           </button>
         </div>
       ) : null}
@@ -489,7 +589,7 @@ function TracksFeed({
     openProductModal,
     closeProductModal,
     isTableOrder,
-    cartById,
+    getItemCartQty,
     addToCart,
   } = useMusic();
 
@@ -521,9 +621,15 @@ function TracksFeed({
               locale={locale}
               currencyLabel={currencyLabel}
               isTableOrder={isTableOrder}
-              cartQuantity={cartById[item.id]?.quantity ?? 0}
+              cartQuantity={getItemCartQty(item.id)}
               onSelect={() => openProductModal(item)}
-              onAddToCart={addToCart}
+              onAddToCart={(it, qty) => {
+                if (hasMenuItemOptions(it)) {
+                  openProductModal(it);
+                } else {
+                  addToCart(it, qty);
+                }
+              }}
             />
           ))}
         </div>
@@ -537,7 +643,7 @@ function TracksFeed({
           currencyLabel={currencyLabel}
           locale={locale}
           isTableOrder={isTableOrder}
-          cartQuantity={cartById[modalItem.id]?.quantity ?? 0}
+          cartQuantity={getItemCartQty(modalItem.id)}
           onAddToCart={addToCart}
           onClose={closeProductModal}
         />

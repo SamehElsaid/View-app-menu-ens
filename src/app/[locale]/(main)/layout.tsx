@@ -127,8 +127,15 @@ export async function generateMetadata({
   const defaults = defaultMetadata[lang] ?? defaultMetadata.ar;
   const data = await getMenu(locale);
   const iconUrl = resolveMenuIconUrl(data?.menu?.logo);
-  const title = data?.menu?.name;
-  const description = data?.menu?.description;
+  const menu = data?.menu;
+  const title =
+    lang === "ar"
+      ? (menu?.nameAr ?? menu?.name ?? null)
+      : (menu?.nameEn ?? menu?.name ?? null);
+  const description =
+    lang === "ar"
+      ? (menu?.descriptionAr ?? menu?.description ?? null)
+      : (menu?.descriptionEn ?? menu?.description ?? null);
 
   return {
     title: title ?? defaults.title,
@@ -172,6 +179,8 @@ export default async function MainLayout({
   const cookieSubdomain = cookieStore.get(DEV_SUB_DOMAIN_COOKIE_KEY)?.value;
   const { needsDevSubdomain, devMode } = resolveMenuSlug(host, cookieSubdomain);
   const data = await getMenu(locale);
+
+  console.log(data);
 
   return (
     <>

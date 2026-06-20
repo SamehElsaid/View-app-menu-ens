@@ -2841,56 +2841,6 @@ body.modal-open {
   }
 }
 
-.sidebar-custom-scrollbar {
-  &::-webkit-scrollbar {
-    width: 3px;
-  }
-  /* Track */
-  &::-webkit-scrollbar-track {
-    border-radius: 10px;
-  }
-  /* Handle */
-  &::-webkit-scrollbar-thumb {
-    background: #fff;
-    border-radius: 10px;
-  }
-  /* Handle on hover */
-  &::-webkit-scrollbar-thumb:hover {
-    background: #fff;
-  }
-
-  &:hover {
-    &::-webkit-scrollbar-thumb {
-      background: #e6e6e6;
-    }
-    /* Handle on hover */
-    &::-webkit-scrollbar-thumb:hover {
-      background: #a1a1a1;
-    }
-  }
-}
-.dark {
-  .sidebar-custom-scrollbar {
-    /* Handle */
-    &::-webkit-scrollbar-thumb {
-      background: #0c1427;
-    }
-    /* Handle on hover */
-    &::-webkit-scrollbar-thumb:hover {
-      background: #333333;
-    }
-    &:hover {
-      /* Handle */
-      &::-webkit-scrollbar-thumb {
-        background: #2a2929;
-      }
-      /* Handle on hover */
-      &::-webkit-scrollbar-thumb:hover {
-        background: #333333;
-      }
-    }
-  }
-}
 
 .main-content-wrap {
   &.active {
@@ -5694,4 +5644,45 @@ html {
     animation: none;
     opacity: 0;
   }
+}
+
+/* ── Cart PhoneInput ─────────────────────────────────────────────── */
+.phone-input-cart {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  background: transparent;
+}
+
+.phone-input-cart .PhoneInputCountry {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-inline-end: 8px;
+  border-inline-end: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.phone-input-cart .PhoneInputCountrySelect {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+.phone-input-cart .PhoneInputCountrySelectArrow {
+  display: none;
+}
+
+.phone-input-cart .PhoneInputInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  color: inherit;
+  min-width: 0;
+  direction: ltr;
 }

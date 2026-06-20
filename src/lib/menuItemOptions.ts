@@ -4,26 +4,33 @@ import type {
   MenuItemVariantOption,
 } from "@/types/menu";
 
+function toFiniteNumber(val: unknown): number | null {
+  const n = Number(val);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
 export function getMenuItemSizes(item: MenuItem): MenuItemSizeOption[] {
   if (!Array.isArray(item.sizes)) return [];
-  return item.sizes.filter(
-    (size) =>
-      size &&
-      typeof size.price === "number" &&
-      Number.isFinite(size.price) &&
-      size.price >= 0,
-  );
+  const result: MenuItemSizeOption[] = [];
+  for (const size of item.sizes) {
+    if (!size) continue;
+    const price = toFiniteNumber(size.price);
+    if (price === null) continue;
+    result.push({ ...size, price });
+  }
+  return result;
 }
 
 export function getMenuItemVariants(item: MenuItem): MenuItemVariantOption[] {
   if (!Array.isArray(item.variants)) return [];
-  return item.variants.filter(
-    (variant) =>
-      variant &&
-      typeof variant.price === "number" &&
-      Number.isFinite(variant.price) &&
-      variant.price >= 0,
-  );
+  const result: MenuItemVariantOption[] = [];
+  for (const variant of item.variants) {
+    if (!variant) continue;
+    const price = toFiniteNumber(variant.price);
+    if (price === null) continue;
+    result.push({ ...variant, price });
+  }
+  return result;
 }
 
 export function hasMenuItemOptions(item: MenuItem): boolean {

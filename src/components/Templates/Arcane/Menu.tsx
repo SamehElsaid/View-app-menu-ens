@@ -10,9 +10,10 @@ import { useArcaneTheme } from "./ArcaneThemeContext";
 import {
   readSkyCartFromCookie,
   subscribeSkyCartUpdated,
-  upsertSkyCartQuantityFromMenuItem,
+  upsertSkyCartFromMenuItemWithOptions,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
+import { hasMenuItemOptions } from "@/lib/menuItemOptions";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import { useAppSelector } from "@/store/hooks";
 import CategoryPills from "./CategoryPills";
@@ -52,7 +53,11 @@ export default function Menu({
   }, []);
 
   const addToCart = (item: MenuItem, quantity: number) => {
-    upsertSkyCartQuantityFromMenuItem(item, quantity);
+    if (hasMenuItemOptions(item)) {
+      setSelectedDish(item);
+      return;
+    }
+    upsertSkyCartFromMenuItemWithOptions(item, quantity, { locale });
     setCartById(readSkyCartFromCookie());
     toast.success(
       locale === "ar"

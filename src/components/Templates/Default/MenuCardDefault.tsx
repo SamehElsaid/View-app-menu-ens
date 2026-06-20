@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { IoPricetagOutline } from "react-icons/io5";
 import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
+import { toast } from "react-toastify";
 import {
   MenuItem,
   MenuItemSizeOption,
@@ -149,6 +150,11 @@ export const MenuCardDefault = ({
       size: selectedSize,
       variant: selectedVariant,
     });
+    toast.success(
+      locale === "ar"
+        ? `تمت إضافة ${quantity} إلى السلة`
+        : `Added ${quantity} to cart`,
+    );
     setSelectedQuantity(1);
     setCardPickQty(1);
     handleClose();
@@ -160,6 +166,11 @@ export const MenuCardDefault = ({
       return;
     }
     onAddToCart?.({ quantity: cardPickQty });
+    toast.success(
+      locale === "ar"
+        ? `تمت إضافة ${cardPickQty} إلى السلة`
+        : `Added ${cardPickQty} to cart`,
+    );
     setCardPickQty(1);
   };
 
@@ -178,12 +189,11 @@ export const MenuCardDefault = ({
         className="relative bg-white/95 backdrop-blur-base  rounded-[2.5rem] shadow-xl shadow-(--bg-main)/5 border border-(--bg-main)/10 flex flex-col items-center text-center group transition-shadow hover:shadow-(--bg-main)/15 overflow-hidden cursor-pointer"
       >
         <div className="relative w-full h-52 mb-6 flex items-center justify-center z-10">
-          <div className="w-full h-full overflow-hidden  relative z-20 bg-white">
+          <div className="w-full h-full overflow-hidden relative z-20 bg-white">
             <LoadImage
               src={item.image ?? ""}
               alt={item.name}
-              height={400}
-              width={400}
+              fill
               className="object-cover transition-transform duration-700 group-hover:scale-110"
             />
           </div>
@@ -354,7 +364,7 @@ export const MenuCardDefault = ({
               </div>
             </div>
 
-            <div className="default-modal-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-8 pt-2 sm:px-8 sm:pb-8">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pb-8 pt-2 sm:px-8 sm:pb-8">
               <div className="mb-4">
                 <h2 className="!text-xl sm:!text-2xl font-black text-(--bg-main) mb-2 tracking-tight text-balance wrap-break-word">
                   {itemName}

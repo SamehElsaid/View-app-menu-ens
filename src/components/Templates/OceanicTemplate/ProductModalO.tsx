@@ -1,17 +1,28 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiX, FiArrowLeft, FiArrowRight } from "react-icons/fi";
+import { toast } from "react-toastify";
 import { useLocale } from "next-intl";
-import type { MenuItem } from "@/types/menu";
+import type { MenuItem, MenuItemSizeOption, MenuItemVariantOption } from "@/types/menu";
 import {
+  getCartQuantityForMenuItem,
   readSkyCartFromCookie,
   subscribeSkyCartUpdated,
-  upsertSkyCartQuantityFromMenuItem,
+  upsertSkyCartFromMenuItemWithOptions,
 } from "@/lib/skyTemplateCart";
+import {
+  computeMenuItemUnitPrice,
+  getMenuItemMinPrice,
+  getMenuItemSizes,
+  getMenuItemVariants,
+  hasMenuItemOptions,
+  pickSizeLabel,
+  pickVariantLabel,
+} from "@/lib/menuItemOptions";
 import LoadImage from "@/components/ImageLoad";
 
 interface ProductModalProps {
@@ -26,6 +37,24 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
   const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
   const [selectedQty, setSelectedQty] = useState(1);
   const [inCartQty, setInCartQty] = useState(0);
+
+  const sizes = useMemo(() => (item ? getMenuItemSizes(item) : []), [item]);
+  const variants = useMemo(
+    () => (item ? getMenuItemVariants(item) : []),
+    [item],
+  );
+  const itemHasOptions = item ? hasMenuItemOptions(item) : false;
+  const displayMinPrice = item ? getMenuItemMinPrice(item) : 0;
+
+  const [selectedSize, setSelectedSize] = useState<MenuItemSizeOption | null>(
+    null,
+  );
+  const [selectedVariant, setSelectedVariant] =
+    useState<MenuItemVariantOption | null>(null);
+
+  const selectedUnitPrice = item
+    ? computeMenuItemUnitPrice(item, selectedSize, selectedVariant)
+    : 0;
 
   useEffect(() => {
     if (item) {
@@ -51,14 +80,16 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
 
   useEffect(() => {
     if (!item) return;
+    setSelectedSize(sizes[0] ?? null);
+    setSelectedVariant(null);
     setSelectedQty(1);
     const sync = () => {
       const c = readSkyCartFromCookie();
-      setInCartQty(c[item.id]?.quantity ?? 0);
+      setInCartQty(getCartQuantityForMenuItem(c, item.id));
     };
     sync();
     return subscribeSkyCartUpdated(sync);
-  }, [item]);
+  }, [item, sizes]);
 
   const displayName = item ? (isAr ? item.nameAr : item.nameEn) : "";
   const displayDesc = item
@@ -76,13 +107,18 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
       ? Math.round((savedAmount / (item.originalPrice as number)) * 100)
       : 0);
 
+  const priceDisplay = itemHasOptions
+    ? isAr
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : String(item?.price ?? 0);
+
   if (typeof document === "undefined") return null;
 
   return createPortal(
     <AnimatePresence>
       {item && (
         <>
-          {/* Backdrop */}
           <motion.div
             key="backdrop"
             initial={{ opacity: 0 }}
@@ -93,7 +129,6 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
             onClick={onClose}
           />
 
-          {/* Modal Container */}
           <motion.div
             key="modal"
             initial={{ opacity: 0, scale: 0.96, y: 20 }}
@@ -110,18 +145,15 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                        bg-linear-to-b from-[#002b36] via-[#00222d] to-[#001a23]
                        border border-white/10 shadow-[0_30px_100px_rgba(0,0,0,0.6)]"
           >
-            {/* Header Image Section */}
-            <div className=" relative w-full aspect-4/3 md:aspect-16/10 overflow-hidden bg-linear-to-br from-[#002433] via-[#002b3a] to-[#003544]">
+            <div className="relative w-full aspect-4/3 md:aspect-16/10 overflow-hidden bg-linear-to-br from-[#002433] via-[#002b3a] to-[#003544]">
               <LoadImage
                 src={item.image ?? ""}
                 alt={displayName}
                 className="object-cover w-full h-full"
                 disableLazy={true}
               />
-              {/* Gradient Overlay (bottom only, lighter to keep image visible) */}
               <div className="absolute inset-x-0 bottom-0 h-1/3 bg-linear-to-t from-[#001a23] to-transparent pointer-events-none" />
 
-              {/* Close Button */}
               <motion.button
                 whileHover={{
                   scale: 1.05,
@@ -137,7 +169,6 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                 <FiX className="w-5 h-5" />
               </motion.button>
 
-              {/* Discount Tag */}
               {hasDiscount && (
                 <motion.div
                   initial={{ scale: 0, rotate: -15 }}
@@ -156,7 +187,6 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
               )}
             </div>
 
-            {/* Content Section */}
             <div className="p-7 md:p-8 text-center md:text-start">
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -183,7 +213,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                     duration: 0.62,
                     ease: [0.16, 1, 0.3, 1],
                   }}
-                  className="mb-8 p-4 md:p-5 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-base"
+                  className="mb-6 p-4 md:p-5 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-base"
                 >
                   <div className="flex flex-col items-center text-center gap-2">
                     <span className="text-[11px] uppercase tracking-widest text-cyan-300/60 font-bold">
@@ -196,11 +226,13 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                         </span>
                       )}
                       <span className="text-cyan-400 font-extrabold text-2xl font-body leading-none">
-                        {item.price}
+                        {itemHasOptions ? priceDisplay : selectedUnitPrice}
                       </span>
-                      <span className="text-cyan-500/70 text-lg font-bold uppercase tracking-wider">
-                        {currency}
-                      </span>
+                      {!itemHasOptions && (
+                        <span className="text-cyan-500/70 text-lg font-bold uppercase tracking-wider">
+                          {currency}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -215,6 +247,133 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                     </div>
                   )}
                 </motion.div>
+
+                {sizes.length > 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.26, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="mb-5"
+                  >
+                    <h5 className="mb-2 text-[11px] font-bold uppercase tracking-widest text-cyan-300/70 text-start">
+                      {isAr ? "الحجم" : "Size"}
+                    </h5>
+                    <div className="space-y-2">
+                      {sizes.map((size) => {
+                        const label = pickSizeLabel(size, locale);
+                        const checked = selectedSize?.nameEn === size.nameEn;
+                        return (
+                          <label
+                            key={`${size.nameEn}-${size.price}`}
+                            className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 transition text-start"
+                            style={{
+                              borderColor: checked
+                                ? "rgba(34,211,238,0.6)"
+                                : "rgba(255,255,255,0.1)",
+                              backgroundColor: checked
+                                ? "rgba(34,211,238,0.08)"
+                                : "transparent",
+                            }}
+                          >
+                            <span className="flex items-center gap-2.5">
+                              <input
+                                type="radio"
+                                name={`oceanic-size-${item.id}`}
+                                checked={checked}
+                                onChange={() => setSelectedSize(size)}
+                                className="h-4 w-4 accent-cyan-400"
+                              />
+                              <span className="text-sm font-medium text-cyan-100">
+                                {label}
+                              </span>
+                            </span>
+                            <span className="text-sm font-bold text-cyan-400">
+                              {size.price} {currency}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                ) : null}
+
+                {variants.length > 0 ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                    className="mb-5"
+                  >
+                    <h5 className="mb-2 text-[11px] font-bold uppercase tracking-widest text-cyan-300/70 text-start">
+                      {isAr ? "الإضافات" : "Add-ons"}
+                    </h5>
+                    <div className="space-y-2">
+                      <label
+                        className="flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-2.5 transition text-start"
+                        style={{
+                          borderColor:
+                            selectedVariant === null
+                              ? "rgba(34,211,238,0.6)"
+                              : "rgba(255,255,255,0.1)",
+                          backgroundColor:
+                            selectedVariant === null
+                              ? "rgba(34,211,238,0.08)"
+                              : "transparent",
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          name={`oceanic-variant-${item.id}`}
+                          checked={selectedVariant === null}
+                          onChange={() => setSelectedVariant(null)}
+                          className="h-4 w-4 accent-cyan-400"
+                        />
+                        <span className="text-sm font-medium text-cyan-100">
+                          {isAr ? "بدون إضافة" : "No add-on"}
+                        </span>
+                      </label>
+                      {variants.map((variant) => {
+                        const label = pickVariantLabel(variant, locale);
+                        const checked =
+                          selectedVariant?.labelEn === variant.labelEn;
+                        return (
+                          <label
+                            key={`${variant.labelEn}-${variant.price}`}
+                            className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2.5 transition text-start"
+                            style={{
+                              borderColor: checked
+                                ? "rgba(34,211,238,0.6)"
+                                : "rgba(255,255,255,0.1)",
+                              backgroundColor: checked
+                                ? "rgba(34,211,238,0.08)"
+                                : "transparent",
+                            }}
+                          >
+                            <span className="flex items-center gap-2.5">
+                              <input
+                                type="radio"
+                                name={`oceanic-variant-${item.id}`}
+                                checked={checked}
+                                onChange={() => setSelectedVariant(variant)}
+                                className="h-4 w-4 accent-cyan-400"
+                              />
+                              <span className="text-sm font-medium text-cyan-100">
+                                {label}
+                              </span>
+                            </span>
+                            <span className="text-sm font-bold text-cyan-400">
+                              {variant.price > 0
+                                ? `+${variant.price} ${currency}`
+                                : isAr
+                                  ? "مجاني"
+                                  : "Free"}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                ) : null}
               </motion.div>
 
               {isTableOrder && item ? (
@@ -232,8 +391,18 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                     <button
                       type="button"
                       onClick={() => {
-                        upsertSkyCartQuantityFromMenuItem(item, selectedQty);
+                        upsertSkyCartFromMenuItemWithOptions(item, selectedQty, {
+                          locale,
+                          size: selectedSize,
+                          variant: selectedVariant,
+                        });
+                        toast.success(
+                          locale === "ar"
+                            ? `تمت إضافة ${selectedQty} إلى السلة`
+                            : `Added ${selectedQty} to cart`,
+                        );
                         setSelectedQty(1);
+                        onClose();
                       }}
                       className="rounded-xl bg-cyan-600 px-4 py-2.5 text-base font-bold text-white transition hover:bg-cyan-500"
                     >

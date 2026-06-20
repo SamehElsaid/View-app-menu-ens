@@ -1,6 +1,7 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import "react-phone-number-input/style.css";
+import type { CSSProperties, ElementType } from "react";
 import {
   useCallback,
   useEffect,
@@ -17,7 +18,12 @@ import { useAppSelector } from "@/store/hooks";
 import { arabCurrencies, Currency } from "@/constants/currencies";
 import { axiosPost } from "@/shared/axiosCall";
 import { FiX, FiSearch, FiMapPin } from "react-icons/fi";
-import { IoCartOutline } from "react-icons/io5";
+import {
+  IoCartOutline,
+  IoBagOutline,
+  IoBasketOutline,
+  IoCafeOutline,
+} from "react-icons/io5";
 import { MdLocationOn, MdMyLocation } from "react-icons/md";
 import type { DeliveryGovernorate } from "@/types/menu";
 import LoadImage from "@/components/ImageLoad";
@@ -31,6 +37,9 @@ import {
 } from "@/lib/skyTemplateCart";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import arLabels from "react-phone-number-input/locale/ar";
+import enLabels from "react-phone-number-input/locale/en";
 
 /** When `menuCustomizations.primaryColor` is missing, match each template’s default accent. */
 const THEME_BG_MAIN_FALLBACK: Record<string, string> = {
@@ -46,6 +55,29 @@ const THEME_BG_MAIN_FALLBACK: Record<string, string> = {
   oceanic: "#0ea5e9",
   pharaonic: "#C9A227",
   onecard: "#9333EA",
+};
+
+type CartIconKey = "cart" | "bag" | "basket" | "cafe";
+const THEME_CART_CONFIG: Record<string, { shape: string; iconKey: CartIconKey }> = {
+  default:   { shape: "rounded-full", iconKey: "cart" },
+  sky:       { shape: "rounded-full", iconKey: "cart" },
+  neon:      { shape: "rounded-full", iconKey: "bag" },
+  coffee:    { shape: "rounded-2xl",  iconKey: "cafe" },
+  retro:     { shape: "rounded-2xl",  iconKey: "cafe" },
+  music:     { shape: "rounded-full", iconKey: "bag" },
+  arcane:    { shape: "rounded-lg",   iconKey: "basket" },
+  emerald:   { shape: "rounded-xl",   iconKey: "cart" },
+  noir:      { shape: "rounded-lg",   iconKey: "bag" },
+  oceanic:   { shape: "rounded-full", iconKey: "cart" },
+  pharaonic: { shape: "rounded-xl",   iconKey: "basket" },
+  onecard:   { shape: "rounded-full", iconKey: "cart" },
+};
+
+const CART_ICON_MAP: Record<CartIconKey, ElementType> = {
+  cart:   IoCartOutline,
+  bag:    IoBagOutline,
+  basket: IoBasketOutline,
+  cafe:   IoCafeOutline,
 };
 
 type StaffCallPayload = {
@@ -156,6 +188,7 @@ export default function RequestStaffButton() {
   const [cart, setCart] = useState<SkyCart>({});
   const [isConfirming, setIsConfirming] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const tableCartAllowed = useTableCartAllowed();
 
   const themeKey = (menuInfo?.theme ?? "default").toLowerCase();
@@ -164,6 +197,8 @@ export default function RequestStaffButton() {
     if (custom) return custom;
     return THEME_BG_MAIN_FALLBACK[themeKey] ?? THEME_BG_MAIN_FALLBACK.default;
   }, [menuCustomizations?.primaryColor, themeKey]);
+  const cartConfig = THEME_CART_CONFIG[themeKey] ?? THEME_CART_CONFIG.default;
+  const CartIcon = CART_ICON_MAP[cartConfig.iconKey];
 
   const delivery = useAppSelector((s) => s.menu.delivery);
   const [showGovSearch, setShowGovSearch] = useState(false);
@@ -196,6 +231,7 @@ export default function RequestStaffButton() {
       router.replace(path, { scroll: false });
       setShowGovSearch(false);
       setGovSearchText("");
+      setFieldErrors((p) => ({ ...p, govArea: "" }));
     },
     [pathname, router, searchParams],
   );
@@ -256,15 +292,17 @@ export default function RequestStaffButton() {
             namePlaceholder: "اكتب اسمك",
             phone: "رقم الهاتف",
             phonePlaceholder: "01xxxxxxxxx",
-            address: "عنوان التوصيل",
+            address: "تفاصيل العنوان",
             addressPlaceholder: "الشارع، المبنى، الدور، علامة مميزة…",
             notes: "ملاحظات",
-            notesPlaceholder: "ملاحظات إضافية (اختياري)",
+            notesPlaceholder: "ملاحظات إضافية",
             confirm: "تأكيد الطلب",
             success: "تم تأكيد الطلب بنجاح",
             enterName: "يرجى إدخال الاسم",
             enterPhone: "يرجى إدخال رقم الهاتف",
-            enterAddress: "يرجى إدخال عنوان التوصيل",
+            enterAddress: "يرجى إدخال تفاصيل العنوان",
+            enterNotes: "يرجى إدخال الملاحظات",
+            enterDeliveryArea: "يرجى اختيار منطقة التوصيل",
             invalidPhone: "رقم الهاتف غير صالح",
             orderFailed: "تعذر تأكيد الطلب، يرجى المحاولة مرة أخرى",
             noValidItems:
@@ -292,15 +330,17 @@ export default function RequestStaffButton() {
             namePlaceholder: "Enter your name",
             phone: "Phone number",
             phonePlaceholder: "01xxxxxxxxx",
-            address: "Delivery address",
+            address: "Address details",
             addressPlaceholder: "Street, building, floor, landmark…",
             notes: "Notes",
-            notesPlaceholder: "Additional notes (optional)",
+            notesPlaceholder: "Additional notes",
             confirm: "Confirm order",
             success: "Order confirmed successfully",
             enterName: "Please enter your name",
             enterPhone: "Please enter your phone number",
-            enterAddress: "Please enter your delivery address",
+            enterAddress: "Please enter address details",
+            enterNotes: "Please enter notes",
+            enterDeliveryArea: "Please select a delivery area",
             invalidPhone: "Invalid phone number",
             orderFailed: "Could not confirm order, please try again",
             noValidItems:
@@ -340,6 +380,14 @@ export default function RequestStaffButton() {
     const intervalId = setInterval(syncFromCookie, 1500);
     return () => clearInterval(intervalId);
   }, []);
+
+  useEffect(() => {
+    if (!hasMounted || !accentMain) return;
+    document.documentElement.style.setProperty("--bg-main", accentMain);
+    return () => {
+      document.documentElement.style.removeProperty("--bg-main");
+    };
+  }, [accentMain, hasMounted]);
 
   const cartItems = useMemo(
     () => Object.values(cart).filter((item) => item.quantity > 0),
@@ -428,7 +476,14 @@ export default function RequestStaffButton() {
   };
 
   const buildWhatsAppMessage = useCallback(
-    (name: string, items: typeof cartItemsForOrder, total: number): string => {
+    (
+      name: string,
+      phone: string,
+      address: string,
+      notes: string,
+      items: typeof cartItemsForOrder,
+      total: number,
+    ): string => {
       const currency = menuInfo?.currency ?? "";
       const govName = currentGovernorate
         ? isArabic
@@ -441,9 +496,13 @@ export default function RequestStaffButton() {
 
       if (isArabic) {
         lines.push("🛵 *طلب توصيل جديد*");
-        lines.push(`👤 العميل: ${name}`);
-        if (govName) lines.push(`📍 المنطقة: ${govName}`);
-        lines.push("");
+        lines.push("─────────────────");
+        lines.push(`👤 *الاسم:* ${name}`);
+        if (phone) lines.push(`📞 *التليفون:* ${phone}`);
+        if (govName) lines.push(`📍 *المنطقة:* ${govName}`);
+        if (address) lines.push(`🏠 *تفاصيل العنوان:* ${address}`);
+        if (notes) lines.push(`📝 *ملاحظات:* ${notes}`);
+        lines.push("─────────────────");
         lines.push("📋 *الطلبات:*");
         for (const item of items) {
           const sizePart = item.size
@@ -452,22 +511,27 @@ export default function RequestStaffButton() {
           const variantPart = item.variant
             ? ` + ${item.variant.labelAr || item.variant.labelEn}`
             : "";
+          const displayName = item.nameAr || item.name;
           lines.push(
-            `• ${item.name}${sizePart}${variantPart} × ${item.quantity} = ${(item.price * item.quantity).toFixed(2)} ${currency}`,
+            `• ${displayName}${sizePart}${variantPart} × ${item.quantity} = ${(item.price * item.quantity).toFixed(2)} ${currency}`,
           );
         }
-        lines.push("");
-        lines.push(`💵 الإجمالي: ${total.toFixed(2)} ${currency}`);
+        lines.push("─────────────────");
+        lines.push(`💵 *الإجمالي:* ${total.toFixed(2)} ${currency}`);
         if (govFee > 0)
-          lines.push(`🚚 رسوم التوصيل: ${govFee} ${currency}`);
+          lines.push(`🚚 *رسوم التوصيل:* ${govFee} ${currency}`);
         lines.push(
-          `💰 المجموع الكلي: ${(total + govFee).toFixed(2)} ${currency}`,
+          `💰 *المجموع الكلي:* ${(total + govFee).toFixed(2)} ${currency}`,
         );
       } else {
         lines.push("🛵 *New Delivery Order*");
-        lines.push(`👤 Customer: ${name}`);
-        if (govName) lines.push(`📍 Area: ${govName}`);
-        lines.push("");
+        lines.push("─────────────────");
+        lines.push(`👤 *Name:* ${name}`);
+        if (phone) lines.push(`📞 *Phone:* ${phone}`);
+        if (govName) lines.push(`📍 *Area:* ${govName}`);
+        if (address) lines.push(`🏠 *Address:* ${address}`);
+        if (notes) lines.push(`📝 *Notes:* ${notes}`);
+        lines.push("─────────────────");
         lines.push("📋 *Order items:*");
         for (const item of items) {
           const sizePart = item.size
@@ -476,16 +540,17 @@ export default function RequestStaffButton() {
           const variantPart = item.variant
             ? ` + ${item.variant.labelEn || item.variant.labelAr}`
             : "";
+          const displayName = item.nameEn || item.name;
           lines.push(
-            `• ${item.name}${sizePart}${variantPart} × ${item.quantity} = ${(item.price * item.quantity).toFixed(2)} ${currency}`,
+            `• ${displayName}${sizePart}${variantPart} × ${item.quantity} = ${(item.price * item.quantity).toFixed(2)} ${currency}`,
           );
         }
-        lines.push("");
-        lines.push(`💵 Subtotal: ${total.toFixed(2)} ${currency}`);
+        lines.push("─────────────────");
+        lines.push(`💵 *Subtotal:* ${total.toFixed(2)} ${currency}`);
         if (govFee > 0)
-          lines.push(`🚚 Delivery fee: ${govFee} ${currency}`);
+          lines.push(`🚚 *Delivery fee:* ${govFee} ${currency}`);
         lines.push(
-          `💰 Grand total: ${(total + govFee).toFixed(2)} ${currency}`,
+          `💰 *Grand total:* ${(total + govFee).toFixed(2)} ${currency}`,
         );
       }
 
@@ -495,12 +560,19 @@ export default function RequestStaffButton() {
   );
 
   const sendWhatsAppNotification = useCallback(
-    (name: string, items: typeof cartItemsForOrder, total: number) => {
+    (
+      name: string,
+      phone: string,
+      address: string,
+      notes: string,
+      items: typeof cartItemsForOrder,
+      total: number,
+    ) => {
       if (delivery?.deliveryWhatsAppOn === false) return;
-      const phone = delivery?.deliveryPhone ?? delivery?.phoneNumber ?? "";
-      if (!phone) return;
-      const cleanPhone = phone.replace(/[^0-9]/g, "");
-      const message = buildWhatsAppMessage(name, items, total);
+      const waPhone = delivery?.deliveryPhone ?? delivery?.phoneNumber ?? "";
+      if (!waPhone) return;
+      const cleanPhone = waPhone.replace(/[^0-9]/g, "");
+      const message = buildWhatsAppMessage(name, phone, address, notes, items, total);
       const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
       window.open(url, "_blank", "noopener,noreferrer");
     },
@@ -508,25 +580,32 @@ export default function RequestStaffButton() {
   );
 
   const confirmOrder = async () => {
+    const errors: Record<string, string> = {};
+
     if (!customerName.trim()) {
-      toast.warning(labels.enterName);
-      return;
-    }
-    if (isDeliveryOrder && !customerPhone.trim()) {
-      toast.warning(labels.enterPhone);
-      return;
-    }
-    if (isDeliveryOrder && !customerAddress.trim()) {
-      toast.warning(labels.enterAddress);
-      return;
+      errors.name = labels.enterName;
     }
     if (isDeliveryOrder) {
-      const digits = customerPhone.replace(/\D/g, "");
-      if (digits.length < 8 || digits.length > 15) {
-        toast.warning(labels.invalidPhone);
-        return;
+      if (!customerPhone.trim()) {
+        errors.phone = labels.enterPhone;
+      } else if (!isValidPhoneNumber(customerPhone)) {
+        errors.phone = labels.invalidPhone;
+      }
+      if (!currentGovernorate) {
+        errors.govArea = labels.enterDeliveryArea;
+      }
+      if (!customerAddress.trim()) {
+        errors.address = labels.enterAddress;
       }
     }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setFieldErrors({});
+
     if (!menuInfo?.id || (!tableNumber && !isDeliveryOrder)) {
       toast.warning(labels.orderFailed);
       return;
@@ -571,17 +650,6 @@ export default function RequestStaffButton() {
           false,
           true,
         ),
-        ...(isDeliveryOrder && delivery?.deliveryWhatsAppOn !== false
-          ? [
-              Promise.resolve(
-                sendWhatsAppNotification(
-                  customerName.trim(),
-                  cartItemsForOrder,
-                  totalPrice,
-                ),
-              ),
-            ]
-          : []),
       ]);
 
       if (!response.status) {
@@ -629,6 +697,18 @@ export default function RequestStaffButton() {
       writeSkyCartToCookie({});
       setCart({});
       notifySkyCartUpdated();
+
+      if (isDeliveryOrder) {
+        sendWhatsAppNotification(
+          customerName.trim(),
+          customerPhone.trim(),
+          customerAddress.trim(),
+          orderNotes.trim(),
+          cartItemsForOrder,
+          totalPrice,
+        );
+      }
+
       setCustomerName("");
       setCustomerPhone("");
       setCustomerAddress("");
@@ -648,8 +728,8 @@ export default function RequestStaffButton() {
   if (!hasMounted || !isOrderingEnabled) return null;
 
   const cartAnchorClass = isArabic
-    ? "bottom-6 left-5"
-    : "bottom-[calc(6.75rem+env(safe-area-inset-bottom,0px))] right-5 sm:bottom-28";
+    ? "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-3"
+    : "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] right-3";
 
   return createPortal(
     <div
@@ -660,10 +740,10 @@ export default function RequestStaffButton() {
         type="button"
         onClick={openDrawer}
         title={labels.openCart}
-        className="flex h-14 w-14 items-center justify-center rounded-full bg-(--bg-main) text-white shadow-lg transition hover:opacity-90"
+        className={`flex h-14 w-14 items-center justify-center ${cartConfig.shape} bg-(--bg-main) text-white shadow-lg transition hover:opacity-90`}
         aria-label={labels.cart}
       >
-        <IoCartOutline className="h-6 w-6" />
+        <CartIcon className="h-6 w-6" />
       </button>
       <span className="max-w-40 truncate rounded-full border border-(--bg-main)/20 bg-white/95 px-3 py-1 text-center text-base font-medium text-(--bg-main) shadow-base">
         {labels.cart}: {totalQuantity}
@@ -730,14 +810,14 @@ export default function RequestStaffButton() {
                               <div className="flex items-start gap-3">
                                 <LoadImage
                                   src={item.image}
-                                  alt={item.name}
+                                  alt={isArabic ? (item.nameAr || item.name) : (item.nameEn || item.name)}
                                   className="h-12 w-12 rounded-lg object-cover border border-(--bg-main)/15 bg-white"
                                   width={48}
                                   height={48}
                                 />
                                 <div>
                                   <p className="line-clamp-1 text-base font-semibold text-zinc-900">
-                                    {item.name}
+                                    {isArabic ? (item.nameAr || item.name) : (item.nameEn || item.name)}
                                   </p>
                                   {item.size || item.variant ? (
                                     <p className="mt-0.5 text-sm text-zinc-500">
@@ -825,11 +905,81 @@ export default function RequestStaffButton() {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-1 flex-col justify-between px-4 py-3">
-                  <div className="space-y-4">
+                <div className="flex flex-1 flex-col overflow-hidden">
+                  <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+                    {/* 1. اسم العميل */}
+                    <div>
+                      <label
+                        htmlFor="customer-name"
+                        className="mb-2 block text-base font-semibold text-(--bg-main)"
+                      >
+                        {labels.name} *
+                      </label>
+                      <input
+                        id="customer-name"
+                        type="text"
+                        value={customerName}
+                        onChange={(e) => {
+                          setCustomerName(e.target.value);
+                          if (fieldErrors.name) setFieldErrors((p) => ({ ...p, name: "" }));
+                        }}
+                        placeholder={labels.namePlaceholder}
+                        className={`w-full rounded-lg border px-3 py-2 text-base outline-none focus:ring-2 transition ${
+                          fieldErrors.name
+                            ? "border-rose-400 ring-rose-200 focus:ring-rose-300"
+                            : "border-(--bg-main)/30 ring-(--bg-main)/30 focus:ring-2"
+                        }`}
+                      />
+                      {fieldErrors.name && (
+                        <p className="mt-1.5 flex items-center gap-1 text-sm text-rose-500">
+                          <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-500 text-[10px] font-bold">!</span>
+                          {fieldErrors.name}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* 2. رقم الهاتف */}
                     {isDeliveryOrder && (
-                      <div className="overflow-hidden rounded-2xl border border-(--bg-main)/15 shadow-sm">
-                        {/* Header */}
+                      <div>
+                        <label
+                          htmlFor="customer-phone"
+                          className="mb-2 block text-base font-semibold text-(--bg-main)"
+                        >
+                          {labels.phone} *
+                        </label>
+                        <div
+                          className={`w-full rounded-lg border px-3 py-2 text-base transition focus-within:ring-2 ${
+                            fieldErrors.phone
+                              ? "border-rose-400 focus-within:ring-rose-200"
+                              : "border-(--bg-main)/30 focus-within:ring-(--bg-main)/25"
+                          }`}
+                        >
+                          <PhoneInput
+                            id="customer-phone"
+                            labels={isArabic ? arLabels : enLabels}
+                            defaultCountry="EG"
+                            value={customerPhone}
+                            onChange={(val) => {
+                              setCustomerPhone(val ?? "");
+                              if (fieldErrors.phone)
+                                setFieldErrors((p) => ({ ...p, phone: "" }));
+                            }}
+                            className="phone-input-cart"
+                          />
+                        </div>
+                        {fieldErrors.phone && (
+                          <p className="mt-1.5 flex items-center gap-1 text-sm text-rose-500">
+                            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-500 text-[10px] font-bold">!</span>
+                            {fieldErrors.phone}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* 3. منطقة التوصيل */}
+                    {isDeliveryOrder && (
+                      <div>
+                        <div className={`overflow-hidden rounded-2xl border shadow-sm ${fieldErrors.govArea ? "border-rose-400" : "border-(--bg-main)/15"}`}>
                         <div
                           className="flex items-center gap-2 px-3 py-2"
                           style={{
@@ -840,29 +990,25 @@ export default function RequestStaffButton() {
                           <span className="text-sm font-semibold text-(--bg-main)">
                             {labels.deliveryArea}
                           </span>
+                          <span className="text-rose-500 text-sm font-bold ms-0.5">*</span>
                         </div>
 
                         {!showGovSearch && currentGovernorate ? (
                           <div className="bg-white px-3 py-3 space-y-2.5">
-                            {/* Current zone */}
                             <div className="flex items-center justify-between gap-3">
                               <div className="min-w-0">
                                 <p className="truncate text-base font-bold text-zinc-900">
-                                  {currentGovernorate
-                                    ? isArabic
-                                      ? currentGovernorate.nameAr
-                                      : currentGovernorate.nameEn
-                                    : "—"}
+                                  {isArabic
+                                    ? currentGovernorate.nameAr
+                                    : currentGovernorate.nameEn}
                                 </p>
-                                {currentGovernorate && (
-                                  <p className="text-sm text-zinc-400">
-                                    🚚 {labels.deliveryFee}:{" "}
-                                    <span className="font-semibold text-zinc-600">
-                                      {currentGovernorate.price}{" "}
-                                      {menuInfo?.currency ?? ""}
-                                    </span>
-                                  </p>
-                                )}
+                                <p className="text-sm text-zinc-400">
+                                  🚚 {labels.deliveryFee}:{" "}
+                                  <span className="font-semibold text-zinc-600">
+                                    {currentGovernorate.price}{" "}
+                                    {menuInfo?.currency ?? ""}
+                                  </span>
+                                </p>
                               </div>
                               <button
                                 type="button"
@@ -874,10 +1020,8 @@ export default function RequestStaffButton() {
                               </button>
                             </div>
 
-                            {/* Divider */}
                             <div className="border-t border-zinc-100" />
 
-                            {/* Detect location */}
                             <button
                               type="button"
                               onClick={detectLocation}
@@ -899,7 +1043,6 @@ export default function RequestStaffButton() {
                           </div>
                         ) : (
                           <div className="bg-white">
-                            {/* Search bar */}
                             <div className="flex items-center gap-2 border-b border-zinc-100 px-3 py-2.5">
                               <FiSearch className="h-4 w-4 shrink-0 text-(--bg-main)/60" />
                               <input
@@ -924,7 +1067,6 @@ export default function RequestStaffButton() {
                               </button>
                             </div>
 
-                            {/* List */}
                             <ul className="max-h-48 overflow-y-auto">
                               {filteredGovernorates.length ? (
                                 filteredGovernorates.map((gov) => {
@@ -937,9 +1079,7 @@ export default function RequestStaffButton() {
                                           changeGovernorate(gov.id)
                                         }
                                         className={`flex w-full items-center justify-between gap-3 px-3 py-3 text-start transition hover:bg-(--bg-main)/6 ${
-                                          isSelected
-                                            ? "bg-(--bg-main)/8"
-                                            : ""
+                                          isSelected ? "bg-(--bg-main)/8" : ""
                                         }`}
                                       >
                                         <span className="flex items-center gap-2 min-w-0">
@@ -986,46 +1126,16 @@ export default function RequestStaffButton() {
                           </div>
                         )}
                       </div>
-                    )}
-
-                    <div>
-                      <label
-                        htmlFor="customer-name"
-                        className="mb-2 block text-base font-semibold text-(--bg-main)"
-                      >
-                        {labels.name}
-                      </label>
-                      <input
-                        id="customer-name"
-                        type="text"
-                        value={customerName}
-                        onChange={(e) => setCustomerName(e.target.value)}
-                        placeholder={labels.namePlaceholder}
-                        className="w-full rounded-lg border border-(--bg-main)/30 px-3 py-2 text-base outline-none ring-(--bg-main)/30 focus:ring-2"
-                      />
-                    </div>
-
-                    {isDeliveryOrder && (
-                      <div>
-                        <label
-                          htmlFor="customer-phone"
-                          className="mb-2 block text-base font-semibold text-(--bg-main)"
-                        >
-                          {labels.phone} *
-                        </label>
-                        <input
-                          id="customer-phone"
-                          type="tel"
-                          inputMode="tel"
-                          autoComplete="tel"
-                          value={customerPhone}
-                          onChange={(e) => setCustomerPhone(e.target.value)}
-                          placeholder={labels.phonePlaceholder}
-                          className="w-full rounded-lg border border-(--bg-main)/30 px-3 py-2 text-base outline-none ring-(--bg-main)/30 focus:ring-2"
-                        />
+                        {fieldErrors.govArea && (
+                          <p className="mt-1.5 flex items-center gap-1 text-sm text-rose-500">
+                            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-500 text-[10px] font-bold">!</span>
+                            {fieldErrors.govArea}
+                          </p>
+                        )}
                       </div>
                     )}
 
+                    {/* 4. تفاصيل العنوان */}
                     {isDeliveryOrder && (
                       <div>
                         <label
@@ -1037,14 +1147,28 @@ export default function RequestStaffButton() {
                         <textarea
                           id="customer-address"
                           value={customerAddress}
-                          onChange={(e) => setCustomerAddress(e.target.value)}
+                          onChange={(e) => {
+                            setCustomerAddress(e.target.value);
+                            if (fieldErrors.address) setFieldErrors((p) => ({ ...p, address: "" }));
+                          }}
                           placeholder={labels.addressPlaceholder}
                           rows={3}
-                          className="w-full resize-none rounded-lg border border-(--bg-main)/30 px-3 py-2 text-base outline-none ring-(--bg-main)/30 focus:ring-2"
+                          className={`w-full resize-none rounded-lg border px-3 py-2 text-base outline-none focus:ring-2 transition ${
+                            fieldErrors.address
+                              ? "border-rose-400 ring-rose-200 focus:ring-rose-300"
+                              : "border-(--bg-main)/30 ring-(--bg-main)/30 focus:ring-2"
+                          }`}
                         />
+                        {fieldErrors.address && (
+                          <p className="mt-1.5 flex items-center gap-1 text-sm text-rose-500">
+                            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-500 text-[10px] font-bold">!</span>
+                            {fieldErrors.address}
+                          </p>
+                        )}
                       </div>
                     )}
 
+                    {/* 5. ملاحظات */}
                     <div>
                       <label
                         htmlFor="order-notes"
@@ -1062,14 +1186,21 @@ export default function RequestStaffButton() {
                       />
                     </div>
                   </div>
-                  <div className="space-y-2 border-t border-(--bg-main)/15 pt-3">
+                  <div className="shrink-0 space-y-2 border-t border-(--bg-main)/15 px-4 pt-3 pb-3 bg-white">
                     <button
                       type="button"
                       onClick={confirmOrder}
                       disabled={isConfirming}
-                      className="w-full rounded-lg bg-(--bg-main) px-4 py-2.5 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-400"
+                      className="flex w-full items-center justify-center gap-2 rounded-lg bg-(--bg-main) px-4 py-2.5 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
                     >
-                      {isConfirming ? "..." : labels.confirm}
+                      {isConfirming ? (
+                        <>
+                          <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                          {labels.confirm}
+                        </>
+                      ) : (
+                        labels.confirm
+                      )}
                     </button>
                     <button
                       type="button"
