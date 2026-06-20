@@ -409,7 +409,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
             <div className="col-span-full text-center py-12">
               <p className="text-slate-600 dark:text-slate-400 text-base">
                 {locale === "ar"
-                  ? "لا توجد عناصر في هذه الفئة"
+                  ? "لا توجد منتاجاتفي هذه الفئة"
                   : "No items in this category"}
               </p>
             </div>

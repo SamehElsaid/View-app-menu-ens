@@ -48,7 +48,7 @@ export default function ProductMenuGrid({
   return (
     <section
       className="mt-10 border-t border-[#eeeeee] pt-8 sm:mt-14 sm:pt-10"
-      aria-label={isAr ? "عناصر القائمة" : "Menu items"}
+      aria-label={isAr ? "منتاجاتالقائمة" : "Menu items"}
     >
       <div
         className={`mb-6 flex items-end justify-between gap-4 sm:mb-8 ${isAr ? "flex-row-reverse" : ""}`}

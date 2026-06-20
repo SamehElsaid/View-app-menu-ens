@@ -106,7 +106,9 @@ export default function Menu({
         className="overflow-x-clip bg-white px-4 py-16 text-center sm:px-6 sm:py-24"
       >
         <p className="text-base text-arcane-muted sm:text-lg">
-          {locale === "ar" ? "لا توجد عناصر في القائمة." : "No menu items yet."}
+          {locale === "ar"
+            ? "لا توجد منتاجاتفي القائمة."
+            : "No menu items yet."}
         </p>
       </section>
     );

@@ -54,7 +54,6 @@ type StaffCallPayload = {
   tableNumber: string;
   customerName: string;
   customerPhone?: string;
-  customerAddress?: string;
   orderNotes?: string;
   governorateId?: number | null;
   items: Array<{
@@ -150,7 +149,6 @@ export default function RequestStaffButton() {
   const [step, setStep] = useState<1 | 2>(1);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
-  const [customerAddress, setCustomerAddress] = useState("");
   const [orderNotes, setOrderNotes] = useState("");
   /** Empty initial state avoids SSR/client mismatch (cookies only exist on client). */
   const [cart, setCart] = useState<SkyCart>({});
@@ -256,15 +254,12 @@ export default function RequestStaffButton() {
             namePlaceholder: "اكتب اسمك",
             phone: "رقم الهاتف",
             phonePlaceholder: "01xxxxxxxxx",
-            address: "عنوان التوصيل",
-            addressPlaceholder: "الشارع، المبنى، الدور، علامة مميزة…",
             notes: "ملاحظات",
             notesPlaceholder: "ملاحظات إضافية (اختياري)",
             confirm: "تأكيد الطلب",
             success: "تم تأكيد الطلب بنجاح",
             enterName: "يرجى إدخال الاسم",
             enterPhone: "يرجى إدخال رقم الهاتف",
-            enterAddress: "يرجى إدخال عنوان التوصيل",
             invalidPhone: "رقم الهاتف غير صالح",
             orderFailed: "تعذر تأكيد الطلب، يرجى المحاولة مرة أخرى",
             noValidItems:
@@ -292,15 +287,12 @@ export default function RequestStaffButton() {
             namePlaceholder: "Enter your name",
             phone: "Phone number",
             phonePlaceholder: "01xxxxxxxxx",
-            address: "Delivery address",
-            addressPlaceholder: "Street, building, floor, landmark…",
             notes: "Notes",
             notesPlaceholder: "Additional notes (optional)",
             confirm: "Confirm order",
             success: "Order confirmed successfully",
             enterName: "Please enter your name",
             enterPhone: "Please enter your phone number",
-            enterAddress: "Please enter your delivery address",
             invalidPhone: "Invalid phone number",
             orderFailed: "Could not confirm order, please try again",
             noValidItems:
@@ -516,10 +508,6 @@ export default function RequestStaffButton() {
       toast.warning(labels.enterPhone);
       return;
     }
-    if (isDeliveryOrder && !customerAddress.trim()) {
-      toast.warning(labels.enterAddress);
-      return;
-    }
     if (isDeliveryOrder) {
       const digits = customerPhone.replace(/\D/g, "");
       if (digits.length < 8 || digits.length > 15) {
@@ -547,7 +535,6 @@ export default function RequestStaffButton() {
         ...(isDeliveryOrder
           ? {
               customerPhone: customerPhone.trim(),
-              customerAddress: customerAddress.trim(),
             }
           : customerPhone.trim()
             ? { customerPhone: customerPhone.trim() }
@@ -612,10 +599,6 @@ export default function RequestStaffButton() {
               ? "منطقة التوصيل المختارة غير متاحة."
               : "The selected delivery zone is not available.",
           );
-        } else if (errBody?.error === "INVALID_ADDRESS") {
-          toast.error(
-            isArabic ? "يرجى إدخال عنوان التوصيل" : "Please enter a delivery address",
-          );
         } else if (errBody?.error === "INVALID_PHONE") {
           toast.error(
             isArabic ? "رقم الهاتف غير صالح" : "Invalid phone number",
@@ -631,7 +614,6 @@ export default function RequestStaffButton() {
       notifySkyCartUpdated();
       setCustomerName("");
       setCustomerPhone("");
-      setCustomerAddress("");
       setOrderNotes("");
       closeDrawer();
       toast.success(labels.success);
@@ -1022,25 +1004,6 @@ export default function RequestStaffButton() {
                           onChange={(e) => setCustomerPhone(e.target.value)}
                           placeholder={labels.phonePlaceholder}
                           className="w-full rounded-lg border border-(--bg-main)/30 px-3 py-2 text-base outline-none ring-(--bg-main)/30 focus:ring-2"
-                        />
-                      </div>
-                    )}
-
-                    {isDeliveryOrder && (
-                      <div>
-                        <label
-                          htmlFor="customer-address"
-                          className="mb-2 block text-base font-semibold text-(--bg-main)"
-                        >
-                          {labels.address} *
-                        </label>
-                        <textarea
-                          id="customer-address"
-                          value={customerAddress}
-                          onChange={(e) => setCustomerAddress(e.target.value)}
-                          placeholder={labels.addressPlaceholder}
-                          rows={3}
-                          className="w-full resize-none rounded-lg border border-(--bg-main)/30 px-3 py-2 text-base outline-none ring-(--bg-main)/30 focus:ring-2"
                         />
                       </div>
                     )}

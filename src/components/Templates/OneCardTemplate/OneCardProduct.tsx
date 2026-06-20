@@ -636,7 +636,7 @@ export default function OneCardProduct({
       <div className="mx-auto max-w-md px-4 py-12 text-center">
         <p className="text-sm font-medium text-zinc-500">
           {isAr
-            ? "لا توجد عناصر في هذا التصنيف."
+            ? "لا توجد منتاجاتفي هذا التصنيف."
             : "No items in this category."}
         </p>
       </div>
