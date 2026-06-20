@@ -345,11 +345,11 @@ function ProductDetailModal({
                 <div className="flex flex-wrap gap-2">
                   {sizes.map((s) => (
                     <button
-                      key={s.id}
+                      key={s.nameEn}
                       type="button"
                       onClick={() => setSelectedSize(s)}
                       className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
-                        selectedSize?.id === s.id
+                        selectedSize?.nameEn === s.nameEn
                           ? "border-brand-coral bg-brand-coral text-white"
                           : "border-brand-sky/30 bg-brand-sky/10 text-[color:var(--music-text)]"
                       }`}
@@ -370,15 +370,15 @@ function ProductDetailModal({
                 <div className="flex flex-wrap gap-2">
                   {variants.map((v) => (
                     <button
-                      key={v.id}
+                      key={v.labelEn}
                       type="button"
                       onClick={() =>
                         setSelectedVariant(
-                          selectedVariant?.id === v.id ? null : v,
+                          selectedVariant?.labelEn === v.labelEn ? null : v,
                         )
                       }
                       className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
-                        selectedVariant?.id === v.id
+                        selectedVariant?.labelEn === v.labelEn
                           ? "border-brand-coral bg-brand-coral text-white"
                           : "border-brand-sky/30 bg-brand-sky/10 text-[color:var(--music-text)]"
                       }`}
