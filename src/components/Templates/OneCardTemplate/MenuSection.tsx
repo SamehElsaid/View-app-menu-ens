@@ -104,9 +104,7 @@ export default function MenuSection({
       size: options?.size ?? null,
       variant: options?.variant ?? null,
     });
-    toast.success(
-      locale === "ar" ? "تمت الإضافة إلى السلة" : "Added to cart",
-    );
+    toast.success(locale === "ar" ? "تمت الإضافة إلى السلة" : "Added to cart");
   };
 
   if (!sortedCategories.length) {
@@ -152,7 +150,7 @@ export default function MenuSection({
           <div className="px-4 py-12 text-center">
             <p className="text-sm font-medium text-zinc-500">
               {locale === "ar"
-                ? "لا توجد عناصر في هذا التصنيف."
+                ? "لا توجد منتاجاتفي هذا التصنيف."
                 : "No items in this category."}
             </p>
           </div>

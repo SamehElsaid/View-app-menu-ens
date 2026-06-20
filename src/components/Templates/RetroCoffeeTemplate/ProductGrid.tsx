@@ -46,7 +46,9 @@ export default function ProductGrid({
     return (
       <div className="py-16 text-center">
         <p className="text-base" style={{ color: colors.textMuted }}>
-          {isAr ? "لا توجد عناصر في القائمة حالياً" : "No menu items available"}
+          {isAr
+            ? "لا توجد منتاجاتفي القائمة حالياً"
+            : "No menu items available"}
         </p>
       </div>
     );
@@ -78,7 +80,7 @@ export default function ProductGrid({
       {filteredItems.length === 0 ? (
         <div className="py-12 text-center">
           <p className="text-base" style={{ color: colors.textMuted }}>
-            {isAr ? "لا توجد عناصر في هذا القسم" : "No items in this category"}
+            {isAr ? "لا توجد منتاجاتفي هذا القسم" : "No items in this category"}
           </p>
         </div>
       ) : (
