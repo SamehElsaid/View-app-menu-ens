@@ -101,7 +101,7 @@ function ShowcaseCarousel({
     setActiveItemForce,
     setActiveCategoryId,
     isTableOrder,
-    cartById,
+    cart,
     addToCart,
   } = useMusic();
   const [featuredQty, setFeaturedQty] = useState(1);
@@ -109,7 +109,7 @@ function ShowcaseCarousel({
   const active = products[index];
   const activeMenuItem = menuItems.find((item) => item.id === active?.id);
   const inCartQty = activeMenuItem
-    ? (cartById[activeMenuItem.id]?.quantity ?? 0)
+    ? (cart[activeMenuItem.id]?.quantity ?? 0)
     : 0;
   const activeMood = active.mood;
   const orbsRef = useRef<FloatOrb[]>(buildOrbs(8));
