@@ -31,6 +31,7 @@ export interface MenuInfo {
   locale: string;
   currency: string;
   isActive: boolean;
+  chatbotEnabled: boolean;
   ownerPlanType: string;
   phone: string | null;
   addressAr: string | null;

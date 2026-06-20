@@ -15,7 +15,7 @@ export default function OrderChatbotGate() {
   const canOrderViaChat = useAiChatCanOrder();
   const hasTable = useAiChatHasTable();
 
-  if (!menuInfo?.id) {
+  if (!menuInfo?.id || menuInfo.chatbotEnabled === false) {
     return null;
   }
 
