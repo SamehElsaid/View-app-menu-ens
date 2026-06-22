@@ -41,7 +41,7 @@ function OneCardTemplateContent() {
         <NavBar />
         <HeaderLogo />
 
-        <div className="overflow-hidden rounded-[6rem] bg-white px-2 pb-5 pt-16 shadow-[0_24px_70px_-28px_rgba(0,0,0,0.55)] sm:px-3 sm:pt-20">
+        <div className="overflow-hidden rounded-[5rem] bg-white px-2 pb-5 pt-16 shadow-[0_24px_70px_-28px_rgba(0,0,0,0.55)] sm:px-3 sm:pt-20">
           {/* <AdVBanner compact /> */}
           <Suspense fallback={null}>
             <MenuSection

@@ -6,7 +6,13 @@ import { DEV_SUB_DOMAIN_COOKIE_KEY } from "@/lib/devSubDomainCookie";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import { resolveMenuSlug } from "@/lib/menuSlug";
 import { serverGet } from "@/shared/serverApi";
-import { MenuItem, MenuInfo, MenuCustomizations, Category, Delivery } from "@/types/menu";
+import {
+  MenuItem,
+  MenuInfo,
+  MenuCustomizations,
+  Category,
+  Delivery,
+} from "@/types/menu";
 import { Ad } from "@/types/Ad";
 import { cookies, headers } from "next/headers";
 import { Metadata } from "next";
@@ -29,11 +35,7 @@ type MenuCacheEntry = {
 const MENU_BOOTSTRAP_CACHE_TTL_MS = 15_000;
 const menuRequests = new Map<string, MenuCacheEntry>();
 
-async function fetchMenu(
-  slug: string,
-  locale: string,
-  forwardQuery: string,
-) {
+async function fetchMenu(slug: string, locale: string, forwardQuery: string) {
   const menuApiPath = forwardQuery
     ? `/public/menu/${slug}?${forwardQuery}`
     : `/public/menu/${slug}`;
@@ -46,34 +48,34 @@ async function fetchMenu(
 const getMenuBySlug = cache(
   (slug: string, locale: string, forwardQuery: string) => {
     const cacheKey = `${locale}:${slug}:${forwardQuery}`;
-  const cached = menuRequests.get(cacheKey);
-  const now = Date.now();
+    const cached = menuRequests.get(cacheKey);
+    const now = Date.now();
 
-  if (cached && cached.expiresAt > now) {
-    return cached.promise;
-  }
+    if (cached && cached.expiresAt > now) {
+      return cached.promise;
+    }
 
     const promise = fetchMenu(slug, locale, forwardQuery)
-    .then((data) => {
-      if (!data) {
-        menuRequests.delete(cacheKey);
-      } else {
-        const current = menuRequests.get(cacheKey);
-        if (current?.promise === promise) {
-          current.expiresAt = Date.now() + MENU_BOOTSTRAP_CACHE_TTL_MS;
+      .then((data) => {
+        if (!data) {
+          menuRequests.delete(cacheKey);
+        } else {
+          const current = menuRequests.get(cacheKey);
+          if (current?.promise === promise) {
+            current.expiresAt = Date.now() + MENU_BOOTSTRAP_CACHE_TTL_MS;
+          }
         }
-      }
-      return data;
-    })
-    .catch(() => {
-      menuRequests.delete(cacheKey);
-      return null;
-    });
+        return data;
+      })
+      .catch(() => {
+        menuRequests.delete(cacheKey);
+        return null;
+      });
 
-  menuRequests.set(cacheKey, {
-    expiresAt: Number.POSITIVE_INFINITY,
-    promise,
-  });
+    menuRequests.set(cacheKey, {
+      expiresAt: Number.POSITIVE_INFINITY,
+      promise,
+    });
 
     return promise;
   },
@@ -97,7 +99,7 @@ const getMenu = async (locale: string) => {
 const defaultMetadata: Record<string, { title: string; description: string }> =
   {
     en: {
-      title:  "ENSmenu",
+      title: "ENSmenu",
       description:
         "ENSmenu is a platform for creating digital menus for restaurants and cafes",
     },
@@ -179,8 +181,6 @@ export default async function MainLayout({
   const cookieSubdomain = cookieStore.get(DEV_SUB_DOMAIN_COOKIE_KEY)?.value;
   const { needsDevSubdomain, devMode } = resolveMenuSlug(host, cookieSubdomain);
   const data = await getMenu(locale);
-
-  console.log(data);
 
   return (
     <>
