@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
-import Default from "@/components/Templates/Default";
 import SkyTemplate from "@/components/Templates/SkyTemplate";
 import NeonTemplate from "@/components/Templates/NeonTemplate";
 import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
@@ -87,7 +86,8 @@ export default function Page() {
           <Suspense fallback={null}>
             <StripInvalidTableParam />
           </Suspense>
-          {menu.theme === "default" && <Default />}
+          {/* {menu.theme === "default" && <Default />} */}
+          {menu.theme === "default" && <OneCardTemplate />}
           {menu.theme === "sky" && <SkyTemplate />}
           {menu.theme === "neon" && <NeonTemplate />}
           {menu.theme === "coffee" && <CoffeeTemplate />}
@@ -98,7 +98,6 @@ export default function Page() {
           {menu.theme === "arcane" && <ArcaneTemplate />}
           {menu.theme === "music" && <MusicTemplate />}
           {menu.theme === "retro" && <RetroCoffeeTemplate />}
-          {menu.theme === "onecard" && <OneCardTemplate />}
           {tableCartAllowed ? (
             <Suspense fallback={null}>
               <RequestStaffButton />
