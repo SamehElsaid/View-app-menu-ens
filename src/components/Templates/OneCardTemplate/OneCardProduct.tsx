@@ -10,13 +10,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
-import {
-  FiChevronLeft,
-  FiChevronRight,
-  FiMinus,
-  FiPlus,
-  FiX,
-} from "react-icons/fi";
+import { FiMinus, FiPlus, FiX } from "react-icons/fi";
 import { IoCartOutline } from "react-icons/io5";
 import LoadImage from "@/components/ImageLoad";
 import type {
@@ -24,7 +18,6 @@ import type {
   MenuItemSizeOption,
   MenuItemVariantOption,
 } from "@/types/menu";
-import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import {
   computeMenuItemUnitPrice,
   getMenuItemMinPrice,
@@ -53,22 +46,6 @@ export type OneCardProductCardProps = {
     options?: OneCardCartOptions,
   ) => void;
   className?: string;
-};
-
-export type OneCardProductProps = {
-  item: MenuItem | null;
-  currencyLabel: string;
-  isTableOrder: boolean;
-  cartQuantity: number;
-  slideIndex: number;
-  total: number;
-  onPrev: () => void;
-  onNext: () => void;
-  onAddToCart: (
-    item: MenuItem,
-    quantity: number,
-    options?: OneCardCartOptions,
-  ) => void;
 };
 
 function pickName(item: MenuItem, locale: string) {
@@ -249,6 +226,10 @@ export function OneCardProductCard({
 
   const name = pickName(item, locale);
   const description = pickDescription(item, locale);
+  const productImageSrc = item.image?.trim() ?? "";
+  const productImageClassName = productImageSrc
+    ? "object-cover"
+    : "object-cover  !pt-0";
   const displayMinPrice = getMenuItemMinPrice(item);
   const selectedUnitPrice = computeMenuItemUnitPrice(
     item,
@@ -340,10 +321,10 @@ export function OneCardProductCard({
 
         <div className="relative aspect-4/3 w-full shrink-0 bg-zinc-100">
           <LoadImage
-            src={resolveMenuItemImageSrc(item.image)}
+            src={productImageSrc}
             alt={name}
             fill
-            className="object-cover"
+            className={productImageClassName}
             disableLazy
           />
           {!item.available ? (
@@ -517,7 +498,7 @@ export function OneCardProductCard({
     <>
       <article className={`relative w-full px-1 pt-1 sm:px-2 ${className}`}>
         <div
-          className="mx-auto w-[88%] rounded-tr-4xl rounded-tl-4xl px-3 py-2.5 text-center text-xs font-bold text-white shadow-[0_10px_24px_-12px_rgba(0,0,0,0.5)] sm:px-5 sm:py-3 sm:text-sm"
+          className="rounded-tr-4xl rounded-tl-4xl px-3 py-2.5 text-center text-xs font-bold text-white shadow-[0_10px_24px_-12px_rgba(0,0,0,0.5)] sm:px-5 sm:py-3 sm:text-sm"
           style={{ backgroundColor: primary }}
         >
           {name}
@@ -526,14 +507,14 @@ export function OneCardProductCard({
         <button
           type="button"
           onClick={openDetails}
-          className="relative block w-full overflow-hidden rounded-4xl bg-zinc-100 text-start shadow-[0_18px_44px_-20px_rgba(0,0,0,0.35)] focus:outline-none"
+          className="relative block w-full overflow-hidden  bg-zinc-100 text-start shadow-[0_18px_44px_-20px_rgba(0,0,0,0.35)] focus:outline-none"
         >
           <div className="relative aspect-4/5 w-full">
             <LoadImage
-              src={resolveMenuItemImageSrc(item.image)}
+              src={productImageSrc}
               alt={name}
               fill
-              className="object-cover"
+              className={productImageClassName}
               disableLazy
             />
 
@@ -572,7 +553,7 @@ export function OneCardProductCard({
           ) : null}
         </button>
 
-        <div className="mt-3 flex flex-col gap-2 sm:mt-4 sm:gap-3">
+        <div className="mt-1 flex flex-col gap-2 sm:gap-3">
           <div
             className={
               isTableOrder && item.available
@@ -613,84 +594,5 @@ export function OneCardProductCard({
         typeof document !== "undefined" &&
         createPortal(modal, document.body)}
     </>
-  );
-}
-
-export default function OneCardProduct({
-  item,
-  currencyLabel,
-  isTableOrder,
-  cartQuantity,
-  slideIndex,
-  total,
-  onPrev,
-  onNext,
-  onAddToCart,
-}: OneCardProductProps) {
-  const locale = useLocale();
-  const isAr = locale === "ar";
-  const { primary } = useOneCardTheme();
-
-  if (!item) {
-    return (
-      <div className="mx-auto max-w-md px-4 py-12 text-center">
-        <p className="text-sm font-medium text-zinc-500">
-          {isAr
-            ? "لا توجد منتاجاتفي هذا التصنيف."
-            : "No items in this category."}
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="relative mx-auto w-full max-w-md px-3 sm:px-4">
-      {total > 1 ? (
-        <>
-          <button
-            type="button"
-            onClick={onPrev}
-            className="absolute start-1 top-[42%] z-30 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-zinc-700 shadow-lg transition active:scale-95"
-            style={{ color: primary }}
-            aria-label={isAr ? "السابق" : "Previous"}
-          >
-            <FiChevronLeft className={isAr ? "rotate-180" : ""} />
-          </button>
-          <button
-            type="button"
-            onClick={onNext}
-            className="absolute end-1 top-[42%] z-30 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-zinc-700 shadow-lg transition active:scale-95"
-            style={{ color: primary }}
-            aria-label={isAr ? "التالي" : "Next"}
-          >
-            <FiChevronRight className={isAr ? "rotate-180" : ""} />
-          </button>
-        </>
-      ) : null}
-
-      <OneCardProductCard
-        item={item}
-        currencyLabel={currencyLabel}
-        isTableOrder={isTableOrder}
-        cartQuantity={cartQuantity}
-        onAddToCart={onAddToCart}
-      />
-
-      {total > 1 ? (
-        <div className="mt-4 flex justify-center gap-1.5">
-          {Array.from({ length: total }).map((_, i) => (
-            <span
-              key={i}
-              className="h-1.5 rounded-full transition-all"
-              style={{
-                width: i === slideIndex ? "1.25rem" : "0.375rem",
-                backgroundColor: i === slideIndex ? primary : `${primary}44`,
-              }}
-              aria-hidden
-            />
-          ))}
-        </div>
-      ) : null}
-    </div>
   );
 }
