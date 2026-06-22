@@ -507,7 +507,7 @@ export function OneCardProductCard({
         <button
           type="button"
           onClick={openDetails}
-          className="relative block w-full overflow-hidden  bg-zinc-100 text-start shadow-[0_18px_44px_-20px_rgba(0,0,0,0.35)] focus:outline-none"
+          className="relative block w-full max-h-[300px] overflow-hidden  bg-zinc-100 text-start shadow-[0_18px_44px_-20px_rgba(0,0,0,0.35)] focus:outline-none"
         >
           <div className="relative aspect-4/5 w-full">
             <LoadImage
