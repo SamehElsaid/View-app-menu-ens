@@ -41,37 +41,11 @@ import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import arLabels from "react-phone-number-input/locale/ar";
 import enLabels from "react-phone-number-input/locale/en";
 
-/** When `menuCustomizations.primaryColor` is missing, match each template’s default accent. */
-const THEME_BG_MAIN_FALLBACK: Record<string, string> = {
-  default: "hsl(271, 81%, 56%)",
-  sky: "#2196F3",
-  neon: "#14b8a6",
-  coffee: "#F2B705",
-  retro: "#C67115",
-  music: "#4338CA",
-  arcane: "#D1282A",
-  emerald: "#4c1121",
-  noir: "#7c3aed",
-  oceanic: "#0ea5e9",
-  pharaonic: "#C9A227",
-  onecard: "#9333EA",
-};
+const DEFAULT_ACCENT = "hsl(271, 81%, 56%)";
+const DEFAULT_CART_SHAPE = "rounded-full";
+const DEFAULT_CART_ICON: CartIconKey = "cart";
 
 type CartIconKey = "cart" | "bag" | "basket" | "cafe";
-const THEME_CART_CONFIG: Record<string, { shape: string; iconKey: CartIconKey }> = {
-  default:   { shape: "rounded-full", iconKey: "cart" },
-  sky:       { shape: "rounded-full", iconKey: "cart" },
-  neon:      { shape: "rounded-full", iconKey: "bag" },
-  coffee:    { shape: "rounded-2xl",  iconKey: "cafe" },
-  retro:     { shape: "rounded-2xl",  iconKey: "cafe" },
-  music:     { shape: "rounded-full", iconKey: "bag" },
-  arcane:    { shape: "rounded-lg",   iconKey: "basket" },
-  emerald:   { shape: "rounded-xl",   iconKey: "cart" },
-  noir:      { shape: "rounded-lg",   iconKey: "bag" },
-  oceanic:   { shape: "rounded-full", iconKey: "cart" },
-  pharaonic: { shape: "rounded-xl",   iconKey: "basket" },
-  onecard:   { shape: "rounded-full", iconKey: "cart" },
-};
 
 const CART_ICON_MAP: Record<CartIconKey, ElementType> = {
   cart:   IoCartOutline,
@@ -191,14 +165,12 @@ export default function RequestStaffButton() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const tableCartAllowed = useTableCartAllowed();
 
-  const themeKey = (menuInfo?.theme ?? "default").toLowerCase();
   const accentMain = useMemo(() => {
     const custom = menuCustomizations?.primaryColor?.trim();
     if (custom) return custom;
-    return THEME_BG_MAIN_FALLBACK[themeKey] ?? THEME_BG_MAIN_FALLBACK.default;
-  }, [menuCustomizations?.primaryColor, themeKey]);
-  const cartConfig = THEME_CART_CONFIG[themeKey] ?? THEME_CART_CONFIG.default;
-  const CartIcon = CART_ICON_MAP[cartConfig.iconKey];
+    return DEFAULT_ACCENT;
+  }, [menuCustomizations?.primaryColor]);
+  const CartIcon = CART_ICON_MAP[DEFAULT_CART_ICON];
 
   const delivery = useAppSelector((s) => s.menu.delivery);
   const [showGovSearch, setShowGovSearch] = useState(false);
@@ -740,7 +712,7 @@ export default function RequestStaffButton() {
         type="button"
         onClick={openDrawer}
         title={labels.openCart}
-        className={`flex h-14 w-14 items-center justify-center ${cartConfig.shape} bg-(--bg-main) text-white shadow-lg transition hover:opacity-90`}
+        className={`flex h-14 w-14 items-center justify-center ${DEFAULT_CART_SHAPE} bg-(--bg-main) text-white shadow-lg transition hover:opacity-90`}
         aria-label={labels.cart}
       >
         <CartIcon className="h-6 w-6" />

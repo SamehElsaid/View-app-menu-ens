@@ -136,24 +136,7 @@ export default function DeliveryLocationModal() {
     }
   }, [confirmGovernorate, foundGovernorate]);
 
-  const accentColor = useMemo(() => {
-    const theme = (menuInfo?.theme ?? "default").toLowerCase();
-    const fallbacks: Record<string, string> = {
-      default: "hsl(271, 81%, 56%)",
-      sky: "#2196F3",
-      neon: "#14b8a6",
-      coffee: "#F2B705",
-      retro: "#C67115",
-      music: "#4338CA",
-      arcane: "#D1282A",
-      emerald: "#4c1121",
-      noir: "#7c3aed",
-      oceanic: "#0ea5e9",
-      pharaonic: "#C9A227",
-      onecard: "#9333EA",
-    };
-    return fallbacks[theme] ?? fallbacks.default;
-  }, [menuInfo?.theme]);
+  const accentColor = "hsl(271, 81%, 56%)";
 
   const labels = useMemo(
     () =>

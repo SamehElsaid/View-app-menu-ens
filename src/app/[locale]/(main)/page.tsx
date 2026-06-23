@@ -3,27 +3,16 @@
 import { Suspense, useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
 import Default from "@/components/Templates/Default";
-import SkyTemplate from "@/components/Templates/SkyTemplate";
-import NeonTemplate from "@/components/Templates/NeonTemplate";
-import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
-import EmeraldTemplate from "@/components/Templates/EmeraldTemplate";
-import NoirTemplate from "@/components/Templates/NoirTemplate";
-import OceanicTemplate from "@/components/Templates/OceanicTemplate";
-import PharaonicTemplate from "@/components/Templates/PharaonicTemplate";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
 import DeliveryLocationModal from "@/components/Global/DeliveryLocationModal";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
-import MusicTemplate from "@/components/Templates/MusicTemplate";
-import ArcaneTemplate from "@/components/Templates/Arcane";
 import MaintenanceView from "@/components/Global/MaintenanceView";
 import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
-import RetroCoffeeTemplate from "@/components/Templates/RetroCoffeeTemplate";
-import OneCardTemplate from "@/components/Templates/OneCardTemplate";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
@@ -87,18 +76,7 @@ export default function Page() {
           <Suspense fallback={null}>
             <StripInvalidTableParam />
           </Suspense>
-          {menu.theme === "default" && <Default />}
-          {menu.theme === "sky" && <SkyTemplate />}
-          {menu.theme === "neon" && <NeonTemplate />}
-          {menu.theme === "coffee" && <CoffeeTemplate />}
-          {menu.theme === "emerald" && <EmeraldTemplate />}
-          {menu.theme === "noir" && <NoirTemplate />}
-          {menu.theme === "oceanic" && <OceanicTemplate />}
-          {menu.theme === "pharaonic" && <PharaonicTemplate />}
-          {menu.theme === "arcane" && <ArcaneTemplate />}
-          {menu.theme === "music" && <MusicTemplate />}
-          {menu.theme === "retro" && <RetroCoffeeTemplate />}
-          {menu.theme === "onecard" && <OneCardTemplate />}
+          <Default />
           {tableCartAllowed ? (
             <Suspense fallback={null}>
               <RequestStaffButton />

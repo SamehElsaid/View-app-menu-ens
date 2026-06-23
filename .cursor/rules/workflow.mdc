@@ -1,0 +1,15 @@
+---
+
+description: Required workflow
+alwaysApply: true
+-----------------
+
+Before making any code changes:
+
+1. Read all Cursor rules.
+2. Search existing implementations.
+3. Check for reusable hooks/components/services.
+4. Avoid duplication.
+5. Keep themes UI-only.
+6. Keep business logic global.
+7. Explain architecture decisions before coding.

@@ -1,0 +1,65 @@
+---
+
+description: Project architecture rules
+globs: ["src/**/*"]
+alwaysApply: true
+-----------------
+
+# Theme Architecture Rules
+
+This project is a theme engine.
+
+Themes are presentation layers only.
+
+Business logic must be global.
+
+## Themes Can Contain
+
+* Layouts
+* Styling
+* Animations
+* Visual components
+* Theme-specific UI
+
+## Themes Cannot Contain
+
+* API calls
+* Business logic
+* Data transformation
+* Validation
+* State management
+* Shared utilities
+* Shared hooks
+
+## Feature Development
+
+Any feature added to one theme should be implemented globally first.
+
+All themes must be able to consume the same feature.
+
+Never duplicate logic across themes.
+
+## Reuse Policy
+
+Before creating:
+
+* Component
+* Hook
+* Service
+* Utility
+
+Search the project first.
+
+Prefer:
+
+1. Reuse
+2. Extend
+3. Refactor
+
+Never copy-paste code.
+
+## Golden Rule
+
+One Logic.
+Many Themes.
+Zero Duplication.

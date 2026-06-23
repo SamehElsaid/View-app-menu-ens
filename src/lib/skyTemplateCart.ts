@@ -192,7 +192,7 @@ export function writeSkyCartToCookie(cart: SkyCart): void {
   )}; expires=${expiresDate.toUTCString()}; path=/; SameSite=Lax`;
 }
 
-/** Add or remove quantity for one line; notifies listeners (e.g. RequestStaffButton, SkyTemplate). */
+/** Add or remove quantity for one line; notifies listeners (e.g. RequestStaffButton, Default template). */
 export function upsertSkyCartQuantityFromMenuItem(
   item: MenuItem,
   quantityToAdd: number,
