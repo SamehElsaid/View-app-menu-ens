@@ -106,7 +106,7 @@ function WaffleProductCardInner({
         className="relative cursor-pointer overflow-hidden rounded-[22px] bg-white shadow-[0_14px_40px_-12px_rgba(0,0,0,0.45)]"
       >
         <div className="flex min-h-[196px]">
-          <div className="relative w-[44%] shrink-0 overflow-hidden bg-white">
+          <div className="relative w-[44%] shrink-0 overflow-hidden bg-[#eeebf4]">
             <div className="relative h-full min-h-[196px] w-full overflow-hidden">
               <LoadImage
                 src={imageSrc}
@@ -114,6 +114,9 @@ function WaffleProductCardInner({
                 fill
                 width={480}
                 className="object-cover"
+                style={{
+                  borderRadius: "10% 23% 37% 10% / 10% 100% 32% 10% ",
+                }}
               />
 
               {!item.available ? (

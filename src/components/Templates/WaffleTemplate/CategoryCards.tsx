@@ -73,7 +73,7 @@ const CategoryCard = memo(function CategoryCard({
           : { boxShadow: "0 6px 20px -8px rgba(0,0,0,0.35)" }
       }
     >
-      <div className="flex min-h-[96px] flex-1 items-center justify-center px-1">
+      <div className="flex min-h-24 flex-1 items-center justify-center px-1">
         {showFallback ? (
           <span
             className="flex h-[88px] w-full items-center justify-center"
@@ -82,14 +82,14 @@ const CategoryCard = memo(function CategoryCard({
             <FallbackIcon size={38} aria-hidden />
           </span>
         ) : (
-          <div className="relative h-[88px] w-full drop-shadow-[0_10px_14px_rgba(0,0,0,0.18)]">
+          <div className="relative h-full w-full drop-shadow-[0_10px_14px_rgba(0,0,0,0.18)] ">
             <LoadImage
               src={imageSrc!}
               alt={label}
               fill
               width={220}
               height={220}
-              className="object-contain"
+              className="object-cover rounded-full"
               onError={() => setImgError(true)}
             />
           </div>

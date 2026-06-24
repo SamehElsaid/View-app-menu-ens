@@ -7,15 +7,24 @@ import { useSearchParams } from "next/navigation";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
 import DeliveryLocationModal from "@/components/Global/DeliveryLocationModal";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
+import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import MaintenanceView from "@/components/Global/MaintenanceView";
 import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
 import Default from "@/components/Templates/Default";
-import OneCard from "@/components/Templates/OneCardTemplate";
-import Vanilla from "@/components/Templates/VanillaTemplate";
-import Waffle from "@/components/Templates/WaffleTemplate";
+import SkyTemplate from "@/components/Templates/SkyTemplate";
+import NeonTemplate from "@/components/Templates/NeonTemplate";
+import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
+import EmeraldTemplate from "@/components/Templates/EmeraldTemplate";
+import NoirTemplate from "@/components/Templates/NoirTemplate";
+import OceanicTemplate from "@/components/Templates/OceanicTemplate";
+import PharaonicTemplate from "@/components/Templates/PharaonicTemplate";
+import ArcaneTemplate from "@/components/Templates/Arcane";
+import MusicTemplate from "@/components/Templates/MusicTemplate";
+import RetroCoffeeTemplate from "@/components/Templates/RetroCoffeeTemplate";
+import OneCardTemplate from "@/components/Templates/OneCardTemplate";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -23,6 +32,7 @@ export default function Page() {
   const menu = useAppSelector((state) => state.menu);
   const locale = useLocale();
   const searchParams = useSearchParams();
+  const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
 
   const showTemplates =
@@ -77,12 +87,24 @@ export default function Page() {
           <Suspense fallback={null}>
             <StripInvalidTableParam />
           </Suspense>
-          {/* {menu.theme === "default" && <Default />} */}
-          {menu.theme === "neon" && <OneCard />}
+          {menu.theme === "default" && <Default />}
+          {menu.theme === "sky" && <SkyTemplate />}
+          {menu.theme === "neon" && <NeonTemplate />}
+          {menu.theme === "coffee" && <CoffeeTemplate />}
+          {menu.theme === "emerald" && <EmeraldTemplate />}
+          {menu.theme === "noir" && <NoirTemplate />}
+          {menu.theme === "oceanic" && <OceanicTemplate />}
+          {menu.theme === "pharaonic" && <PharaonicTemplate />}
+          {menu.theme === "arcane" && <ArcaneTemplate />}
+          {menu.theme === "music" && <MusicTemplate />}
+          {menu.theme === "retro" && <RetroCoffeeTemplate />}
+          {menu.theme === "onecard" && <OneCardTemplate />}
 
-          <Suspense fallback={null}>
-            <RequestStaffButton />
-          </Suspense>
+          {tableCartAllowed || delivery?.deliveryOn ? (
+            <Suspense fallback={null}>
+              <RequestStaffButton />
+            </Suspense>
+          ) : null}
           {delivery?.deliveryOn && !searchParams.get("table")?.trim() ? (
             <Suspense fallback={null}>
               <DeliveryLocationModal />
