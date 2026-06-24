@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import {
   Category,
@@ -61,11 +61,11 @@ function CategoryFilterChip({
       aria-pressed={isActive}
       onClick={onClick}
       className={[
-        "group relative inline-flex min-h-[3.5rem] min-w-[9rem] max-w-[min(88vw,15rem)] items-center justify-between gap-3 overflow-hidden rounded-full border ps-4 pe-1.5 py-1.5 transition-all duration-300 sm:min-w-[10rem] sm:ps-5",
+        "group relative inline-flex min-h-[3.5rem] min-w-[9rem] max-w-[min(88vw,15rem)] items-center justify-between gap-3 overflow-hidden rounded-full border ps-4 pe-1.5 py-1.5 transition-all duration-200 sm:min-w-[10rem] sm:ps-5",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-(--bg-main)/45 focus-visible:ring-offset-2",
         isActive
-          ? "border-transparent bg-linear-to-r from-(--bg-main) to-(--bg-main)/85 text-white shadow-[0_12px_28px_-14px] shadow-(--bg-main)/70"
-          : "border-(--bg-main)/10 bg-white/95 text-zinc-800 shadow-[0_8px_24px_-20px] shadow-(--bg-main)/40 hover:-translate-y-0.5 hover:border-(--bg-main)/25 hover:shadow-[0_16px_30px_-18px] hover:shadow-(--bg-main)/35 active:translate-y-0",
+          ? "border-transparent bg-linear-to-r from-(--bg-main) to-(--bg-main)/85 text-white shadow-[0_2px_8px_0_rgb(0_0_0/0.12)]"
+          : "border-(--bg-main)/15 bg-white text-zinc-800 shadow-[0_1px_4px_0_rgb(0_0_0/0.07)] hover:-translate-y-0.5 hover:border-(--bg-main)/30 active:translate-y-0",
       ].join(" ")}
     >
       {isActive ? (
@@ -85,7 +85,7 @@ function CategoryFilterChip({
 
       {image?.trim() ? (
         <span
-          className={`relative z-10 h-11 w-11 shrink-0 overflow-hidden rounded-full shadow-md ring-2 ${
+          className={`relative z-10 h-11 w-11 shrink-0 overflow-hidden rounded-full ring-2 ${
             isActive
               ? "ring-white/95"
               : "ring-white group-hover:ring-(--bg-main)/20"
@@ -95,12 +95,14 @@ function CategoryFilterChip({
             src={image}
             alt={label}
             fill
+            height={44}
+            width={44}
             className="object-cover transition-transform duration-500 group-hover:scale-110"
           />
         </span>
       ) : fallbackIcon ? (
         <span
-          className={`relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full shadow-md ring-2 ${
+          className={`relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full ring-2 ${
             isActive
               ? "bg-white/18 ring-white/95 text-white"
               : "bg-(--bg-main)/10 ring-white text-(--bg-main) group-hover:bg-(--bg-main)/15"
@@ -129,15 +131,15 @@ function CategorySectionHeader({
       : `${itemCount} ${itemCount === 1 ? "item" : "items"}`;
 
   return (
-    <div className="relative mb-10 overflow-hidden rounded-[1.75rem] border border-(--bg-main)/10 bg-white shadow-[0_18px_40px_-28px] shadow-(--bg-main)/35">
+    <div className="relative mb-10 overflow-hidden rounded-[1.75rem] border border-(--bg-main)/10 bg-white shadow-sm">
       {category.image?.trim() ? (
         <>
           <div className="absolute inset-0">
             <LoadImage
-              src={category.image}
+              src={category.image ?? ""}
               alt=""
               fill
-              className="object-cover opacity-[0.14] blur-md scale-110"
+              className="object-cover opacity-[0.12] scale-110"
             />
           </div>
           <div className="absolute inset-0 bg-linear-to-r from-white via-white/95 to-white/80" />
@@ -148,9 +150,9 @@ function CategorySectionHeader({
 
       <div className="relative flex items-center gap-4 p-4 sm:gap-5 sm:p-5">
         {category.image?.trim() ? (
-          <span className="relative h-[4.5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-2xl shadow-lg ring-4 ring-white sm:h-20 sm:w-20">
+          <span className="relative h-[4.5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-2xl ring-2 ring-white sm:h-20 sm:w-20">
             <LoadImage
-              src={category.image}
+              src={category.image ?? ""}
               alt={label}
               fill
               className="object-cover"
@@ -216,7 +218,7 @@ export default function MenuSection({ currency }: { currency: string }) {
 
     update();
     window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
+    window.addEventListener("resize", update, { passive: true });
     return () => {
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
@@ -253,7 +255,7 @@ export default function MenuSection({ currency }: { currency: string }) {
     return categories.find((category) => category.id === activeCategory) ?? null;
   }, [activeCategory, categories]);
 
-  const renderMenuCard = (item: MenuItem, index: number) => (
+  const renderMenuCard = useCallback((item: MenuItem, index: number) => (
     <MenuCardDefault
       key={item.id}
       item={item}
@@ -269,7 +271,8 @@ export default function MenuSection({ currency }: { currency: string }) {
         handleAddToCart(item, quantity, { size, variant })
       }
     />
-  );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [currency, openItemId, openModal, closeModal, isTableOrder, cart, handleAddToCart]);
 
   return (
     <div

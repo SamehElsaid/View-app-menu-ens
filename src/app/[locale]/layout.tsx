@@ -12,6 +12,7 @@ import "swiper/css/navigation";
 import "swiper/css/free-mode";
 import "react-lazy-load-image-component/src/effects/blur.css";
 import { Metadata } from "next/types";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "ENSmenu",
@@ -57,9 +58,25 @@ export default async function RootLayout({
           crossOrigin="anonymous"
         />
         <link rel="stylesheet" href={MENU_GOOGLE_FONTS_URL} />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css"
+        />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body suppressHydrationWarning>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-T1K1MCCZ0Y"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-T1K1MCCZ0Y');
+          `}
+        </Script>
         <ProgressBar />
         <ToastContainer
           position={locale === "ar" ? "top-left" : "top-right"}

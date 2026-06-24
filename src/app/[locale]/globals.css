@@ -3241,7 +3241,7 @@ html {
 }
 
 .one-card-border-radius {
-  border-radius: 8% 20% 58% 25% / 15% 20% 61% 25%;
+  border-radius: 30px;
 }
 
 .parent-border-radius {
@@ -3280,6 +3280,30 @@ html {
   width: 16px;
   height: 16px;
   color: #ffffff;
+}
+
+.vanilla-lang-pill button {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+.vanilla-lang-pill button span {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+.vanilla-lang-pill button svg {
+  width: 16px;
+  height: 16px;
 }
 
 .waffle-lang-pill button {

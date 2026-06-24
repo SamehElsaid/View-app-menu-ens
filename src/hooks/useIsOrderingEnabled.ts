@@ -10,9 +10,10 @@ export const DELIVERY_ZONE_PARAM = "deliveryZone";
 /**
  * Returns whether ordering (add-to-cart + cart button) is currently active.
  * Ordering is enabled in two modes:
- *  - Table mode:    URL has `?table=<number>` and the plan is paid (Pro).
+ *  - Table mode:    URL has `?table=<number>` and the plan is paid.
  *  - Delivery mode: URL has `?deliveryZone=<id>` (set after location confirmed)
- *                   and delivery is turned on — available on Free and Pro.
+ *                   and delivery is turned on in the menu config.
+ *                   Delivery is available on all plan types.
  */
 export function useIsOrderingEnabled(): {
   isOrderingEnabled: boolean;

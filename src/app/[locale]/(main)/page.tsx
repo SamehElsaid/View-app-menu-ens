@@ -20,11 +20,9 @@ import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
 import EmeraldTemplate from "@/components/Templates/EmeraldTemplate";
 import NoirTemplate from "@/components/Templates/NoirTemplate";
 import OceanicTemplate from "@/components/Templates/OceanicTemplate";
-import PharaonicTemplate from "@/components/Templates/PharaonicTemplate";
-import ArcaneTemplate from "@/components/Templates/Arcane";
-import MusicTemplate from "@/components/Templates/MusicTemplate";
-import RetroCoffeeTemplate from "@/components/Templates/RetroCoffeeTemplate";
 import OneCardTemplate from "@/components/Templates/OneCardTemplate";
+import WaffleTemplate from "@/components/Templates/WaffleTemplate";
+import VanillaTemplate from "@/components/Templates/VanillaTemplate";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -94,11 +92,10 @@ export default function Page() {
           {menu.theme === "emerald" && <EmeraldTemplate />}
           {menu.theme === "noir" && <NoirTemplate />}
           {menu.theme === "oceanic" && <OceanicTemplate />}
-          {menu.theme === "pharaonic" && <PharaonicTemplate />}
-          {menu.theme === "arcane" && <ArcaneTemplate />}
-          {menu.theme === "music" && <MusicTemplate />}
-          {menu.theme === "retro" && <RetroCoffeeTemplate />}
+
           {menu.theme === "onecard" && <OneCardTemplate />}
+          {menu.theme === "waffle" && <WaffleTemplate />}
+          {menu.theme === "vanilla" && <VanillaTemplate />}
 
           {tableCartAllowed || delivery?.deliveryOn ? (
             <Suspense fallback={null}>
