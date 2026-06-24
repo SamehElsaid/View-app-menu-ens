@@ -36,6 +36,7 @@ import {
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
+import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import arLabels from "react-phone-number-input/locale/ar";
 import enLabels from "react-phone-number-input/locale/en";
@@ -143,6 +144,7 @@ export default function RequestStaffButton() {
   const storeMenu = useAppSelector((s) => s.menu.menu);
   const isMenuActive = menuInfo?.isActive !== false;
   const isArabic = locale === "ar";
+  const tableCartAllowed = useTableCartAllowed();
   const { isOrderingEnabled, isDeliveryOrder, tableNumber, governorateId } =
     useIsOrderingEnabled();
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
