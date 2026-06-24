@@ -152,7 +152,7 @@ function OneCardProductCardInner({
         className={`h-full w-full ${className}`.trim()}
         placeholder={
           <div
-            className="h-80 overflow-hidden rounded-[1.75rem] bg-zinc-100/80"
+            className="h-88 overflow-hidden rounded-[1.75rem] bg-zinc-100/80"
             aria-hidden
           />
         }
@@ -169,7 +169,7 @@ function OneCardProductCardInner({
               backgroundSize: "14px 14px",
             }}
           />
-          <div className="relative z-10 h-80 overflow-hidden rounded-[1.75rem]">
+          <div className="relative z-10 h-88 overflow-hidden rounded-[1.75rem]">
             <div
               className="pointer-events-none absolute start-2 top-2 z-10 h-20 w-24 opacity-35 sm:start-3 sm:top-3 sm:h-24 sm:w-28"
               aria-hidden
@@ -214,7 +214,7 @@ function OneCardProductCardInner({
                   ) : null}
 
                   <h3
-                    className="text-base font-black leading-snug sm:text-lg md:text-xl lg:text-2xl"
+                    className="line-clamp-3 text-base font-black leading-snug sm:text-lg md:text-xl lg:text-2xl"
                     style={{ color: primary }}
                   >
                     {name}
@@ -233,33 +233,33 @@ function OneCardProductCardInner({
                   ) : null}
                 </div>
 
-                <div className="mt-4 flex items-center justify-center gap-2.5 sm:mt-5 sm:gap-3">
-                  <div
-                    className="shrink-0 rounded-full bg-white px-4 py-2.5 text-xs font-black tabular-nums shadow-md sm:px-5 sm:py-3 sm:text-sm md:text-base"
+                <div className="mt-3 flex flex-col items-center gap-2 sm:mt-4 sm:gap-2.5">
+                  <span
+                    className="text-xs font-black tabular-nums sm:text-sm md:text-base"
                     style={{ color: primary }}
                   >
                     {cardPriceLabel} {currencyLabel}
-                  </div>
+                  </span>
 
                   <button
                     type="button"
                     onClick={handleCardAction}
                     disabled={!item.available && isTableOrder}
-                    className="inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-full px-4 text-xs font-bold text-white shadow-md transition active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-11 sm:px-5 sm:text-sm md:min-h-12 md:px-6 md:text-base"
+                    className="inline-flex w-full min-h-9 items-center justify-center gap-1.5 rounded-full px-3 text-xs font-bold text-white shadow-md transition active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-10 sm:px-4 sm:text-sm"
                     style={{ backgroundColor: primary }}
                   >
                     {isAr ? (
                       <>
                         {orderButtonLabel}
                         <IoBagHandleOutline
-                          className="h-4 w-4 shrink-0 sm:h-4.5 sm:w-4.5"
+                          className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4"
                           aria-hidden
                         />
                       </>
                     ) : (
                       <>
                         <IoBagHandleOutline
-                          className="h-4 w-4 shrink-0 sm:h-4.5 sm:w-4.5"
+                          className="h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4"
                           aria-hidden
                         />
                         {orderButtonLabel}
@@ -284,6 +284,7 @@ function OneCardProductCardInner({
           onClose={() => setOpen(false)}
           onAddToCart={onAddToCart}
         />
+
       ) : null}
     </>
   );
