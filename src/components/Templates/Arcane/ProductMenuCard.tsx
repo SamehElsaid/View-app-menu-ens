@@ -67,10 +67,12 @@ export default function ProductMenuCard({
       >
         <div className="relative aspect-square overflow-hidden bg-[#fafafa]">
           <LoadImage
-            src={item.image}
+            src={item.image ?? ""}
             alt={name}
             fill
             disableLazy
+            height={600}
+            width={600}
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
           {hasDiscount && discountPercent ? (
