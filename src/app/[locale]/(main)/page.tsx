@@ -100,7 +100,7 @@ export default function Page() {
           {menu.theme === "retro" && <RetroCoffeeTemplate />}
           {menu.theme === "onecard" && <OneCardTemplate />}
 
-          {tableCartAllowed ? (
+          {(tableCartAllowed || delivery?.deliveryOn) ? (
             <Suspense fallback={null}>
               <RequestStaffButton />
             </Suspense>

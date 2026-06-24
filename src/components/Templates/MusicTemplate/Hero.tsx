@@ -259,7 +259,7 @@ function ShowcaseCarousel({
             <div className="music-showcase-hero__disc-ring" aria-hidden />
             <div className="music-showcase-hero__disc relative aspect-square overflow-hidden rounded-full">
               <LoadImage
-                src={active.image}
+                src={active.image ?? ""}
                 alt={active.name}
                 fill
                 className="object-cover"

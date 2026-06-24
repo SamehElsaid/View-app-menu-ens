@@ -136,7 +136,7 @@ function CategorySectionHeader({
         <>
           <div className="absolute inset-0">
             <LoadImage
-              src={category.image}
+              src={category.image ?? ""}
               alt=""
               fill
               className="object-cover opacity-[0.14] blur-md scale-110"
@@ -152,7 +152,7 @@ function CategorySectionHeader({
         {category.image?.trim() ? (
           <span className="relative h-[4.5rem] w-[4.5rem] shrink-0 overflow-hidden rounded-2xl shadow-lg ring-4 ring-white sm:h-20 sm:w-20">
             <LoadImage
-              src={category.image}
+              src={category.image ?? ""}
               alt={label}
               fill
               className="object-cover"

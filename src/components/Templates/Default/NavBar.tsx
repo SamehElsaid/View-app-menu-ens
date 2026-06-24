@@ -151,7 +151,7 @@ function NavBar({
                   {category.image?.trim() ? (
                     <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border border-(--bg-main)/15">
                       <LoadImage
-                        src={category.image}
+                        src={category.image ?? ""}
                         alt={
                           locale === "ar"
                             ? category.nameAr || category.name || ""

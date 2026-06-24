@@ -77,7 +77,7 @@ function SkyTemplate() {
         quantity: nextQuantity,
         name: item.name,
         price: item.price,
-        image: item.image,
+        image: item.image ?? "",
       };
 
       return nextCart;

@@ -174,7 +174,7 @@ export default function SkyDetailModal({
 
         <div className="relative h-40 shrink-0 overflow-hidden sm:h-44">
           <LoadImage
-            src={item.image}
+            src={item.image ?? ""}
             alt={itemName}
             fill
             disableLazy

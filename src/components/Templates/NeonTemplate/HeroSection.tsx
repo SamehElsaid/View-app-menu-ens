@@ -96,7 +96,7 @@ function NeonMenuItemCard({
     >
       <div className="relative h-48 overflow-hidden leading-none">
         <LoadImage
-          src={item.image}
+          src={item.image ?? ""}
           alt={itemName}
           fill
           disableLazy={true}
@@ -440,7 +440,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   <span className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full md:h-8 md:w-8">
                     {category.image ? (
                       <LoadImage
-                        src={category.image}
+                        src={category.image ?? ""}
                         alt={category.name}
                         fill
                         className="object-cover"

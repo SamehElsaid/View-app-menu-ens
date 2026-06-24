@@ -174,7 +174,7 @@ export default function NeonDetailModal({
 
         <div className="relative h-72 shrink-0 overflow-hidden leading-none sm:h-80">
           <LoadImage
-            src={item.image}
+            src={item.image ?? ""}
             alt={itemName}
             fill
             disableLazy

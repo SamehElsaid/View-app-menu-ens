@@ -88,7 +88,7 @@ export default function MenuCard({
           {/* Sky Blue Smoke */}
 
           <LoadImage
-            src={item.image}
+            src={item.image ?? ""}
             alt={itemName}
             className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 group-hover:rotate-1"
             disableLazy={true}

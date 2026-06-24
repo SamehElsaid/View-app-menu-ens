@@ -292,7 +292,7 @@ function ProductDetailModal({
             >
               <ModalProductImage
                 key={item.id}
-                image={item.image}
+                image={item.image ?? ""}
                 alt={activeName}
                 mood={productMood}
               />
@@ -494,7 +494,7 @@ function ProductMenuCard({
       >
         <div className="relative aspect-4/3 overflow-hidden bg-brand-sky/8">
           <LoadImage
-            src={item.image}
+            src={item.image ?? ""}
             alt={name}
             fill
             disableLazy
