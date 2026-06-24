@@ -78,7 +78,7 @@ export default function Page() {
             <StripInvalidTableParam />
           </Suspense>
           {/* {menu.theme === "default" && <Default />} */}
-          {menu.theme === "neon" && <OneCard />}
+          <OneCard />
 
           {tableCartAllowed ? (
             <Suspense fallback={null}>
