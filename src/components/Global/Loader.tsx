@@ -1,20 +1,76 @@
-import { FaSpinner } from "react-icons/fa";
+import { buildResizeUrl } from "../ImageLoad";
 
-function Loader() {
+const DEFAULT_PRIMARY = "#605dff";
+const DEFAULT_SECONDARY = "#3584fc";
+
+interface LoaderProps {
+  logo?: string | null;
+  name?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+}
+
+function Loader({
+  logo,
+  name,
+  primaryColor,
+  secondaryColor,
+}: LoaderProps = {}) {
+  const displayName = name?.trim() ?? "";
+  const initial = displayName.charAt(0).toUpperCase();
+  const primary = primaryColor?.trim() || DEFAULT_PRIMARY;
+  const secondary = secondaryColor?.trim() || DEFAULT_SECONDARY;
+
+  const bgGradient = `linear-gradient(135deg, ${primary}55 0%, #ffffff 50%, ${secondary}33 100%)`;
+
   return (
-    <div className="flex-col gap-4 w-full flex items-center justify-center">
-      <div className="w-20 h-20 border-4 text-primary text-4xl animate-spin border-gray-300 flex items-center justify-center border-t-primary rounded-full">
-        {/* <svg
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          height="24px"
-          width="24px"
-          className="animate-ping"
-        >
-          <path d="M12.001 4.8c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624C13.666 10.618 15.027 12 18.001 12c3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C16.337 6.182 14.976 4.8 12.001 4.8zm-6 7.2c-3.2 0-5.2 1.6-6 4.8 1.2-1.6 2.6-2.2 4.2-1.8.913.228 1.565.89 2.288 1.624 1.177 1.194 2.538 2.576 5.512 2.576 3.2 0 5.2-1.6 6-4.8-1.2 1.6-2.6 2.2-4.2 1.8-.913-.228-1.565-.89-2.288-1.624C10.337 13.382 8.976 12 6.001 12z"></path>
-        </svg> */}
-        <FaSpinner className="animate-spin" size={40} />
+    <div
+      className="flex flex-col gap-4 w-full h-full items-center justify-center py-12"
+      style={{ background: bgGradient }}
+    >
+      <div className="relative w-24 h-24">
+        {/* track ring */}
+        <div
+          className="absolute inset-0 rounded-full border-4"
+          style={{ borderColor: `${primary}22` }}
+        />
+        {/* outer spinning arc */}
+        <div
+          className="absolute inset-0 rounded-full border-4 border-transparent animate-spin"
+          style={{ borderTopColor: primary }}
+        />
+        {/* inner counter-spinning arc */}
+        <div
+          className="absolute inset-0 rounded-full border-4 border-transparent animate-spin"
+          style={{
+            borderBottomColor: secondary,
+            animationDuration: "0.7s",
+            animationDirection: "reverse",
+          }}
+        />
+
+        {/* avatar inside the rings */}
+        <div className="absolute inset-2 rounded-full overflow-hidden shadow-md">
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={buildResizeUrl(logo, 200, 200) || ""}
+              alt={displayName || "logo"}
+              className="w-full h-full object-cover"
+            />
+          ) : displayName ? (
+            <div
+              className="flex w-full h-full items-center justify-center text-white text-2xl font-black"
+              style={{ background: `linear-gradient(135deg, ${primary}, ${secondary})` }}
+            >
+              {initial}
+            </div>
+          ) : (
+            <div className="w-full h-full" style={{ backgroundColor: `${primary}11` }} />
+          )}
+        </div>
       </div>
+
     </div>
   );
 }

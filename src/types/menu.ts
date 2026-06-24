@@ -86,7 +86,7 @@ export interface MenuItem {
   descriptionAr: string | null;
   descriptionEn: string | null;
   price: number;
-  image: string;
+  image: string | null;
   category: string;
   categoryId: number;
   categoryName: string;
@@ -112,7 +112,8 @@ export interface Category {
   image?: string | null;
   sortOrder?: number;
   isActive?: boolean;
-  menuItems: MenuItem[];
+  itemsCount?: number;
+  menuItems?: MenuItem[];
 }
 
 export interface DeliveryGovernorate {

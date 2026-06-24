@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
-import Default from "@/components/Templates/Default";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
@@ -14,6 +13,8 @@ import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
+import Default from "@/components/Templates/Default";
+import OneCard from "@/components/Templates/OneCardTemplate";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -76,7 +77,9 @@ export default function Page() {
           <Suspense fallback={null}>
             <StripInvalidTableParam />
           </Suspense>
-          <Default />
+          {/* {menu.theme === "default" && <Default />} */}
+          <OneCard />
+
           {tableCartAllowed ? (
             <Suspense fallback={null}>
               <RequestStaffButton />

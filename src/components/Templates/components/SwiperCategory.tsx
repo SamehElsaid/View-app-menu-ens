@@ -75,12 +75,13 @@ function SwiperCategory({
 
   useEffect(() => {
     if (!emblaApi) return;
-    updateScrollState();
+    const frame = requestAnimationFrame(() => updateScrollState());
     emblaApi.on("reInit", updateScrollState);
     emblaApi.on("select", updateScrollState);
     emblaApi.on("resize", updateScrollState);
     emblaApi.on("scroll", updateScrollState);
     return () => {
+      cancelAnimationFrame(frame);
       emblaApi.off("reInit", updateScrollState);
       emblaApi.off("select", updateScrollState);
       emblaApi.off("resize", updateScrollState);

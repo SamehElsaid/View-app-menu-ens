@@ -114,20 +114,11 @@ export const MenuCardDefault = ({
     };
   }, [isOpen]);
 
-  useEffect(() => {
+  const handleCardClick = () => {
+    trackItem(item.id);
     setSelectedSize(sizes[0] ?? null);
     setSelectedVariant(null);
     setSelectedQuantity(1);
-  }, [item.id, sizes]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setIsClosing(false);
-    }
-  }, [isOpen]);
-
-  const handleCardClick = () => {
-    trackItem(item.id);
     onOpenModal(item.id);
     setIsClosing(false);
     onClick();
