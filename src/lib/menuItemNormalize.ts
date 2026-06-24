@@ -37,6 +37,18 @@ export function normalizeCategories(cats: Category[]): Category[] {
   }));
 }
 
+/**
+ * Merges incoming items into the existing set by id.
+ *
+ * Incoming items (e.g. from catalog pagination) may be "shallow" — they
+ * intentionally omit enriched fields like `sizes`, `variants`, `allergens`,
+ * and `ingredients` that the bootstrap already loaded. A blind overwrite would
+ * silently lose that data and cause the detail modal to render without options.
+ *
+ * Strategy: incoming wins for every field it explicitly carries, but enriched
+ * fields that are absent (`undefined`) on the incoming item are preserved from
+ * the previously loaded richer version.
+ */
 export function mergeMenuItemsById(
   existing: MenuItem[],
   incoming: MenuItem[],
@@ -45,7 +57,19 @@ export function mergeMenuItemsById(
 
   const byId = new Map(existing.map((item) => [item.id, item]));
   for (const item of incoming) {
-    byId.set(item.id, item);
+    const prev = byId.get(item.id);
+    if (prev) {
+      byId.set(item.id, {
+        ...prev,
+        ...item,
+        sizes: item.sizes !== undefined ? item.sizes : prev.sizes,
+        variants: item.variants !== undefined ? item.variants : prev.variants,
+        allergens: item.allergens !== undefined ? item.allergens : prev.allergens,
+        ingredients: item.ingredients !== undefined ? item.ingredients : prev.ingredients,
+      });
+    } else {
+      byId.set(item.id, item);
+    }
   }
   return [...byId.values()];
 }

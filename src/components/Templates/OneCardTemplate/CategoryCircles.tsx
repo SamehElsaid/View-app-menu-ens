@@ -3,8 +3,44 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import {
+  GiHamburger,
+  GiPizzaSlice,
+  GiCupcake,
+  GiNoodles,
+  GiFrenchFries,
+  GiCoffeeCup,
+  GiSandwich,
+  GiChickenLeg,
+  GiCookie,
+  GiDonut,
+  GiIceCreamCone,
+  GiBowlOfRice,
+} from "react-icons/gi";
+import { MdRestaurantMenu } from "react-icons/md";
+import type { IconType } from "react-icons";
 import type { Category } from "@/types/menu";
 import LoadImage from "@/components/ImageLoad";
+
+const FALLBACK_ICONS: IconType[] = [
+  GiHamburger,
+  GiPizzaSlice,
+  GiCupcake,
+  GiNoodles,
+  GiFrenchFries,
+  GiCoffeeCup,
+  GiSandwich,
+  GiChickenLeg,
+  GiCookie,
+  GiDonut,
+  GiIceCreamCone,
+  GiBowlOfRice,
+];
+
+function getFallbackIcon(id: number): IconType {
+  if (id === 0) return MdRestaurantMenu;
+  return FALLBACK_ICONS[Math.abs(id) % FALLBACK_ICONS.length];
+}
 
 type CategoryCirclesProps = {
   categories: Category[];
@@ -38,6 +74,7 @@ const CategoryButton = memo(function CategoryButton({
 }: CategoryButtonProps) {
   const [imgError, setImgError] = useState(false);
   const showFallback = !imageSrc?.trim() || imgError;
+  const FallbackIcon = getFallbackIcon(id);
 
   return (
     <button
@@ -52,8 +89,8 @@ const CategoryButton = memo(function CategoryButton({
         }`}
       >
         {showFallback ? (
-          <span className="flex h-full w-full items-center justify-center bg-[#f3f0f8] text-2xl font-bold text-(--onecard-primary,#6b0fd6)">
-            {label.charAt(0)}
+          <span className="flex h-full w-full items-center justify-center bg-[#f3f0f8] text-(--onecard-primary,#6b0fd6)">
+            <FallbackIcon size={28} aria-hidden />
           </span>
         ) : (
           <LoadImage
@@ -63,6 +100,7 @@ const CategoryButton = memo(function CategoryButton({
             width={200}
             fill={true}
             className="h-full w-full object-cover"
+            onError={() => setImgError(true)}
           />
         )}
       </span>

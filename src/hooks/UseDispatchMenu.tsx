@@ -91,8 +91,13 @@ export default function UseDispatchMenu({
   return (
     <>
       {loading && (
-        <div className="fixed top-0 left-0 right-0 bottom-0 bg-white z-111111 flex items-center justify-center">
-          <Loader />
+        <div className="fixed inset-0 bg-white z-111111 flex items-center justify-center">
+          <Loader
+            logo={menuInfo?.logo}
+            name={menuInfo?.restaurantName ?? menuInfo?.name}
+            primaryColor={menuCustomizations?.primaryColor}
+            secondaryColor={menuCustomizations?.secondaryColor}
+          />
         </div>
       )}
     </>

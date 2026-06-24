@@ -136,7 +136,8 @@ export default function DeliveryLocationModal() {
     }
   }, [confirmGovernorate, foundGovernorate]);
 
-  const accentColor = "hsl(271, 81%, 56%)";
+  const customizations = useAppSelector((s) => s.menu.menuCustomizations);
+  const accentColor = customizations?.primaryColor?.trim() || "#7000B5";
 
   const labels = useMemo(
     () =>

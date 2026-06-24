@@ -8,7 +8,7 @@ import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 
 type ImageFallbackStage = "primary" | "logo" | "failed";
 
-function buildResizeUrl(src: string, width?: number, height?: number): string {
+export function buildResizeUrl(src: string, width?: number, height?: number): string {
   if (!src.startsWith("http://") && !src.startsWith("https://")) {
     return src;
   }
