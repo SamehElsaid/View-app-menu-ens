@@ -172,7 +172,7 @@ const MenuCardDefaultInner = ({
     <>
       <div
         onClick={handleCardClick}
-        className="relative bg-white rounded-[2.5rem] shadow-xl shadow-(--bg-main)/5 border border-(--bg-main)/10 flex flex-col items-center text-center group transition-shadow hover:shadow-(--bg-main)/15 overflow-hidden cursor-pointer"
+        className="relative bg-white rounded-[2.5rem] shadow-sm border border-(--bg-main)/10 flex flex-col items-center text-center group overflow-hidden cursor-pointer"
       >
         <div className="relative w-full h-52 mb-6 flex items-center justify-center z-10">
           <div className="w-full h-full overflow-hidden relative z-20 bg-white">
@@ -237,7 +237,7 @@ const MenuCardDefaultInner = ({
                 e.stopPropagation();
                 handleCardClick();
               }}
-              className="bg-(--bg-main) hover:bg-(--bg-main)/80 transition-all duration-300 text-white w-9 h-9 rounded-full flex items-center justify-center font-black text-base shadow-lg shrink-0"
+              className="bg-(--bg-main) hover:bg-(--bg-main)/80 transition-colors text-white w-9 h-9 rounded-full flex items-center justify-center font-black text-base shrink-0"
               aria-label={locale === "ar" ? "التفاصيل" : "Details"}
             >
               <ArrowIcon className="text-lg sm:text-xl" />
@@ -274,7 +274,7 @@ const MenuCardDefaultInner = ({
                 <button
                   type="button"
                   onClick={handleCardAddClick}
-                  className="rounded-2xl bg-(--bg-main) px-4 py-2 text-base font-black text-white shadow-md transition hover:opacity-90"
+                  className="rounded-2xl bg-(--bg-main) px-4 py-2 text-base font-black text-white transition hover:opacity-90"
                 >
                   {locale === "ar" ? "أضف للسلة" : "Add to cart"}
                 </button>
@@ -306,14 +306,14 @@ const MenuCardDefaultInner = ({
 
           <div
             dir={direction}
-            className={`relative flex w-full max-w-2xl max-h-[92dvh] flex-col overflow-hidden rounded-[2.5rem] border border-(--bg-main)/20 bg-white shadow-2xl transition-all duration-300 ${
+            className={`relative flex w-full max-w-2xl max-h-[92dvh] flex-col overflow-hidden rounded-[2.5rem] border border-(--bg-main)/20 bg-white shadow-md transition-all duration-300 ${
               isClosing ? "animate-modal-out" : "animate-modal-in"
             }`}
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={handleClose}
-              className={`absolute top-6 z-30 w-12 h-12 rounded-full bg-(--bg-main)/90 flex items-center justify-center text-white hover:bg-(--bg-main) transition-all duration-300 shadow-lg ${
+              className={`absolute top-6 z-30 w-12 h-12 rounded-full bg-(--bg-main)/90 flex items-center justify-center text-white hover:bg-(--bg-main) transition-colors ${
                 direction === "rtl" ? "left-6" : "right-6"
               }`}
             >
@@ -331,7 +331,7 @@ const MenuCardDefaultInner = ({
 
               {itemCategoryName ? (
                 <div
-                  className={`absolute top-6 bg-(--bg-main)/90 backdrop-blur-md text-white text-base font-black px-4 py-2 rounded-full shadow-base tracking-widest uppercase border border-white/20 ${
+                  className={`absolute top-6 bg-(--bg-main)/90 text-white text-base font-black px-4 py-2 rounded-full tracking-widest uppercase border border-white/20 ${
                     direction === "rtl" ? "right-6" : "left-6"
                   }`}
                 >
@@ -340,7 +340,7 @@ const MenuCardDefaultInner = ({
               ) : null}
 
               <div
-                className={`absolute bottom-6 bg-(--bg-main) text-white px-6 py-3 rounded-2xl shadow-xl border-4 border-white ${
+                className={`absolute bottom-6 bg-(--bg-main) text-white px-6 py-3 rounded-2xl border-2 border-white ${
                   direction === "rtl" ? "right-6" : "left-6"
                 }`}
               >

@@ -182,7 +182,7 @@ function EmeraldMenuCard({
             {badgeText}
           </span>
         )}
-        <div className="absolute bottom-3 end-3 bg-white/95 backdrop-blur-base rounded-full px-3 py-1 shadow-base">
+        <div className="absolute bottom-3 end-3 bg-white/95    rounded-full px-3 py-1 shadow-base">
           <span
             className="font-sans font-700 text-base"
             style={{ color: primary }}
@@ -384,7 +384,7 @@ function EmeraldDishModal({
   return (
     <>
       <div
-        className="fixed inset-0 z-50 backdrop-blur-base animate-fade-in motion-reduce:animate-none"
+        className="fixed inset-0 z-50    animate-fade-in motion-reduce:animate-none"
         style={{ backgroundColor: backdrop }}
         onClick={onClose}
         aria-hidden="true"

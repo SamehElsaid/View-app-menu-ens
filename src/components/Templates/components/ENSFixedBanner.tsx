@@ -43,7 +43,7 @@ export const ENSFixedBanner: React.FC = () => {
     >
       <div className="container mx-auto flex min-w-0 items-center justify-between gap-2 sm:gap-4">
         <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto pe-3 sm:gap-3 sm:pe-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <div className="hidden shrink-0 items-center gap-2 rounded-full bg-white/20 px-3 py-1 backdrop-blur-base sm:flex">
+          <div className="hidden shrink-0 items-center gap-2 rounded-full bg-white/20 px-3 py-1    sm:flex">
             <FaGlobe className="text-base" aria-hidden />
             <span className="text-base font-bold">ENS</span>
           </div>

@@ -68,7 +68,7 @@ const SearchBar = ({ value, onChange }: SearchBarProps) => {
           onChange={(e) => handleChange(e.target.value)}
           className={`
             w-full h-14 rounded-full
-            bg-white/40 backdrop-blur-xl
+            bg-white/40  
             border-2 border-white/50
             ${isAr ? 'pr-14 pl-12' : 'pl-14 pr-12'}
             text-lg text-[#001a23] font-medium
@@ -89,7 +89,7 @@ const SearchBar = ({ value, onChange }: SearchBarProps) => {
               onClick={handleClear}
               className={`
                 absolute ${isAr ? 'left-4' : 'right-4'} top-1/2 -translate-y-1/2
-                w-8 h-8 rounded-full bg-slate-200/50 backdrop-blur-base
+                w-8 h-8 rounded-full bg-slate-200/50   
                 flex items-center justify-center hover:bg-red-50 hover:text-red-500
                 transition-all duration-200 group
               `}

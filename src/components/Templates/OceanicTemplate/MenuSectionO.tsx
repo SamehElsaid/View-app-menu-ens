@@ -174,7 +174,7 @@ const MenuSectionO = () => {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -12, opacity: 0 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed top-[72px] sm:top-20 left-0 right-0 z-40 bg-white/95 backdrop-blur-xl py-4 sm:py-5 px-2 sm:px-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] border-b border-cyan-100"
+              className="fixed top-[72px] sm:top-20 left-0 right-0 z-40 bg-white/95   py-4 sm:py-5 px-2 sm:px-4 shadow-[0_10px_30px_rgba(0,0,0,0.08)] border-b border-cyan-100"
             >
               <div className="max-w-7xl mx-auto">
                 <CategoryTabs

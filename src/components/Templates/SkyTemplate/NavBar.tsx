@@ -26,7 +26,7 @@ const Navbar = ({ menuName, menuLogo, whatsapp }: NavbarProps) => {
     : null;
 
   return (
-    <nav className="fixed top-0 w-full start-0 z-50 bg-(--bg-main)/5 backdrop-blur-xl border-b border-(--bg-main)/10">
+    <nav className="fixed top-0 w-full start-0 z-50 bg-(--bg-main)/5   border-b border-(--bg-main)/10">
       <div className="max-w-7xl mx-auto px-8 h-20 flex items-center justify-between">
         <div className="text-(--bg-main) font-black text-2xl tracking-tighter">
           <Link href="/" className="flex items-center gap-3 group">

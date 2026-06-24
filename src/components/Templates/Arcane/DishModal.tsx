@@ -133,7 +133,7 @@ export default function DishModal({
       onClick={onClose}
     >
       <div
-        className="absolute inset-0 animate-fade-in backdrop-blur-base motion-reduce:animate-none"
+        className="absolute inset-0 animate-fade-in    motion-reduce:animate-none"
         style={{ backgroundColor: backdrop }}
         aria-hidden
       />

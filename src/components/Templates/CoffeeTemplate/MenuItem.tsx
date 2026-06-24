@@ -234,7 +234,7 @@ const MenuItem = ({
         <button
           type="button"
           onClick={() => setOpen(false)}
-          className="absolute end-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-[#3B332E] bg-[#221D1A]/95 text-[#F4EEE7] backdrop-blur-base transition hover:border-[#F2B705]/50 hover:bg-[#F2B705] hover:text-[#17120F]"
+          className="absolute end-3 top-3 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-[#3B332E] bg-[#221D1A]/95 text-[#F4EEE7]    transition hover:border-[#F2B705]/50 hover:bg-[#F2B705] hover:text-[#17120F]"
           aria-label={locale === "ar" ? "إغلاق" : "Close"}
         >
           <FiX className="text-xl" />

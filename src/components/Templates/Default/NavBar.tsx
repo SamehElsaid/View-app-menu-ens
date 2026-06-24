@@ -42,14 +42,14 @@ function NavBar({
     <nav className="fixed left-0 right-0 top-0 z-50 flex w-full justify-center items-center py-6">
       <div className="w-[90%] max-w-4xl">
         {" "}
-        <div className="bg-white/97 border border-purple-100 px-4 py-4 sm:px-8 rounded-full flex items-center justify-between shadow-lg shadow-purple-500/5 gap-2">
+        <div className="bg-white/97 border border-purple-100 px-4 py-4 sm:px-8 rounded-full flex items-center justify-between shadow-sm gap-2">
           <div className="flex min-w-0  items-center gap-2 text-(--bg-main) ">
             {(showCategoryBurger || categoriesDrawerOpen) &&
             categories.length > 0 ? (
               <button
                 type="button"
                 onClick={toggleCategoriesDrawer}
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border shadow-base transition ${
+                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition ${
                   categoriesDrawerOpen
                     ? "border-(--bg-main) bg-(--bg-main) text-white hover:bg-(--bg-main)/90"
                     : "border border-zinc-200 bg-white text-zinc-700 hover:border-(--bg-main) hover:text-(--bg-main)"
@@ -105,7 +105,7 @@ function NavBar({
             </a>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <div className="bg-(--bg-main) text-white  rounded-full font-bold text-base shadow-md shadow-purple-200">
+            <div className="bg-(--bg-main) text-white rounded-full font-bold text-base">
               <LanguageToggle />
             </div>
           </div>

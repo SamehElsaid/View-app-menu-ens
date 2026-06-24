@@ -85,7 +85,7 @@ const MenuItemO = ({
           {/* Always-visible expand button */}
           <div className="absolute top-3 end-3 z-20">
             <motion.div
-              className="bg-cyan-500/90 text-white p-2.5 rounded-full shadow-[0_4px_14px_rgba(6,182,212,0.45)] ring-1 ring-white/30 backdrop-blur-base"
+              className="bg-cyan-500/90 text-white p-2.5 rounded-full shadow-[0_4px_14px_rgba(6,182,212,0.45)] ring-1 ring-white/30   "
               whileHover={{
                 scale: 1.06,
                 transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
@@ -145,7 +145,7 @@ const MenuItemO = ({
               role="presentation"
             >
               <div className="flex flex-wrap items-center justify-center gap-2 md:justify-between">
-                <div className="flex items-center gap-1 rounded-2xl border border-white/15 bg-white/5 px-1 py-1 backdrop-blur-base">
+                <div className="flex items-center gap-1 rounded-2xl border border-white/15 bg-white/5 px-1 py-1   ">
                   <button
                     type="button"
                     onClick={() => setCardPickQty((q) => Math.max(1, q - 1))}

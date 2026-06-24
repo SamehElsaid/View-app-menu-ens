@@ -80,7 +80,7 @@ export default function PromoBannerE() {
 
                 {/* وسم إعلان صغير */}
                 <div
-                  className="absolute top-2.5 z-20 flex items-center gap-1.5 rounded-full border border-white/80 bg-black/70 px-2 py-1 text-white shadow-md backdrop-blur-base end-3 sm:top-3 sm:px-2.5 sm:py-1 sm:end-5"
+                  className="absolute top-2.5 z-20 flex items-center gap-1.5 rounded-full border border-white/80 bg-black/70 px-2 py-1 text-white shadow-md    end-3 sm:top-3 sm:px-2.5 sm:py-1 sm:end-5"
                   dir={locale === "ar" ? "rtl" : "ltr"}
                 >
                   <span

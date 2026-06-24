@@ -70,7 +70,7 @@ export default function Navbar() {
 
   const headerClass = onHero
     ? "border-transparent bg-transparent text-white"
-    : "border-[#eeeeee]/80 bg-white/95 text-[#111111] shadow-sm backdrop-blur-xl";
+    : "border-[#eeeeee]/80 bg-white/95 text-[#111111] shadow-sm  ";
 
   const nameColor = onHero ? "#FFFFFF" : primary;
 

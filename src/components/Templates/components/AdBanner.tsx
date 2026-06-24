@@ -99,7 +99,7 @@ export default function AdVBanner({ compact = false }: { compact?: boolean }) {
 
                       {/* شارة إعلان ثابتة أعلى الصورة */}
                       <div
-                        className={`absolute top-2.5 z-20 flex items-center gap-1.5 rounded-full border border-white/80 bg-black/75 px-2 py-1 text-white shadow-md backdrop-blur-base sm:top-3 sm:px-2.5 sm:py-1 ${
+                        className={`absolute top-2.5 z-20 flex items-center gap-1.5 rounded-full border border-white/80 bg-black/75 px-2 py-1 text-white shadow-md    sm:top-3 sm:px-2.5 sm:py-1 ${
                           rtl ? "left-3 sm:left-5" : "right-3 sm:right-5"
                         }`}
                       >
@@ -182,7 +182,7 @@ export default function AdVBanner({ compact = false }: { compact?: boolean }) {
             <>
               <button
                 onClick={() => swiperRef.current?.slidePrev()}
-                className={`absolute top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 backdrop-blur-base flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300 ${
+                className={`absolute top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20    flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300 ${
                   rtl ? "right-2 sm:right-4" : "left-2 sm:left-4"
                 }`}
                 aria-label="Previous"
@@ -203,7 +203,7 @@ export default function AdVBanner({ compact = false }: { compact?: boolean }) {
               </button>
               <button
                 onClick={() => swiperRef.current?.slideNext()}
-                className={`absolute top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20 backdrop-blur-base flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300 ${
+                className={`absolute top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/20    flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300 ${
                   rtl ? "left-2 sm:left-4" : "right-2 sm:right-4"
                 }`}
                 aria-label="Next"

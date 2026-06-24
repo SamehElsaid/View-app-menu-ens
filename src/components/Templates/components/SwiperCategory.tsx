@@ -208,13 +208,13 @@ function SwiperCategory({
   }, [categories, activeCategory, setActiveCategory, filterMode]);
 
   const filterShellClasses =
-    "relative z-10 mb-10 overflow-hidden rounded-[2rem] border border-(--bg-main)/12 bg-white/95 shadow-[0_22px_50px_-28px] shadow-(--bg-main)/30 backdrop-blur-xl";
+    "";
 
   const stickyClasses = sticky
-    ? `sticky z-50 ${isGray ? "bg-white/20 backdrop-blur-base lg:top-[100px] top-[60px]" : "bg-white lg:top-20 top-[60px]"}`
+    ? `sticky z-50 ${isGray ? "bg-white/20    lg:top-[100px] top-[60px]" : "bg-white lg:top-20 top-[60px]"}`
     : filterMode
       ? filterShellClasses
-      : `relative z-10 rounded-3xl border border-(--bg-main)/8 bg-linear-to-b from-white to-(--bg-main)/3 shadow-sm ${isGray ? "backdrop-blur-base" : "bg-white"}`;
+      : `relative z-10 rounded-3xl border border-(--bg-main)/8 bg-linear-to-b from-white to-(--bg-main)/3 shadow-sm ${isGray ? "  " : "bg-white"}`;
 
   const isScrollable = canScrollPrev || canScrollNext;
   const showSideNav = showNavButtons && isScrollable && !filterMode;

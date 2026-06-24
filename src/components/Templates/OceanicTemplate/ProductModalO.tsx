@@ -163,7 +163,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                 whileTap={{ scale: 0.96, transition: { duration: 0.15 } }}
                 onClick={onClose}
                 className={`absolute top-5 ${isAr ? "left-5" : "right-5"} z-30 w-11 h-11
-                           bg-black/30 backdrop-blur-xl border border-white/15 rounded-full
+                           bg-black/30   border border-white/15 rounded-full
                            flex items-center justify-center text-white hover:bg-white/20 transition-colors`}
               >
                 <FiX className="w-5 h-5" />
@@ -213,7 +213,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                     duration: 0.62,
                     ease: [0.16, 1, 0.3, 1],
                   }}
-                  className="mb-6 p-4 md:p-5 rounded-2xl bg-white/[0.04] border border-white/10 backdrop-blur-base"
+                  className="mb-6 p-4 md:p-5 rounded-2xl bg-white/[0.04] border border-white/10   "
                 >
                   <div className="flex flex-col items-center text-center gap-2">
                     <span className="text-[11px] uppercase tracking-widest text-cyan-300/60 font-bold">
@@ -387,7 +387,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                   }}
                   className="mb-6 space-y-2"
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur-base">
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/[0.06] p-4   ">
                     <button
                       type="button"
                       onClick={() => {
