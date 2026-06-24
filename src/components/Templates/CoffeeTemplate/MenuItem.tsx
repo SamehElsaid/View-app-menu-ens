@@ -43,7 +43,7 @@ interface MenuItemProps {
   price: number | string;
   tag?: string;
   tagAr?: string;
-  image?: string;
+  image?: string | null;
   delay?: number;
   originalPrice?: number | null;
   discountPercent?: number | null;
