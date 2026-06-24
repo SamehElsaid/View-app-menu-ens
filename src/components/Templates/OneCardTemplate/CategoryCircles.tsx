@@ -1,11 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { useLocale, useTranslations } from "next-intl";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import type { Category } from "@/types/menu";
-import LoadImage from "@/components/ImageLoad";
 
 type CategoryCirclesProps = {
   categories: Category[];
@@ -20,7 +19,69 @@ function getCategoryLabel(category: Category, locale: string): string {
     : category.nameEn || category.name;
 }
 
-export default function CategoryCircles({
+// ─── Memoized button — only the two toggled buttons re-render on selection change ─
+
+type CategoryButtonProps = {
+  id: number;
+  label: string;
+  imageSrc: string | null | undefined;
+  isActive: boolean;
+  onSelect: (id: number) => void;
+};
+
+const CategoryButton = memo(function CategoryButton({
+  id,
+  label,
+  imageSrc,
+  isActive,
+  onSelect,
+}: CategoryButtonProps) {
+  const [imgError, setImgError] = useState(false);
+  const showFallback = !imageSrc?.trim() || imgError;
+
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(id)}
+      className="flex w-[90px] shrink-0 flex-col items-center gap-2 transition-transform duration-200 ease-in hover:scale-[0.95]"
+      aria-pressed={isActive}
+    >
+      <span
+        className={`relative flex h-[60px] w-[60px] shrink-0 overflow-hidden rounded-full border-(--onecard-primary,#6b0fd6) ${
+          isActive ? "border-4" : "border-[3px]"
+        }`}
+      >
+        {showFallback ? (
+          <span className="flex h-full w-full items-center justify-center bg-[#f3f0f8] text-2xl font-bold text-(--onecard-primary,#6b0fd6)">
+            {label.charAt(0)}
+          </span>
+        ) : (
+          <img
+            src={imageSrc!}
+            alt={label}
+            loading="eager"
+            decoding="async"
+            className="h-full w-full object-cover"
+            onError={() => setImgError(true)}
+          />
+        )}
+      </span>
+      <span className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-semibold text-(--onecard-primary,#6b0fd6)">
+        {label}
+      </span>
+      <span
+        className={`h-[3px] w-7 rounded-sm transition-[background] duration-200 ease-in ${
+          isActive ? "bg-(--onecard-primary,#6b0fd6)" : "bg-transparent"
+        }`}
+        aria-hidden
+      />
+    </button>
+  );
+});
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
+function CategoryCirclesInner({
   categories,
   activeCategoryId,
   onSelect,
@@ -30,6 +91,7 @@ export default function CategoryCircles({
   const t = useTranslations("menu");
   const direction = locale === "ar" ? "rtl" : "ltr";
   const allLabel = locale === "ar" ? "الكل" : "All";
+
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
 
@@ -81,48 +143,13 @@ export default function CategoryCircles({
     if (target >= 0) emblaApi.scrollTo(target);
   }, [emblaApi, activeCategoryId, categories, showAll]);
 
-  const handleNav = (nav: "prev" | "next") => {
-    if (!emblaApi) return;
-    if (nav === "prev") emblaApi.scrollPrev();
-    else emblaApi.scrollNext();
-  };
-
-  const renderCategoryButton = (
-    id: number,
-    label: string,
-    imageSrc: string | null | undefined,
-    isActive: boolean,
-  ) => (
-    <button
-      key={id}
-      type="button"
-      onClick={() => onSelect(id)}
-      className="flex w-[90px] shrink-0 flex-col items-center gap-2 transition-transform duration-200 ease-in hover:scale-[0.95]"
-      aria-pressed={isActive}
-    >
-      <span
-        className={`relative w-[60px] h-[60px] overflow-hidden rounded-full border-(--onecard-primary,#6b0fd6) ${
-          isActive ? "border-4" : "border-[3px]"
-        }`}
-      >
-        {imageSrc?.trim() ? (
-          <LoadImage src={imageSrc} alt={label} fill className="object-cover" />
-        ) : (
-          <span className="flex h-full w-full items-center justify-center bg-[#f3f0f8] text-2xl font-bold text-(--onecard-primary,#6b0fd6)">
-            {label.charAt(0)}
-          </span>
-        )}
-      </span>
-      <span className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-semibold text-(--onecard-primary,#6b0fd6)">
-        {label}
-      </span>
-      <span
-        className={`w-7 h-[3px] rounded-sm transition-[background] duration-200 ease-in ${
-          isActive ? "bg-(--onecard-primary,#6b0fd6)" : "bg-transparent"
-        }`}
-        aria-hidden
-      />
-    </button>
+  const handleNav = useCallback(
+    (nav: "prev" | "next") => {
+      if (!emblaApi) return;
+      if (nav === "prev") emblaApi.scrollPrev();
+      else emblaApi.scrollNext();
+    },
+    [emblaApi],
   );
 
   return (
@@ -133,17 +160,25 @@ export default function CategoryCircles({
             className="flex gap-1"
             style={{ direction: direction as "ltr" | "rtl" }}
           >
-            {showAll
-              ? renderCategoryButton(0, allLabel, null, activeCategoryId === 0)
-              : null}
-            {categories.map((category) =>
-              renderCategoryButton(
-                category.id,
-                getCategoryLabel(category, locale),
-                category.image,
-                category.id === activeCategoryId,
-              ),
-            )}
+            {showAll ? (
+              <CategoryButton
+                id={0}
+                label={allLabel}
+                imageSrc={null}
+                isActive={activeCategoryId === 0}
+                onSelect={onSelect}
+              />
+            ) : null}
+            {categories.map((category) => (
+              <CategoryButton
+                key={category.id}
+                id={category.id}
+                label={getCategoryLabel(category, locale)}
+                imageSrc={category.image}
+                isActive={category.id === activeCategoryId}
+                onSelect={onSelect}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -170,3 +205,5 @@ export default function CategoryCircles({
     </div>
   );
 }
+
+export default memo(CategoryCirclesInner);

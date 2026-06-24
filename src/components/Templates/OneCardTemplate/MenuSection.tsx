@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useTransition,
+} from "react";
 import { toast } from "react-toastify";
 import { useLocale } from "next-intl";
 import type { Category, MenuItem } from "@/types/menu";
@@ -19,7 +25,6 @@ import {
 } from "@/lib/skyTemplateCart";
 import CategoryCircles from "./CategoryCircles";
 import {
-  
   OneCardProductCard,
   type OneCardCartOptions,
 } from "./OneCardProduct";
@@ -37,13 +42,34 @@ export default function MenuSection({
   const locale = useLocale() as "ar" | "en";
   const currencyLabel = useCurrencyLabel()(currency);
   const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
+  const [isPending, startTransition] = useTransition();
 
   const sortedCategories = useMemo(
     () => sortCategories(categories),
     [categories],
   );
 
+  /*
+   * Two-layer selection:
+   * - selectedCategoryId: updates instantly on click → drives visual feedback in CategoryCircles
+   * - activeCategoryId: updates inside startTransition → drives the heavy product-list re-render
+   * This keeps button highlight / carousel scroll instant while deferring the expensive work.
+   */
+  const [selectedCategoryId, setSelectedCategoryId] = useState(0);
   const [activeCategoryId, setActiveCategoryId] = useState(0);
+
+  const handleCategorySelect = useCallback(
+    (id: number) => {
+      setSelectedCategoryId(id);
+      startTransition(() => {
+        setActiveCategoryId(id);
+      });
+    },
+    // startTransition is stable; no need to list it
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+
   const {
     items,
     initialLoading,
@@ -111,42 +137,50 @@ export default function MenuSection({
     >
       <CategoryCircles
         categories={sortedCategories}
-        activeCategoryId={activeCategoryId}
-        onSelect={setActiveCategoryId}
+        activeCategoryId={selectedCategoryId}
+        onSelect={handleCategorySelect}
         showAll
       />
 
-      {activeCategoryId === 0 ? (
-        categorySections.length > 0 ? (
-          <div className={`${ONECARD_PRODUCT_GRID} px-1 sm:px-2 md:px-3`}>
-            {categorySections.map((section) => (
-              <div key={section.categoryId} className="contents">
-                {section.items.map((item) => renderProduct(item))}
-              </div>
-            ))}
-          </div>
-        ) : (
+      {/*
+       * While the transition renders, fade the list slightly to signal loading
+       * without a jarring skeleton flash.
+       */}
+      <div
+        className={`transition-opacity duration-150 ${isPending ? "opacity-50 pointer-events-none" : "opacity-100"}`}
+      >
+        {activeCategoryId === 0 ? (
+          categorySections.length > 0 ? (
+            <div className={`${ONECARD_PRODUCT_GRID} px-1 sm:px-2 md:px-3`}>
+              {categorySections.map((section) => (
+                <div key={section.categoryId} className="contents">
+                  {section.items.map((item) => renderProduct(item))}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="px-4 py-12 text-center">
+              <p className="text-sm font-medium text-zinc-500">
+                {locale === "ar" ? "لا توجد منتجات بعد." : "No items yet."}
+              </p>
+            </div>
+          )
+        ) : initialLoading ? (
+          <MenuCatalogSkeleton variant="onecard" count={8} />
+        ) : items.length === 0 ? (
           <div className="px-4 py-12 text-center">
             <p className="text-sm font-medium text-zinc-500">
-              {locale === "ar" ? "لا توجد منتجات بعد." : "No items yet."}
+              {locale === "ar"
+                ? "لا توجد منتجات في هذا التصنيف."
+                : "No items in this category."}
             </p>
           </div>
-        )
-      ) : initialLoading ? (
-        <MenuCatalogSkeleton variant="onecard" count={8} />
-      ) : items.length === 0 ? (
-        <div className="px-4 py-12 text-center">
-          <p className="text-sm font-medium text-zinc-500">
-            {locale === "ar"
-              ? "لا توجد منتجات في هذا التصنيف."
-              : "No items in this category."}
-          </p>
-        </div>
-      ) : (
-        <div className={`${ONECARD_PRODUCT_GRID} px-1 sm:px-2 md:px-3`}>
-          {items.map((item) => renderProduct(item))}
-        </div>
-      )}
+        ) : (
+          <div className={`${ONECARD_PRODUCT_GRID} px-1 sm:px-2 md:px-3`}>
+            {items.map((item) => renderProduct(item))}
+          </div>
+        )}
+      </div>
 
       <MenuCatalogSentinel
         sentinelRef={sentinelRef}
