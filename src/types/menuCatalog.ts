@@ -1,4 +1,4 @@
-import type { MenuItem } from "@/types/menu";
+import type { MenuItem, MenuItemSizeOption, MenuItemVariantOption } from "@/types/menu";
 
 export type MenuCatalogMeta = {
   total: number | null;
@@ -30,6 +30,10 @@ export type CatalogProduct = {
   categoryName: string;
   categoryNameAr: string;
   categoryNameEn: string;
+  originalPrice?: number | null;
+  discountPercent?: number | null;
+  sizes?: MenuItemSizeOption[] | null;
+  variants?: MenuItemVariantOption[] | null;
 };
 
 export type CatalogCategorySummary = {
@@ -83,9 +87,11 @@ export function mapCatalogProductToMenuItem(product: CatalogProduct): MenuItem {
     categoryName: product.categoryName,
     categoryNameAr: product.categoryNameAr,
     categoryNameEn: product.categoryNameEn,
-    originalPrice: null,
-    discountPercent: null,
+    originalPrice: product.originalPrice ?? null,
+    discountPercent: product.discountPercent ?? null,
     available: true,
     sortOrder: product.sortOrder ?? 0,
+    sizes: product.sizes ?? null,
+    variants: product.variants ?? null,
   };
 }
