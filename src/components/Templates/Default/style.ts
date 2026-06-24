@@ -3,10 +3,6 @@
 // ============================
 
 export const globalStyles = `
-  /* ============================
-   Fonts (loaded via layout.tsx link)
-   ============================ */
-  @import url("https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css");
 
   /* ============================
    Design Tokens

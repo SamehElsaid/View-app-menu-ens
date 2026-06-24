@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, memo } from "react";
 import { IoPricetagOutline } from "react-icons/io5";
 import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
 import { toast } from "react-toastify";
@@ -43,7 +43,7 @@ interface MenuCardProps {
   }) => void;
 }
 
-export const MenuCardDefault = ({
+const MenuCardDefaultInner = ({
   item,
   openItemId,
   onOpenModal,
@@ -90,18 +90,13 @@ export const MenuCardDefault = ({
     selectedVariant,
   );
 
-  const getCurrency = () => {
-    let currencySymbol: string = currency;
-    if (locale === "ar") {
-      const foundCurrency = arabCurrencies.find(
-        (currencyList: Currency) => currencyList.code === currency,
-      );
-      if (foundCurrency && foundCurrency.symbol) {
-        currencySymbol = foundCurrency.symbol;
-      }
-    }
-    return currencySymbol;
-  };
+  const currencySymbol = useMemo(() => {
+    if (locale !== "ar") return currency;
+    const found = arabCurrencies.find((c: Currency) => c.code === currency);
+    return found?.symbol ?? currency;
+  }, [locale, currency]);
+
+  const getCurrency = () => currencySymbol;
 
   useEffect(() => {
     if (isOpen) {
@@ -177,7 +172,7 @@ export const MenuCardDefault = ({
     <>
       <div
         onClick={handleCardClick}
-        className="relative bg-white/95 backdrop-blur-base  rounded-[2.5rem] shadow-xl shadow-(--bg-main)/5 border border-(--bg-main)/10 flex flex-col items-center text-center group transition-shadow hover:shadow-(--bg-main)/15 overflow-hidden cursor-pointer"
+        className="relative bg-white rounded-[2.5rem] shadow-xl shadow-(--bg-main)/5 border border-(--bg-main)/10 flex flex-col items-center text-center group transition-shadow hover:shadow-(--bg-main)/15 overflow-hidden cursor-pointer"
       >
         <div className="relative w-full h-52 mb-6 flex items-center justify-center z-10">
           <div className="w-full h-full overflow-hidden relative z-20 bg-white">
@@ -190,8 +185,6 @@ export const MenuCardDefault = ({
               className="object-cover transition-transform duration-700 group-hover:scale-110"
             />
           </div>
-
-          <div className="absolute inset-0 rounded-full bg-(--bg-main)/10 blur-3xl z-0 group-hover:bg-(--bg-main)/20 transition-colors" />
         </div>
 
         <div className="relative z-10 w-full p-6">
@@ -213,7 +206,7 @@ export const MenuCardDefault = ({
                         locale === "ar" ? "rotateY(180deg)" : "rotateY(0deg)",
                     }}
                   >
-                    <IoPricetagOutline className="text-lg text-gray-500 animate-bounce" />
+                    <IoPricetagOutline className="text-lg text-gray-500" />
                   </span>
                   {priceLabel}
                 </span>
@@ -306,7 +299,7 @@ export const MenuCardDefault = ({
           onClick={handleClose}
         >
           <div
-            className={`absolute inset-0 bg-black/80  backdrop-blur-md transition-opacity duration-300 ${
+            className={`absolute inset-0 bg-black/80 transition-opacity duration-300 ${
               isClosing ? "opacity-0" : "opacity-100"
             }`}
           />
@@ -320,7 +313,7 @@ export const MenuCardDefault = ({
           >
             <button
               onClick={handleClose}
-              className={`absolute top-6 z-30 w-12 h-12 rounded-full bg-(--bg-main)/90 backdrop-blur-base flex items-center justify-center text-white hover:bg-(--bg-main) transition-all duration-300 shadow-lg ${
+              className={`absolute top-6 z-30 w-12 h-12 rounded-full bg-(--bg-main)/90 flex items-center justify-center text-white hover:bg-(--bg-main) transition-all duration-300 shadow-lg ${
                 direction === "rtl" ? "left-6" : "right-6"
               }`}
             >
@@ -553,3 +546,5 @@ export const MenuCardDefault = ({
     </>
   );
 };
+
+export const MenuCardDefault = memo(MenuCardDefaultInner);

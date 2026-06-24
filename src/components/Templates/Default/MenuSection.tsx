@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import {
   Category,
@@ -139,7 +139,7 @@ function CategorySectionHeader({
               src={category.image ?? ""}
               alt=""
               fill
-              className="object-cover opacity-[0.14] blur-md scale-110"
+              className="object-cover opacity-[0.12] scale-110"
             />
           </div>
           <div className="absolute inset-0 bg-linear-to-r from-white via-white/95 to-white/80" />
@@ -218,7 +218,7 @@ export default function MenuSection({ currency }: { currency: string }) {
 
     update();
     window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
+    window.addEventListener("resize", update, { passive: true });
     return () => {
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
@@ -255,7 +255,7 @@ export default function MenuSection({ currency }: { currency: string }) {
     return categories.find((category) => category.id === activeCategory) ?? null;
   }, [activeCategory, categories]);
 
-  const renderMenuCard = (item: MenuItem, index: number) => (
+  const renderMenuCard = useCallback((item: MenuItem, index: number) => (
     <MenuCardDefault
       key={item.id}
       item={item}
@@ -271,7 +271,8 @@ export default function MenuSection({ currency }: { currency: string }) {
         handleAddToCart(item, quantity, { size, variant })
       }
     />
-  );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [currency, openItemId, openModal, closeModal, isTableOrder, cart, handleAddToCart]);
 
   return (
     <div

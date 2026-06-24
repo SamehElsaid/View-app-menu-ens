@@ -42,7 +42,7 @@ function NavBar({
     <nav className="fixed left-0 right-0 top-0 z-50 flex w-full justify-center items-center py-6">
       <div className="w-[90%] max-w-4xl">
         {" "}
-        <div className="bg-white/80 backdrop-blur-xl border border-purple-100 px-4 py-4 sm:px-8 rounded-full flex items-center justify-between shadow-lg shadow-purple-500/5 gap-2">
+        <div className="bg-white/97 border border-purple-100 px-4 py-4 sm:px-8 rounded-full flex items-center justify-between shadow-lg shadow-purple-500/5 gap-2">
           <div className="flex min-w-0  items-center gap-2 text-(--bg-main) ">
             {(showCategoryBurger || categoriesDrawerOpen) &&
             categories.length > 0 ? (

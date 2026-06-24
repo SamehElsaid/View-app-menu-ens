@@ -126,7 +126,7 @@ export default function MenuCard({
         </div>
 
         {/* Content Section */}
-        <div className="p-5 pt-2 relative z-10 text-right">
+        <div className="p-5 pt-2 relative z-10 text-start">
           <div className="mb-3">
             <h3 className="text-lg font-black text-(--bg-main) mb-1.5 group-hover:text-(--bg-main) transition-colors tracking-tight">
               {itemName}

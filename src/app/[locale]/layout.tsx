@@ -57,6 +57,10 @@ export default async function RootLayout({
           crossOrigin="anonymous"
         />
         <link rel="stylesheet" href={MENU_GOOGLE_FONTS_URL} />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css"
+        />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body suppressHydrationWarning>
