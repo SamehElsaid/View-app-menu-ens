@@ -78,7 +78,7 @@ export default function Page() {
             <StripInvalidTableParam />
           </Suspense>
           {/* {menu.theme === "default" && <Default />} */}
-          {menu.theme === "default" && <OneCard />}
+          {menu.theme === "neon" && <OneCard />}
 
           <Suspense fallback={null}>
             <RequestStaffButton />
