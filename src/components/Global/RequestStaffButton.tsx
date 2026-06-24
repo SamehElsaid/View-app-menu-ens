@@ -710,6 +710,7 @@ export default function RequestStaffButton() {
   };
 
   if (!isMenuActive || !menuInfo?.id) return null;
+  if (!tableCartAllowed && !isDeliveryOrder) return null;
   /** After mount: searchParams and locale match the browser; avoids hydration mismatch. */
   if (!hasMounted || !isOrderingEnabled) return null;
 

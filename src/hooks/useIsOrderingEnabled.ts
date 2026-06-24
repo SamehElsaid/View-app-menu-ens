@@ -33,7 +33,8 @@ export function useIsOrderingEnabled(): {
     : null;
 
   const isDeliveryOrder =
-    Boolean(deliveryZoneParam) && Boolean(delivery?.deliveryOn);
+    Boolean(deliveryZoneParam) &&
+    Boolean(delivery?.deliveryOn);
 
   const isTableOrder =
     Boolean(tableNumber) &&
