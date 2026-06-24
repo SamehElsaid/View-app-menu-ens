@@ -199,16 +199,9 @@ function OneCardProductCardInner({
               </div>
             ) : null}
 
-            {isTableOrder && cartQuantity > 0 ? (
-              <span
-                className="absolute start-3 top-3 z-20 flex h-7 min-w-7 items-center justify-center rounded-full px-2 text-[11px] font-black text-white shadow-md ring-2 ring-white sm:start-4 sm:top-4"
-                style={{ backgroundColor: primary }}
-              >
-                {cartQuantity}
-              </span>
-            ) : null}
+        
 
-            <div className="absolute inset-y-4 top-6 start-5 z-20 flex w-[44%] xl:w-[50%] 2xl:w-[44%] min-w-[130px] max-w-68">
+            <div className="absolute inset-y-4 top-6 start-5 z-20 flex w-[50%] xl:w-[50%] 2xl:w-[44%] min-w-[130px] max-w-68">
               <div className="flex w-full flex-col justify-between overflow-hidden rounded-[1.25rem] bg-white px-4 py-4 text-center shadow-sm sm:rounded-3xl sm:px-5 sm:py-5 md:px-6 md:py-6">
 
                 <div className="flex min-h-0 flex-col items-center overflow-hidden">

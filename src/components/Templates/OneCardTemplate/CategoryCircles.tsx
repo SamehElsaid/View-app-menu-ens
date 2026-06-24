@@ -1,7 +1,6 @@
 "use client";
 
-import { memo, useCallback, useEffect, useState } from "react";
-import useEmblaCarousel from "embla-carousel-react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import type { Category } from "@/types/menu";
@@ -89,76 +88,98 @@ function CategoryCirclesInner({
 }: CategoryCirclesProps) {
   const locale = useLocale();
   const t = useTranslations("menu");
-  const direction = locale === "ar" ? "rtl" : "ltr";
-  const allLabel = locale === "ar" ? "الكل" : "All";
+  const isRtl = locale === "ar";
+  const allLabel = isRtl ? "الكل" : "All";
 
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
 
-  const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: "start",
-    containScroll: "trimSnaps",
-    dragFree: true,
-    direction: direction as "ltr" | "rtl",
-  });
-
   const updateScrollState = useCallback(() => {
-    if (!emblaApi) return;
-    setCanScrollPrev(emblaApi.canScrollPrev());
-    setCanScrollNext(emblaApi.canScrollNext());
-  }, [emblaApi]);
+    const el = scrollRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll <= 0) {
+      setCanScrollPrev(false);
+      setCanScrollNext(false);
+      return;
+    }
+    // Math.abs normalizes for LTR (positive scrollLeft) and Chrome/Safari/Edge RTL
+    // (negative scrollLeft). Firefox RTL uses a positive-inverted convention which
+    // is a minor edge-case – button visibility may be swapped there but still works.
+    const absScroll = Math.abs(el.scrollLeft);
+    setCanScrollPrev(absScroll > 2);
+    setCanScrollNext(absScroll < maxScroll - 2);
+  }, []);
 
   useEffect(() => {
-    if (!emblaApi) return;
-    const frame = requestAnimationFrame(() => updateScrollState());
-    emblaApi.on("reInit", updateScrollState);
-    emblaApi.on("select", updateScrollState);
-    emblaApi.on("resize", updateScrollState);
-    emblaApi.on("scroll", updateScrollState);
+    const el = scrollRef.current;
+    if (!el) return;
+    const frame = requestAnimationFrame(updateScrollState);
+    el.addEventListener("scroll", updateScrollState, { passive: true });
+    const ro = new ResizeObserver(updateScrollState);
+    ro.observe(el);
     return () => {
       cancelAnimationFrame(frame);
-      emblaApi.off("reInit", updateScrollState);
-      emblaApi.off("select", updateScrollState);
-      emblaApi.off("resize", updateScrollState);
-      emblaApi.off("scroll", updateScrollState);
+      el.removeEventListener("scroll", updateScrollState);
+      ro.disconnect();
     };
-  }, [emblaApi, updateScrollState]);
+  }, [updateScrollState]);
 
+  // Scroll active category button into view without touching page scroll
   useEffect(() => {
-    if (!emblaApi) return;
-    emblaApi.reInit({
-      align: "start",
-      containScroll: "trimSnaps",
-      dragFree: true,
-      direction: direction as "ltr" | "rtl",
-    });
-  }, [emblaApi, direction, categories.length]);
+    const el = scrollRef.current;
+    if (!el) return;
+    const inner = el.firstElementChild as HTMLElement | null;
+    if (!inner) return;
+    const children = Array.from(inner.children) as HTMLElement[];
 
-  useEffect(() => {
-    if (!emblaApi) return;
-    const index = showAll
-      ? categories.findIndex((cat) => cat.id === activeCategoryId) + 1
-      : categories.findIndex((cat) => cat.id === activeCategoryId);
-    const target = activeCategoryId === 0 && showAll ? 0 : index;
-    if (target >= 0) emblaApi.scrollTo(target);
-  }, [emblaApi, activeCategoryId, categories, showAll]);
+    let idx: number;
+    if (activeCategoryId === 0 && showAll) {
+      idx = 0;
+    } else {
+      const catIdx = categories.findIndex((c) => c.id === activeCategoryId);
+      idx = showAll ? catIdx + 1 : catIdx;
+    }
+
+    const child = children[idx];
+    if (!child) return;
+
+    // Use screen-space delta so direction-agnostic (works for both LTR and RTL).
+    const containerRect = el.getBoundingClientRect();
+    const childRect = child.getBoundingClientRect();
+    const delta =
+      childRect.left + childRect.width / 2 -
+      (containerRect.left + containerRect.width / 2);
+
+    el.scrollBy({ left: delta, behavior: "smooth" });
+  }, [activeCategoryId, categories, showAll]);
 
   const handleNav = useCallback(
     (nav: "prev" | "next") => {
-      if (!emblaApi) return;
-      if (nav === "prev") emblaApi.scrollPrev();
-      else emblaApi.scrollNext();
+      const el = scrollRef.current;
+      if (!el) return;
+      // In RTL the logical "next" direction is to the left (negative scrollLeft in Chrome)
+      const sign = isRtl ? -1 : 1;
+      el.scrollBy({
+        left: (nav === "next" ? 200 : -200) * sign,
+        behavior: "smooth",
+      });
     },
-    [emblaApi],
+    [isRtl],
   );
 
   return (
     <div className="relative mb-6">
       <div className="px-6 py-4 rounded-2xl shadow-[0_0_24px_8px_rgba(0,0,0,0.08)]">
-        <div className="min-w-0 overflow-hidden" ref={emblaRef}>
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          dir={isRtl ? "rtl" : "ltr"}
+        >
           <div
             className="flex gap-1"
-            style={{ direction: direction as "ltr" | "rtl" }}
+            style={{ direction: isRtl ? "rtl" : "ltr" }}
           >
             {showAll ? (
               <CategoryButton
