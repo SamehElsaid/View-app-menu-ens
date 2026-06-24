@@ -17,12 +17,11 @@ import Default from "@/components/Templates/Default";
 import SkyTemplate from "@/components/Templates/SkyTemplate";
 import NeonTemplate from "@/components/Templates/NeonTemplate";
 import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
-import EmeraldTemplate from "@/components/Templates/EmeraldTemplate";
-import NoirTemplate from "@/components/Templates/NoirTemplate";
-import OceanicTemplate from "@/components/Templates/OceanicTemplate";
+
 import OneCardTemplate from "@/components/Templates/OneCardTemplate";
 import WaffleTemplate from "@/components/Templates/WaffleTemplate";
 import VanillaTemplate from "@/components/Templates/VanillaTemplate";
+import { resolveMenuTheme } from "@/lib/resolveMenuTheme";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -32,9 +31,10 @@ export default function Page() {
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
+  const activeTheme = resolveMenuTheme(menu.theme);
 
   const showTemplates =
-    menu.menuInfo?.isActive !== false && Boolean(menu.theme);
+    menu.menuInfo?.isActive !== false && Boolean(activeTheme);
 
   useEffect(() => {
     const slug = menu.menuInfo?.slug;
@@ -85,17 +85,13 @@ export default function Page() {
           <Suspense fallback={null}>
             <StripInvalidTableParam />
           </Suspense>
-          {menu.theme === "default" && <Default />}
-          {menu.theme === "sky" && <SkyTemplate />}
-          {menu.theme === "neon" && <NeonTemplate />}
-          {menu.theme === "coffee" && <CoffeeTemplate />}
-          {menu.theme === "emerald" && <EmeraldTemplate />}
-          {menu.theme === "noir" && <NoirTemplate />}
-          {menu.theme === "oceanic" && <OceanicTemplate />}
-
-          {menu.theme === "onecard" && <OneCardTemplate />}
-          {menu.theme === "waffle" && <WaffleTemplate />}
-          {menu.theme === "vanilla" && <VanillaTemplate />}
+          {activeTheme === "default" && <OneCardTemplate />}
+          {activeTheme === "sky" && <SkyTemplate />}
+          {activeTheme === "neon" && <NeonTemplate />}
+          {activeTheme === "coffee" && <CoffeeTemplate />}
+          {/* {activeTheme === "onecard" && <OneCardTemplate />} */}
+          {activeTheme === "waffle" && <WaffleTemplate />}
+          {activeTheme === "vanilla" && <VanillaTemplate />}
 
           {tableCartAllowed || delivery?.deliveryOn ? (
             <Suspense fallback={null}>
