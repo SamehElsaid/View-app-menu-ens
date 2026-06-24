@@ -35,7 +35,6 @@ import {
   type SkyCart,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import arLabels from "react-phone-number-input/locale/ar";
@@ -48,10 +47,10 @@ const DEFAULT_CART_ICON: CartIconKey = "cart";
 type CartIconKey = "cart" | "bag" | "basket" | "cafe";
 
 const CART_ICON_MAP: Record<CartIconKey, ElementType> = {
-  cart:   IoCartOutline,
-  bag:    IoBagOutline,
+  cart: IoCartOutline,
+  bag: IoBagOutline,
   basket: IoBasketOutline,
-  cafe:   IoCafeOutline,
+  cafe: IoCafeOutline,
 };
 
 type StaffCallPayload = {
@@ -144,12 +143,8 @@ export default function RequestStaffButton() {
   const storeMenu = useAppSelector((s) => s.menu.menu);
   const isMenuActive = menuInfo?.isActive !== false;
   const isArabic = locale === "ar";
-  const {
-    isOrderingEnabled,
-    isDeliveryOrder,
-    tableNumber,
-    governorateId,
-  } = useIsOrderingEnabled();
+  const { isOrderingEnabled, isDeliveryOrder, tableNumber, governorateId } =
+    useIsOrderingEnabled();
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [open, setOpen] = useState(false);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -163,7 +158,6 @@ export default function RequestStaffButton() {
   const [isConfirming, setIsConfirming] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const tableCartAllowed = useTableCartAllowed();
 
   const accentMain = useMemo(() => {
     const custom = menuCustomizations?.primaryColor?.trim();
@@ -178,7 +172,8 @@ export default function RequestStaffButton() {
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
 
   const currentGovernorate = useMemo<DeliveryGovernorate | null>(() => {
-    if (!isDeliveryOrder || !governorateId || !delivery?.governorates?.length) return null;
+    if (!isDeliveryOrder || !governorateId || !delivery?.governorates?.length)
+      return null;
     return delivery.governorates.find((g) => g.id === governorateId) ?? null;
   }, [isDeliveryOrder, governorateId, delivery?.governorates]);
 
@@ -234,13 +229,21 @@ export default function RequestStaffButton() {
         if (nearest && minDist <= 10) {
           changeGovernorate(nearest.id);
         } else {
-          toast.warning(isArabic ? "موقعك خارج نطاق التوصيل" : "Location outside delivery range");
+          toast.warning(
+            isArabic
+              ? "موقعك خارج نطاق التوصيل"
+              : "Location outside delivery range",
+          );
         }
         setIsDetectingLocation(false);
       },
       () => {
         setIsDetectingLocation(false);
-        toast.error(isArabic ? "يرجى السماح بالوصول للموقع في المتصفح" : "Please allow location access in your browser");
+        toast.error(
+          isArabic
+            ? "يرجى السماح بالوصول للموقع في المتصفح"
+            : "Please allow location access in your browser",
+        );
       },
       { enableHighAccuracy: true, timeout: 10_000 },
     );
@@ -490,8 +493,7 @@ export default function RequestStaffButton() {
         }
         lines.push("─────────────────");
         lines.push(`💵 *الإجمالي:* ${total.toFixed(2)} ${currency}`);
-        if (govFee > 0)
-          lines.push(`🚚 *رسوم التوصيل:* ${govFee} ${currency}`);
+        if (govFee > 0) lines.push(`🚚 *رسوم التوصيل:* ${govFee} ${currency}`);
         lines.push(
           `💰 *المجموع الكلي:* ${(total + govFee).toFixed(2)} ${currency}`,
         );
@@ -519,8 +521,7 @@ export default function RequestStaffButton() {
         }
         lines.push("─────────────────");
         lines.push(`💵 *Subtotal:* ${total.toFixed(2)} ${currency}`);
-        if (govFee > 0)
-          lines.push(`🚚 *Delivery fee:* ${govFee} ${currency}`);
+        if (govFee > 0) lines.push(`🚚 *Delivery fee:* ${govFee} ${currency}`);
         lines.push(
           `💰 *Grand total:* ${(total + govFee).toFixed(2)} ${currency}`,
         );
@@ -544,11 +545,23 @@ export default function RequestStaffButton() {
       const waPhone = delivery?.deliveryPhone ?? delivery?.phoneNumber ?? "";
       if (!waPhone) return;
       const cleanPhone = waPhone.replace(/[^0-9]/g, "");
-      const message = buildWhatsAppMessage(name, phone, address, notes, items, total);
+      const message = buildWhatsAppMessage(
+        name,
+        phone,
+        address,
+        notes,
+        items,
+        total,
+      );
       const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
       window.open(url, "_blank", "noopener,noreferrer");
     },
-    [buildWhatsAppMessage, delivery?.deliveryPhone, delivery?.deliveryWhatsAppOn, delivery?.phoneNumber],
+    [
+      buildWhatsAppMessage,
+      delivery?.deliveryPhone,
+      delivery?.deliveryWhatsAppOn,
+      delivery?.phoneNumber,
+    ],
   );
 
   const confirmOrder = async () => {
@@ -654,7 +667,9 @@ export default function RequestStaffButton() {
           );
         } else if (errBody?.error === "INVALID_ADDRESS") {
           toast.error(
-            isArabic ? "يرجى إدخال عنوان التوصيل" : "Please enter a delivery address",
+            isArabic
+              ? "يرجى إدخال عنوان التوصيل"
+              : "Please enter a delivery address",
           );
         } else if (errBody?.error === "INVALID_PHONE") {
           toast.error(
@@ -782,22 +797,30 @@ export default function RequestStaffButton() {
                               <div className="flex items-start gap-3">
                                 <LoadImage
                                   src={item.image}
-                                  alt={isArabic ? (item.nameAr || item.name) : (item.nameEn || item.name)}
+                                  alt={
+                                    isArabic
+                                      ? item.nameAr || item.name
+                                      : item.nameEn || item.name
+                                  }
                                   className="h-12 w-12 rounded-lg object-cover border border-(--bg-main)/15 bg-white"
                                   width={48}
                                   height={48}
                                 />
                                 <div>
                                   <p className="line-clamp-1 text-base font-semibold text-zinc-900">
-                                    {isArabic ? (item.nameAr || item.name) : (item.nameEn || item.name)}
+                                    {isArabic
+                                      ? item.nameAr || item.name
+                                      : item.nameEn || item.name}
                                   </p>
                                   {item.size || item.variant ? (
                                     <p className="mt-0.5 text-sm text-zinc-500">
                                       {[
                                         item.size
                                           ? isArabic
-                                            ? item.size.nameAr || item.size.nameEn
-                                            : item.size.nameEn || item.size.nameAr
+                                            ? item.size.nameAr ||
+                                              item.size.nameEn
+                                            : item.size.nameEn ||
+                                              item.size.nameAr
                                           : null,
                                         item.variant
                                           ? isArabic
@@ -893,7 +916,8 @@ export default function RequestStaffButton() {
                         value={customerName}
                         onChange={(e) => {
                           setCustomerName(e.target.value);
-                          if (fieldErrors.name) setFieldErrors((p) => ({ ...p, name: "" }));
+                          if (fieldErrors.name)
+                            setFieldErrors((p) => ({ ...p, name: "" }));
                         }}
                         placeholder={labels.namePlaceholder}
                         className={`w-full rounded-lg border px-3 py-2 text-base outline-none focus:ring-2 transition ${
@@ -904,7 +928,9 @@ export default function RequestStaffButton() {
                       />
                       {fieldErrors.name && (
                         <p className="mt-1.5 flex items-center gap-1 text-sm text-rose-500">
-                          <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-500 text-[10px] font-bold">!</span>
+                          <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-500 text-[10px] font-bold">
+                            !
+                          </span>
                           {fieldErrors.name}
                         </p>
                       )}
@@ -941,7 +967,9 @@ export default function RequestStaffButton() {
                         </div>
                         {fieldErrors.phone && (
                           <p className="mt-1.5 flex items-center gap-1 text-sm text-rose-500">
-                            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-500 text-[10px] font-bold">!</span>
+                            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-500 text-[10px] font-bold">
+                              !
+                            </span>
                             {fieldErrors.phone}
                           </p>
                         )}
@@ -951,156 +979,165 @@ export default function RequestStaffButton() {
                     {/* 3. منطقة التوصيل */}
                     {isDeliveryOrder && (
                       <div>
-                        <div className={`overflow-hidden rounded-2xl border shadow-sm ${fieldErrors.govArea ? "border-rose-400" : "border-(--bg-main)/15"}`}>
                         <div
-                          className="flex items-center gap-2 px-3 py-2"
-                          style={{
-                            background: `color-mix(in srgb, var(--bg-main) 10%, transparent)`,
-                          }}
+                          className={`overflow-hidden rounded-2xl border shadow-sm ${fieldErrors.govArea ? "border-rose-400" : "border-(--bg-main)/15"}`}
                         >
-                          <MdLocationOn className="h-4 w-4 text-(--bg-main)" />
-                          <span className="text-sm font-semibold text-(--bg-main)">
-                            {labels.deliveryArea}
-                          </span>
-                          <span className="text-rose-500 text-sm font-bold ms-0.5">*</span>
-                        </div>
-
-                        {!showGovSearch && currentGovernorate ? (
-                          <div className="bg-white px-3 py-3 space-y-2.5">
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="min-w-0">
-                                <p className="truncate text-base font-bold text-zinc-900">
-                                  {isArabic
-                                    ? currentGovernorate.nameAr
-                                    : currentGovernorate.nameEn}
-                                </p>
-                                <p className="text-sm text-zinc-400">
-                                  🚚 {labels.deliveryFee}:{" "}
-                                  <span className="font-semibold text-zinc-600">
-                                    {currentGovernorate.price}{" "}
-                                    {menuInfo?.currency ?? ""}
-                                  </span>
-                                </p>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => setShowGovSearch(true)}
-                                className="shrink-0 flex items-center gap-1.5 rounded-full border border-(--bg-main)/30 bg-(--bg-main)/6 px-3 py-1 text-sm font-semibold text-(--bg-main) transition hover:bg-(--bg-main)/15 active:scale-95"
-                              >
-                                <FiMapPin className="h-3.5 w-3.5" />
-                                {labels.changeArea}
-                              </button>
-                            </div>
-
-                            <div className="border-t border-zinc-100" />
-
-                            <button
-                              type="button"
-                              onClick={detectLocation}
-                              disabled={isDetectingLocation}
-                              className="flex w-full items-center justify-center gap-2 rounded-xl border border-(--bg-main)/25 bg-(--bg-main)/5 py-2 text-sm font-medium text-(--bg-main) transition hover:bg-(--bg-main)/12 active:scale-[0.98] disabled:opacity-50"
-                            >
-                              {isDetectingLocation ? (
-                                <>
-                                  <span className="h-4 w-4 rounded-full border-2 border-t-transparent border-(--bg-main) animate-spin" />
-                                  {isArabic ? "جاري التحديد..." : "Detecting..."}
-                                </>
-                              ) : (
-                                <>
-                                  <MdMyLocation className="h-4 w-4" />
-                                  {labels.detectLocation}
-                                </>
-                              )}
-                            </button>
+                          <div
+                            className="flex items-center gap-2 px-3 py-2"
+                            style={{
+                              background: `color-mix(in srgb, var(--bg-main) 10%, transparent)`,
+                            }}
+                          >
+                            <MdLocationOn className="h-4 w-4 text-(--bg-main)" />
+                            <span className="text-sm font-semibold text-(--bg-main)">
+                              {labels.deliveryArea}
+                            </span>
+                            <span className="text-rose-500 text-sm font-bold ms-0.5">
+                              *
+                            </span>
                           </div>
-                        ) : (
-                          <div className="bg-white">
-                            <div className="flex items-center gap-2 border-b border-zinc-100 px-3 py-2.5">
-                              <FiSearch className="h-4 w-4 shrink-0 text-(--bg-main)/60" />
-                              <input
-                                type="text"
-                                autoFocus
-                                value={govSearchText}
-                                onChange={(e) =>
-                                  setGovSearchText(e.target.value)
-                                }
-                                placeholder={labels.searchArea}
-                                className="flex-1 bg-transparent text-base outline-none placeholder:text-zinc-400"
-                              />
+
+                          {!showGovSearch && currentGovernorate ? (
+                            <div className="bg-white px-3 py-3 space-y-2.5">
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                  <p className="truncate text-base font-bold text-zinc-900">
+                                    {isArabic
+                                      ? currentGovernorate.nameAr
+                                      : currentGovernorate.nameEn}
+                                  </p>
+                                  <p className="text-sm text-zinc-400">
+                                    🚚 {labels.deliveryFee}:{" "}
+                                    <span className="font-semibold text-zinc-600">
+                                      {currentGovernorate.price}{" "}
+                                      {menuInfo?.currency ?? ""}
+                                    </span>
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowGovSearch(true)}
+                                  className="shrink-0 flex items-center gap-1.5 rounded-full border border-(--bg-main)/30 bg-(--bg-main)/6 px-3 py-1 text-sm font-semibold text-(--bg-main) transition hover:bg-(--bg-main)/15 active:scale-95"
+                                >
+                                  <FiMapPin className="h-3.5 w-3.5" />
+                                  {labels.changeArea}
+                                </button>
+                              </div>
+
+                              <div className="border-t border-zinc-100" />
+
                               <button
                                 type="button"
-                                onClick={() => {
-                                  setShowGovSearch(false);
-                                  setGovSearchText("");
-                                }}
-                                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400 transition hover:bg-zinc-200"
+                                onClick={detectLocation}
+                                disabled={isDetectingLocation}
+                                className="flex w-full items-center justify-center gap-2 rounded-xl border border-(--bg-main)/25 bg-(--bg-main)/5 py-2 text-sm font-medium text-(--bg-main) transition hover:bg-(--bg-main)/12 active:scale-[0.98] disabled:opacity-50"
                               >
-                                <FiX className="h-3.5 w-3.5" />
+                                {isDetectingLocation ? (
+                                  <>
+                                    <span className="h-4 w-4 rounded-full border-2 border-t-transparent border-(--bg-main) animate-spin" />
+                                    {isArabic
+                                      ? "جاري التحديد..."
+                                      : "Detecting..."}
+                                  </>
+                                ) : (
+                                  <>
+                                    <MdMyLocation className="h-4 w-4" />
+                                    {labels.detectLocation}
+                                  </>
+                                )}
                               </button>
                             </div>
+                          ) : (
+                            <div className="bg-white">
+                              <div className="flex items-center gap-2 border-b border-zinc-100 px-3 py-2.5">
+                                <FiSearch className="h-4 w-4 shrink-0 text-(--bg-main)/60" />
+                                <input
+                                  type="text"
+                                  autoFocus
+                                  value={govSearchText}
+                                  onChange={(e) =>
+                                    setGovSearchText(e.target.value)
+                                  }
+                                  placeholder={labels.searchArea}
+                                  className="flex-1 bg-transparent text-base outline-none placeholder:text-zinc-400"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setShowGovSearch(false);
+                                    setGovSearchText("");
+                                  }}
+                                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-400 transition hover:bg-zinc-200"
+                                >
+                                  <FiX className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
 
-                            <ul className="max-h-48 overflow-y-auto">
-                              {filteredGovernorates.length ? (
-                                filteredGovernorates.map((gov) => {
-                                  const isSelected = gov.id === governorateId;
-                                  return (
-                                    <li key={gov.id}>
-                                      <button
-                                        type="button"
-                                        onClick={() =>
-                                          changeGovernorate(gov.id)
-                                        }
-                                        className={`flex w-full items-center justify-between gap-3 px-3 py-3 text-start transition hover:bg-(--bg-main)/6 ${
-                                          isSelected ? "bg-(--bg-main)/8" : ""
-                                        }`}
-                                      >
-                                        <span className="flex items-center gap-2 min-w-0">
-                                          <span
-                                            className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
-                                              isSelected
-                                                ? "bg-(--bg-main) text-white"
-                                                : "bg-zinc-100 text-zinc-400"
-                                            }`}
-                                          >
-                                            <FiMapPin className="h-3.5 w-3.5" />
-                                          </span>
-                                          <span
-                                            className={`truncate text-base ${
-                                              isSelected
-                                                ? "font-bold text-(--bg-main)"
-                                                : "font-medium text-zinc-800"
-                                            }`}
-                                          >
-                                            {isArabic
-                                              ? gov.nameAr
-                                              : gov.nameEn}
-                                          </span>
-                                        </span>
-                                        <span
-                                          className={`shrink-0 rounded-full px-2.5 py-0.5 text-sm font-semibold ${
-                                            isSelected
-                                              ? "bg-(--bg-main)/15 text-(--bg-main)"
-                                              : "bg-zinc-100 text-zinc-500"
+                              <ul className="max-h-48 overflow-y-auto">
+                                {filteredGovernorates.length ? (
+                                  filteredGovernorates.map((gov) => {
+                                    const isSelected = gov.id === governorateId;
+                                    return (
+                                      <li key={gov.id}>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            changeGovernorate(gov.id)
+                                          }
+                                          className={`flex w-full items-center justify-between gap-3 px-3 py-3 text-start transition hover:bg-(--bg-main)/6 ${
+                                            isSelected ? "bg-(--bg-main)/8" : ""
                                           }`}
                                         >
-                                          {gov.price} {menuInfo?.currency ?? ""}
-                                        </span>
-                                      </button>
-                                    </li>
-                                  );
-                                })
-                              ) : (
-                                <li className="px-3 py-5 text-center text-sm text-zinc-400">
-                                  {isArabic ? "لا توجد نتائج" : "No results"}
-                                </li>
-                              )}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
+                                          <span className="flex items-center gap-2 min-w-0">
+                                            <span
+                                              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${
+                                                isSelected
+                                                  ? "bg-(--bg-main) text-white"
+                                                  : "bg-zinc-100 text-zinc-400"
+                                              }`}
+                                            >
+                                              <FiMapPin className="h-3.5 w-3.5" />
+                                            </span>
+                                            <span
+                                              className={`truncate text-base ${
+                                                isSelected
+                                                  ? "font-bold text-(--bg-main)"
+                                                  : "font-medium text-zinc-800"
+                                              }`}
+                                            >
+                                              {isArabic
+                                                ? gov.nameAr
+                                                : gov.nameEn}
+                                            </span>
+                                          </span>
+                                          <span
+                                            className={`shrink-0 rounded-full px-2.5 py-0.5 text-sm font-semibold ${
+                                              isSelected
+                                                ? "bg-(--bg-main)/15 text-(--bg-main)"
+                                                : "bg-zinc-100 text-zinc-500"
+                                            }`}
+                                          >
+                                            {gov.price}{" "}
+                                            {menuInfo?.currency ?? ""}
+                                          </span>
+                                        </button>
+                                      </li>
+                                    );
+                                  })
+                                ) : (
+                                  <li className="px-3 py-5 text-center text-sm text-zinc-400">
+                                    {isArabic ? "لا توجد نتائج" : "No results"}
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
                         {fieldErrors.govArea && (
                           <p className="mt-1.5 flex items-center gap-1 text-sm text-rose-500">
-                            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-500 text-[10px] font-bold">!</span>
+                            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-500 text-[10px] font-bold">
+                              !
+                            </span>
                             {fieldErrors.govArea}
                           </p>
                         )}
@@ -1121,7 +1158,8 @@ export default function RequestStaffButton() {
                           value={customerAddress}
                           onChange={(e) => {
                             setCustomerAddress(e.target.value);
-                            if (fieldErrors.address) setFieldErrors((p) => ({ ...p, address: "" }));
+                            if (fieldErrors.address)
+                              setFieldErrors((p) => ({ ...p, address: "" }));
                           }}
                           placeholder={labels.addressPlaceholder}
                           rows={3}
@@ -1133,7 +1171,9 @@ export default function RequestStaffButton() {
                         />
                         {fieldErrors.address && (
                           <p className="mt-1.5 flex items-center gap-1 text-sm text-rose-500">
-                            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-500 text-[10px] font-bold">!</span>
+                            <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-500 text-[10px] font-bold">
+                              !
+                            </span>
                             {fieldErrors.address}
                           </p>
                         )}

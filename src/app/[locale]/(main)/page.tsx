@@ -13,7 +13,7 @@ import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
-import Default from "@/components/Templates/Default";
+import Default from "@/components/Templates/Default";   
 import SkyTemplate from "@/components/Templates/SkyTemplate";
 import NeonTemplate from "@/components/Templates/NeonTemplate";
 import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
@@ -34,9 +34,10 @@ export default function Page() {
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
+  const activeTheme = resolveMenuTheme(menu.theme);
 
   const showTemplates =
-    menu.menuInfo?.isActive !== false && Boolean(menu.theme);
+    menu.menuInfo?.isActive !== false && Boolean(activeTheme);
 
   useEffect(() => {
     const slug = menu.menuInfo?.slug;
