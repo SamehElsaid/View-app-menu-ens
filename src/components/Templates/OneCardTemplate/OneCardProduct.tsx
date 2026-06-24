@@ -56,16 +56,20 @@ function pickCategoryLabel(item: MenuItem, locale: string) {
 function BadgePill({
   children,
   primary,
+  secondary,
   className = "",
 }: {
   children: ReactNode;
   primary: string;
+  secondary: string;
   className?: string;
 }) {
   return (
     <span
       className="inline-flex items-center overflow-hidden rounded-full shadow-md ltr:flex-row-reverse"
-      style={{ backgroundColor: primary }}
+      style={{
+        background: `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)`,
+      }}
     >
       <span
         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full sm:h-8 sm:w-8"
@@ -189,7 +193,7 @@ function OneCardProductCardInner({
 
             {item.available ? (
               <div className="absolute end-3 top-3 z-20 sm:end-4 sm:top-4 md:end-5 md:top-5">
-                <BadgePill primary={primary}>
+                <BadgePill primary={primary} secondary={secondary}>
                   {isAr ? "متاح الان" : "Available Now"}
                 </BadgePill>
               </div>
@@ -203,7 +207,7 @@ function OneCardProductCardInner({
                 <div className="flex min-h-0 flex-col items-center overflow-hidden">
                   {categoryLabel ? (
                     <div className="mb-2.5 flex justify-center sm:mb-3">
-                      <BadgePill primary={primary}>
+                      <BadgePill primary={primary} secondary={secondary}>
                         {categoryLabel}
                       </BadgePill>
                     </div>
