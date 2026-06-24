@@ -34,7 +34,7 @@ function OneCardTemplateContent() {
 
   return (
     <main
-      className="relative w-full min-h-screen overflow-x-hidden bg-[linear-gradient(135deg,var(--onecard-secondary,#5a00c2),var(--onecard-primary,#6b0fd6))] onecard-root menu-template font-body antialiased"
+      className="relative w-full min-h-screen overflow-x-hidden bg-(--onecard-primary,#6b0fd6) onecard-root menu-template font-body antialiased"
       style={{ fontFamily: menuTemplateFontFamily(locale) }}
       dir={locale === "ar" ? "rtl" : "ltr"}
     >
