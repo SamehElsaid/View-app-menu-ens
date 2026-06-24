@@ -17,7 +17,7 @@ function Default() {
 
   return (
     <CategoryNavProvider>
-      <div className="menu-template font-body min-h-screen">
+      <div className="menu-template font-body min-h-dvh">
         <style jsx global>
           {globalStyles}
         </style>

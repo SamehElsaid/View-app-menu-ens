@@ -5,6 +5,14 @@
 export const globalStyles = `
 
   /* ============================
+   iOS overscroll fix — prevents white flash on rubber-band scroll
+   ============================ */
+  html {
+    background-color: #ffffff;
+    overscroll-behavior-y: none;
+  }
+
+  /* ============================
    Design Tokens
    ============================ */
   :root {
