@@ -1,8 +1,3 @@
-import placeholder from "@/components/img/30690.png";
-
-/** Bundled default used when a menu item has no image URL and no menu logo fallback. */
-export const DEFAULT_MENU_ITEM_IMAGE_SRC = placeholder.src;
-
 const LOCAL_UPLOAD_HOSTS = new Set(["localhost", "127.0.0.1"]);
 
 /** Production upload host — files live here when local API has no copy. */
@@ -54,7 +49,6 @@ function resolveAssetUrl(trimmed: string): string {
     return trimmed;
   }
 
-  // Next.js bundled assets (default placeholder) — must not be sent to the API host.
   if (trimmed.startsWith("/_next/")) {
     return trimmed;
   }
@@ -70,7 +64,7 @@ function resolveAssetUrl(trimmed: string): string {
 }
 
 /**
- * Resolves a menu item image URL: empty/whitespace → menu logo (if provided) or default placeholder,
+ * Resolves a menu item image URL: empty/whitespace → menu logo (if provided) or empty string,
  * absolute/data URLs unchanged, relative paths joined to the API host (same as ImageLoad).
  */
 export function resolveMenuItemImageSrc(
@@ -83,7 +77,7 @@ export function resolveMenuItemImageSrc(
     if (logoTrimmed) {
       return resolveAssetUrl(logoTrimmed);
     }
-    return DEFAULT_MENU_ITEM_IMAGE_SRC;
+    return "";
   }
 
   return resolveAssetUrl(trimmed);

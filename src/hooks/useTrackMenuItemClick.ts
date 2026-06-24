@@ -15,7 +15,7 @@ export function useTrackMenuItemClick() {
         trackMenuItemClick(menuInfo.slug, itemId);
       }
     },
-    [menuInfo?.slug],
+    [menuInfo],
   );
 
   const openItem = useCallback(

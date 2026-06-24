@@ -1,5 +1,5 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
+
 import { MenuItem, MenuInfo, MenuCustomizations, Category, Delivery } from "@/types/menu";
 import { Ad } from "@/types/Ad";
 import { useEffect, useState } from "react";
@@ -10,6 +10,7 @@ import {
   SET_MENU_CUSTOMIZATIONS,
   SET_CATEGORIES,
   SET_DELIVERY,
+  SET_CATALOG_META,
 } from "@/store/authMenu/authMenu";
 import { useAppDispatch } from "@/store/hooks";
 import Loader from "@/components/Global/Loader";
@@ -17,43 +18,12 @@ import {
   sortCategories,
   sortMenuItemsForDisplay,
 } from "@/lib/menuCategoryOrder";
-
-function normalizePrice(val: unknown): number {
-  const n = Number(val);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function normalizeMenuItem(item: MenuItem): MenuItem {
-  return {
-    ...item,
-    price: normalizePrice(item.price),
-    originalPrice:
-      item.originalPrice != null ? normalizePrice(item.originalPrice) : null,
-    sizes: Array.isArray(item.sizes)
-      ? item.sizes
-          .filter(Boolean)
-          .map((s) => ({ ...s, price: normalizePrice(s.price) }))
-      : null,
-    variants: Array.isArray(item.variants)
-      ? item.variants
-          .filter(Boolean)
-          .map((v) => ({ ...v, price: normalizePrice(v.price) }))
-      : null,
-  };
-}
-
-function normalizeMenuItems(items: MenuItem[]): MenuItem[] {
-  return items.map(normalizeMenuItem);
-}
-
-function normalizeCategories(cats: Category[]): Category[] {
-  return cats.map((cat) => ({
-    ...cat,
-    menuItems: Array.isArray(cat.menuItems)
-      ? normalizeMenuItems(cat.menuItems)
-      : cat.menuItems,
-  }));
-}
+import {
+  normalizeCategories,
+  normalizeMenuItems,
+} from "@/lib/menuItemNormalize";
+import { resolveBootstrapCatalogMeta } from "@/lib/menuCatalogApi";
+import type { MenuCatalogMeta } from "@/types/menuCatalog";
 
 type Props = {
   menu: MenuItem[] | null;
@@ -62,6 +32,7 @@ type Props = {
   menuCustomizations: MenuCustomizations | null;
   categories: Category[] | null;
   delivery: Delivery | null;
+  catalog: MenuCatalogMeta | null;
 };
 
 export default function UseDispatchMenu({
@@ -71,6 +42,7 @@ export default function UseDispatchMenu({
   menuCustomizations,
   categories,
   delivery,
+  catalog,
 }: Props) {
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(true);
@@ -100,8 +72,22 @@ export default function UseDispatchMenu({
       dispatch(SET_MENU_CUSTOMIZATIONS(menuCustomizations));
     }
     dispatch(SET_DELIVERY(delivery ?? null));
-    setLoading(false);
-  }, [menu, menuInfo, ads, menuCustomizations, categories, delivery, dispatch]);
+    dispatch(
+      SET_CATALOG_META(
+        catalog ?? (menu ? resolveBootstrapCatalogMeta(menu.length) : null),
+      ),
+    );
+    queueMicrotask(() => setLoading(false));
+  }, [
+    menu,
+    menuInfo,
+    ads,
+    menuCustomizations,
+    categories,
+    delivery,
+    catalog,
+    dispatch,
+  ]);
   return (
     <>
       {loading && (

@@ -25,10 +25,14 @@ import { useCategoryNav } from "./CategoryNavContext";
 import { getCategoryIconName, type MenuCategoryLike } from "./categoryIconMap";
 import {
   buildCategorySections,
-  sortMenuItems,
 } from "@/lib/menuCategoryOrder";
 import { useProductModalUrl } from "@/hooks/useProductModalUrl";
 import LoadImage from "@/components/ImageLoad";
+import { useMenuCatalogPagination } from "@/hooks/useMenuCatalogPagination";
+import MenuCatalogSentinel from "@/components/Global/MenuCatalogSentinel";
+import MenuCatalogSkeleton, {
+  MenuCategoryHeaderSkeleton,
+} from "@/components/Global/MenuCatalogSkeleton";
 
 const NAV_OFFSET_PX = 80;
 
@@ -182,10 +186,15 @@ export default function MenuSection({ currency }: { currency: string }) {
   const { activeCategory, setActiveCategory, setShowCategoryBurger } =
     useCategoryNav();
 
-  const storeMenuItems = useAppSelector((state) => state.menu.menu);
   const storeCategories = useAppSelector((state) => state.menu.categories);
 
-  const menuItems = useMemo(() => storeMenuItems ?? [], [storeMenuItems]);
+  const {
+    items: menuItems,
+    initialLoading: catalogInitialLoading,
+    loadingMore: catalogLoadingMore,
+    hasMore,
+    sentinelRef,
+  } = useMenuCatalogPagination(activeCategory);
 
   const categories = useMemo(
     () =>
@@ -215,9 +224,7 @@ export default function MenuSection({ currency }: { currency: string }) {
   }, [setShowCategoryBurger]);
 
   useEffect(() => {
-    const sync = () => setCart(readSkyCartFromCookie());
-    sync();
-    return subscribeSkyCartUpdated(sync);
+    return subscribeSkyCartUpdated(() => setCart(readSkyCartFromCookie()));
   }, []);
 
   const handleAddToCart = (
@@ -240,13 +247,6 @@ export default function MenuSection({ currency }: { currency: string }) {
     () => buildCategorySections(categories, menuItems),
     [categories, menuItems],
   );
-
-  const filteredItems = useMemo(() => {
-    if (activeCategory === 0) return [];
-    return sortMenuItems(
-      menuItems.filter((item) => item.categoryId === activeCategory),
-    );
-  }, [menuItems, activeCategory]);
 
   const activeCategoryData = useMemo(() => {
     if (activeCategory === 0) return null;
@@ -353,22 +353,38 @@ export default function MenuSection({ currency }: { currency: string }) {
         )
       ) : activeCategoryData ? (
         <>
-          <CategorySectionHeader
-            category={activeCategoryData}
-            locale={locale}
-            itemCount={filteredItems.length}
-          />
-          {filteredItems.length > 0 ? (
-            <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
-              {filteredItems.map((item, index) => renderMenuCard(item, index))}
-            </div>
+          {catalogInitialLoading ? (
+            <>
+              <MenuCategoryHeaderSkeleton />
+              <MenuCatalogSkeleton variant="default" count={6} />
+            </>
           ) : (
-            <p className="rounded-2xl border border-dashed border-(--bg-main)/25 bg-white/80 px-6 py-12 text-center text-base font-medium text-zinc-500">
-              {t("noItems")}
-            </p>
+            <>
+              <CategorySectionHeader
+                category={activeCategoryData}
+                locale={locale}
+                itemCount={activeCategoryData.itemsCount ?? menuItems.length}
+              />
+              {menuItems.length > 0 ? (
+                <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
+                  {menuItems.map((item, index) => renderMenuCard(item, index))}
+                </div>
+              ) : (
+                <p className="rounded-2xl border border-dashed border-(--bg-main)/25 bg-white/80 px-6 py-12 text-center text-base font-medium text-zinc-500">
+                  {t("noItems")}
+                </p>
+              )}
+            </>
           )}
         </>
       ) : null}
+
+      <MenuCatalogSentinel
+        sentinelRef={sentinelRef}
+        loadingMore={catalogLoadingMore}
+        hasMore={hasMore}
+        skeletonVariant="default"
+      />
     </div>
   );
 }

@@ -13,7 +13,8 @@ import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
-import OneCardTemplate from "@/components/Templates/OneCardTemplate";
+import Default from "@/components/Templates/Default";
+import OneCard from "@/components/Templates/OneCardTemplate";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -77,7 +78,7 @@ export default function Page() {
             <StripInvalidTableParam />
           </Suspense>
           {/* {menu.theme === "default" && <Default />} */}
-          {menu.theme === "default" && <OneCardTemplate />}
+          {menu.theme === "neon" && <OneCard />}
 
           {tableCartAllowed ? (
             <Suspense fallback={null}>

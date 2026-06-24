@@ -8,6 +8,7 @@ import AdVBanner from "../components/AdBanner";
 import MenuSection from "./MenuSection";
 import Footer from "../components/Footer";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
+import MenuFooterGate from "@/components/Global/MenuFooterGate";
 import { useAppSelector } from "@/store/hooks";
 import { CategoryNavProvider } from "./CategoryNavContext";
 
@@ -29,10 +30,12 @@ function Default() {
         <Suspense fallback={null}>
           <MenuSection currency={menuInfo?.currency || "AED"} />
         </Suspense>
-        <Footer
-          workingHours={menuInfo?.workingHours || null}
-          menuInfo={menuInfo || null}
-        />
+        <MenuFooterGate>
+          <Footer
+            workingHours={menuInfo?.workingHours || null}
+            menuInfo={menuInfo || null}
+          />
+        </MenuFooterGate>
         {menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
       </div>
     </CategoryNavProvider>

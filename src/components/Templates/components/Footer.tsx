@@ -77,7 +77,7 @@ export default function Footer({
   return (
     <footer
       id="footer"
-      className="scroll-mt-20 mt-16 border-t border-purple-50 bg-white py-12 sm:py-16"
+      className="scroll-mt-20 mt-16 border-t border-purple-50 bg-white py-12 sm:py-16 [overflow-anchor:none]"
     >
       <div className="mx-auto w-full max-w-4xl px-4 sm:px-6">
         <div className="flex flex-col items-center text-center">

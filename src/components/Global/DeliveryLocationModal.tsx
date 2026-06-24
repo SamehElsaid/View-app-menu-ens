@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -62,14 +62,14 @@ export default function DeliveryLocationModal() {
   const delivery = useAppSelector((s) => s.menu.delivery);
   const menuInfo = useAppSelector((s) => s.menu.menuInfo);
 
-  const [hasMounted, setHasMounted] = useState(false);
+  const hasMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const [modalState, setModalState] = useState<ModalState>("idle");
   const [foundGovernorate, setFoundGovernorate] =
     useState<DeliveryGovernorate | null>(null);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
 
   const deliveryZoneAlreadySet = Boolean(
     searchParams.get(DELIVERY_ZONE_PARAM)?.trim(),

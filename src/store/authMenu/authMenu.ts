@@ -1,6 +1,9 @@
 import { MenuItem, MenuInfo, MenuCustomizations, Category, Delivery } from "@/types/menu";
 import { Ad } from "@/types/Ad";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import type { MenuCatalogMeta } from "@/types/menuCatalog";
+import { mergeMenuItemsById } from "@/lib/menuItemNormalize";
+import { sortMenuItemsForDisplay } from "@/lib/menuCategoryOrder";
 
 type MenuState = {
   menu: MenuItem[] | null;
@@ -10,6 +13,7 @@ type MenuState = {
   menuCustomizations: MenuCustomizations | null;
   categories: Category[] | null;
   delivery: Delivery | null;
+  catalog: MenuCatalogMeta | null;
 };
 const initialState: MenuState = {
   menu: null,
@@ -19,6 +23,7 @@ const initialState: MenuState = {
   menuCustomizations: null,
   categories: null,
   delivery: null,
+  catalog: null,
 };
 
 const menuSlice = createSlice({
@@ -47,6 +52,14 @@ const menuSlice = createSlice({
     SET_CATEGORIES: (state, action: PayloadAction<Category[]>) => {
       state.categories = action.payload;
     },
+    SET_CATALOG_META: (state, action: PayloadAction<MenuCatalogMeta | null>) => {
+      state.catalog = action.payload;
+    },
+    APPEND_MENU_ITEMS: (state, action: PayloadAction<MenuItem[]>) => {
+      if (!action.payload.length) return;
+      const merged = mergeMenuItemsById(state.menu ?? [], action.payload);
+      state.menu = sortMenuItemsForDisplay(merged, state.categories ?? undefined);
+    },
     SET_DELIVERY: (state, action: PayloadAction<Delivery | null>) => {
       state.delivery = action.payload;
     },
@@ -58,6 +71,7 @@ const menuSlice = createSlice({
       state.menuCustomizations = null;
       state.categories = null;
       state.delivery = null;
+      state.catalog = null;
     },
   },
 });
@@ -69,6 +83,8 @@ export const {
   SET_THEME,
   SET_MENU_CUSTOMIZATIONS,
   SET_CATEGORIES,
+  SET_CATALOG_META,
+  APPEND_MENU_ITEMS,
   SET_DELIVERY,
   REMOVE_MENU,
 } = menuSlice.actions;

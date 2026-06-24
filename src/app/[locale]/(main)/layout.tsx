@@ -16,33 +16,47 @@ import {
 import { Ad } from "@/types/Ad";
 import { cookies, headers } from "next/headers";
 import { Metadata } from "next";
-import { cache } from "react";
+import { resolveBootstrapCatalogMeta } from "@/lib/menuCatalogApi";
+import type {
+  MenuBootstrapApiEnvelope,
+  MenuBootstrapResponse,
+} from "@/types/menuBootstrap";
 
-type MenuResponse = {
-  menu: MenuInfo;
-  items: MenuItem[];
-  ads: Ad[];
-  customizations: MenuCustomizations | null;
-  categories: Category[];
-  delivery: Delivery | null;
-};
+import { cache } from "react";
 
 type MenuCacheEntry = {
   expiresAt: number;
-  promise: Promise<MenuResponse | null>;
+  promise: Promise<MenuBootstrapResponse | null>;
 };
 
 const MENU_BOOTSTRAP_CACHE_TTL_MS = 15_000;
 const menuRequests = new Map<string, MenuCacheEntry>();
+
+function parseMenuBootstrapPayload(
+  body: MenuBootstrapApiEnvelope | MenuBootstrapResponse | undefined,
+): MenuBootstrapResponse | null {
+  if (!body) return null;
+  if ("menu" in body && body.menu) {
+    return body as MenuBootstrapResponse;
+  }
+  if ("data" in body && body.data?.menu) {
+    return body.data;
+  }
+  return null;
+}
 
 async function fetchMenu(slug: string, locale: string, forwardQuery: string) {
   const menuApiPath = forwardQuery
     ? `/public/menu/${slug}?${forwardQuery}`
     : `/public/menu/${slug}`;
 
-  const response = await serverGet<{ data: MenuResponse }>(menuApiPath, locale);
+  const response = await serverGet<MenuBootstrapApiEnvelope | MenuBootstrapResponse>(
+    menuApiPath,
+    locale,
+  );
 
-  return response.status ? (response?.data?.data ?? null) : null;
+  if (!response.status) return null;
+  return parseMenuBootstrapPayload(response.data);
 }
 
 const getMenuBySlug = cache(
@@ -181,6 +195,10 @@ export default async function MainLayout({
   const cookieSubdomain = cookieStore.get(DEV_SUB_DOMAIN_COOKIE_KEY)?.value;
   const { needsDevSubdomain, devMode } = resolveMenuSlug(host, cookieSubdomain);
   const data = await getMenu(locale);
+  console.log(data);
+  const bootstrapCatalog = data?.items
+    ? resolveBootstrapCatalogMeta(data.items.length, data.totalItems)
+    : null;
 
   return (
     <>
@@ -197,6 +215,7 @@ export default async function MainLayout({
         }
         categories={(data?.categories as Category[]) ?? null}
         delivery={(data?.delivery as Delivery) ?? null}
+        catalog={bootstrapCatalog}
       />
       <Header />
       {children}
