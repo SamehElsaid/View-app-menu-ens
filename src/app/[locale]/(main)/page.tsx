@@ -25,6 +25,7 @@ import ArcaneTemplate from "@/components/Templates/Arcane";
 import MusicTemplate from "@/components/Templates/MusicTemplate";
 import RetroCoffeeTemplate from "@/components/Templates/RetroCoffeeTemplate";
 import OneCardTemplate from "@/components/Templates/OneCardTemplate";
+import { resolveMenuTheme } from "@/lib/resolveMenuTheme";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
