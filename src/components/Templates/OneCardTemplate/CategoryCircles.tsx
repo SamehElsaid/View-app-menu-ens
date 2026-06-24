@@ -4,6 +4,7 @@ import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import type { Category } from "@/types/menu";
+import LoadImage from "@/components/ImageLoad";
 
 type CategoryCirclesProps = {
   categories: Category[];
@@ -55,13 +56,13 @@ const CategoryButton = memo(function CategoryButton({
             {label.charAt(0)}
           </span>
         ) : (
-          <img
+          <LoadImage
             src={imageSrc!}
             alt={label}
-            loading="eager"
-            decoding="async"
+            height={200}
+            width={200}
+            fill={true}
             className="h-full w-full object-cover"
-            onError={() => setImgError(true)}
           />
         )}
       </span>
