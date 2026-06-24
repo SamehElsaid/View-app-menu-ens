@@ -13,7 +13,7 @@ import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
-import Default from "@/components/Templates/Default";   
+import Default from "@/components/Templates/Default";
 import SkyTemplate from "@/components/Templates/SkyTemplate";
 import NeonTemplate from "@/components/Templates/NeonTemplate";
 import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
@@ -26,6 +26,8 @@ import MusicTemplate from "@/components/Templates/MusicTemplate";
 import RetroCoffeeTemplate from "@/components/Templates/RetroCoffeeTemplate";
 import OneCardTemplate from "@/components/Templates/OneCardTemplate";
 import { resolveMenuTheme } from "@/lib/resolveMenuTheme";
+import VanillaTemplate from "@/components/Templates/VanillaTemplate";
+import WaffleTemplate from "@/components/Templates/WaffleTemplate";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -89,18 +91,20 @@ export default function Page() {
           <Suspense fallback={null}>
             <StripInvalidTableParam />
           </Suspense>
-          {menu.theme === "default" && <Default />}
-          {menu.theme === "sky" && <SkyTemplate />}
-          {menu.theme === "neon" && <NeonTemplate />}
-          {menu.theme === "coffee" && <CoffeeTemplate />}
-          {menu.theme === "emerald" && <EmeraldTemplate />}
-          {menu.theme === "noir" && <NoirTemplate />}
-          {menu.theme === "oceanic" && <OceanicTemplate />}
-          {menu.theme === "pharaonic" && <PharaonicTemplate />}
-          {menu.theme === "arcane" && <ArcaneTemplate />}
-          {menu.theme === "music" && <MusicTemplate />}
-          {menu.theme === "retro" && <RetroCoffeeTemplate />}
-          {menu.theme === "onecard" && <OneCardTemplate />}
+          {menu.theme === "sky" ? <SkyTemplate />
+            : menu.theme === "neon" ? <NeonTemplate />
+              : menu.theme === "coffee" ? <CoffeeTemplate />
+                : menu.theme === "emerald" ? <EmeraldTemplate />
+                  : menu.theme === "noir" ? <NoirTemplate />
+                    : menu.theme === "oceanic" ? <OceanicTemplate />
+                      : menu.theme === "pharaonic" ? <PharaonicTemplate />
+                        : menu.theme === "arcane" ? <ArcaneTemplate />
+                          : menu.theme === "music" ? <MusicTemplate />
+                            : menu.theme === "retro" ? <RetroCoffeeTemplate />
+                              : menu.theme === "onecard" ? <OneCardTemplate />
+                                : menu.theme === "vanilla" ? <VanillaTemplate />
+                                  : menu.theme === "waffle" ? <WaffleTemplate />
+                                    : <Default />}
 
           {(tableCartAllowed || delivery?.deliveryOn) ? (
             <Suspense fallback={null}>
