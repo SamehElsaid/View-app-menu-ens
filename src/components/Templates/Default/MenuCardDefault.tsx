@@ -185,6 +185,8 @@ export const MenuCardDefault = ({
               src={item.image ?? ""}
               alt={item.name}
               fill
+              height={600}
+              width={600}
               className="object-cover transition-transform duration-700 group-hover:scale-110"
             />
           </div>

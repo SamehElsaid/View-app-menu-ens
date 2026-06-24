@@ -95,6 +95,8 @@ function CategoryFilterChip({
             src={image}
             alt={label}
             fill
+            height={44}
+            width={44}
             className="object-cover transition-transform duration-500 group-hover:scale-110"
           />
         </span>

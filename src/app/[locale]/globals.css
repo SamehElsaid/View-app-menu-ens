@@ -3217,7 +3217,7 @@ html {
 }
 
 .one-card-border-radius {
-  border-radius: 8% 20% 58% 25% / 15% 20% 61% 25%  ;
+  border-radius: 30px;
 }
 
 .parent-border-radius {

@@ -41,7 +41,7 @@ export default function MenuCategoryButton({
               <LoadImage
                 src={category.image}
                 alt={category.name || ""}
-                disableLazy={false}
+                disableLazy={true}
                 className="w-full h-full object-cover"
               />
             </div>

@@ -14,7 +14,17 @@ import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
 import Default from "@/components/Templates/Default";
-import OneCard from "@/components/Templates/OneCardTemplate";
+import SkyTemplate from "@/components/Templates/SkyTemplate";
+import NeonTemplate from "@/components/Templates/NeonTemplate";
+import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
+import EmeraldTemplate from "@/components/Templates/EmeraldTemplate";
+import NoirTemplate from "@/components/Templates/NoirTemplate";
+import OceanicTemplate from "@/components/Templates/OceanicTemplate";
+import PharaonicTemplate from "@/components/Templates/PharaonicTemplate";
+import ArcaneTemplate from "@/components/Templates/Arcane";
+import MusicTemplate from "@/components/Templates/MusicTemplate";
+import RetroCoffeeTemplate from "@/components/Templates/RetroCoffeeTemplate";
+import OneCardTemplate from "@/components/Templates/OneCardTemplate";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -77,8 +87,18 @@ export default function Page() {
           <Suspense fallback={null}>
             <StripInvalidTableParam />
           </Suspense>
-          {/* {menu.theme === "default" && <Default />} */}
-          <OneCard />
+          {menu.theme === "default" && <Default />}
+          {menu.theme === "sky" && <SkyTemplate />}
+          {menu.theme === "neon" && <NeonTemplate />}
+          {menu.theme === "coffee" && <CoffeeTemplate />}
+          {menu.theme === "emerald" && <EmeraldTemplate />}
+          {menu.theme === "noir" && <NoirTemplate />}
+          {menu.theme === "oceanic" && <OceanicTemplate />}
+          {menu.theme === "pharaonic" && <PharaonicTemplate />}
+          {menu.theme === "arcane" && <ArcaneTemplate />}
+          {menu.theme === "music" && <MusicTemplate />}
+          {menu.theme === "retro" && <RetroCoffeeTemplate />}
+          {menu.theme === "onecard" && <OneCardTemplate />}
 
           {tableCartAllowed ? (
             <Suspense fallback={null}>
