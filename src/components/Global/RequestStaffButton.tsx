@@ -35,7 +35,6 @@ import {
   type SkyCart,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import arLabels from "react-phone-number-input/locale/ar";
@@ -163,7 +162,6 @@ export default function RequestStaffButton() {
   const [isConfirming, setIsConfirming] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const tableCartAllowed = useTableCartAllowed();
 
   const accentMain = useMemo(() => {
     const custom = menuCustomizations?.primaryColor?.trim();
@@ -695,7 +693,6 @@ export default function RequestStaffButton() {
   };
 
   if (!isMenuActive || !menuInfo?.id) return null;
-  if (!tableCartAllowed) return null;
   /** After mount: searchParams and locale match the browser; avoids hydration mismatch. */
   if (!hasMounted || !isOrderingEnabled) return null;
 

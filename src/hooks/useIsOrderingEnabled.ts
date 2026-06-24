@@ -10,9 +10,9 @@ export const DELIVERY_ZONE_PARAM = "deliveryZone";
 /**
  * Returns whether ordering (add-to-cart + cart button) is currently active.
  * Ordering is enabled in two modes:
- *  - Table mode:    URL has `?table=<number>` and the plan is paid.
- *  - Delivery mode: URL has `?deliveryZone=<id>` (set after location confirmed),
- *                   delivery is turned on in the menu config, and plan is paid.
+ *  - Table mode:    URL has `?table=<number>` and the plan is paid (Pro).
+ *  - Delivery mode: URL has `?deliveryZone=<id>` (set after location confirmed)
+ *                   and delivery is turned on — available on Free and Pro.
  */
 export function useIsOrderingEnabled(): {
   isOrderingEnabled: boolean;
@@ -32,9 +32,7 @@ export function useIsOrderingEnabled(): {
     : null;
 
   const isDeliveryOrder =
-    Boolean(deliveryZoneParam) &&
-    Boolean(delivery?.deliveryOn) &&
-    tableCartAllowed;
+    Boolean(deliveryZoneParam) && Boolean(delivery?.deliveryOn);
 
   const isTableOrder =
     Boolean(tableNumber) &&

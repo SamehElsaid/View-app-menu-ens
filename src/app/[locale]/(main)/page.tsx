@@ -7,7 +7,6 @@ import { useSearchParams } from "next/navigation";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
 import DeliveryLocationModal from "@/components/Global/DeliveryLocationModal";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import MaintenanceView from "@/components/Global/MaintenanceView";
 import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
@@ -15,6 +14,8 @@ import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
 import Default from "@/components/Templates/Default";
 import OneCard from "@/components/Templates/OneCardTemplate";
+import Vanilla from "@/components/Templates/VanillaTemplate";
+import Waffle from "@/components/Templates/WaffleTemplate";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -22,7 +23,6 @@ export default function Page() {
   const menu = useAppSelector((state) => state.menu);
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
 
   const showTemplates =
@@ -78,13 +78,11 @@ export default function Page() {
             <StripInvalidTableParam />
           </Suspense>
           {/* {menu.theme === "default" && <Default />} */}
-          {menu.theme === "neon" && <OneCard />}
+          {menu.theme === "default" && <OneCard />}
 
-          {tableCartAllowed ? (
-            <Suspense fallback={null}>
-              <RequestStaffButton />
-            </Suspense>
-          ) : null}
+          <Suspense fallback={null}>
+            <RequestStaffButton />
+          </Suspense>
           {delivery?.deliveryOn && !searchParams.get("table")?.trim() ? (
             <Suspense fallback={null}>
               <DeliveryLocationModal />
