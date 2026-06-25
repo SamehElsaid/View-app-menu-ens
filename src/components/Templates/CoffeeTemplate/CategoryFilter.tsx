@@ -72,7 +72,7 @@ const CategoryFilterButton = memo(function CategoryFilterButton({
       type="button"
       onClick={() => onSelect(id)}
       aria-pressed={isActive}
-      className={`flex shrink-0 flex-col items-center gap-2 w-[76px] transition-transform duration-200 ease-in hover:scale-[0.95]`}
+      className={`flex shrink-0 flex-col items-center gap-2 min-w-[76px] max-w-[96px] transition-transform duration-200 ease-in hover:scale-[0.95]`}
     >
       <span
         className={`relative flex h-[56px] w-[56px] shrink-0 overflow-hidden rounded-full transition-all duration-200 ${
@@ -103,7 +103,7 @@ const CategoryFilterButton = memo(function CategoryFilterButton({
       </span>
 
       <span
-        className={`max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-center text-xs font-semibold transition-colors duration-200 ${
+        className={`w-full text-center text-xs font-semibold leading-tight transition-colors duration-200 ${
           isActive ? "text-[#F2B705]" : "text-[#B6AA99]"
         }`}
       >

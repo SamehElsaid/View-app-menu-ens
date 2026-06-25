@@ -14,6 +14,8 @@ type MenuState = {
   categories: Category[] | null;
   delivery: Delivery | null;
   catalog: MenuCatalogMeta | null;
+  /** true once UseDispatchMenu has finished its first dispatch cycle */
+  menuLoaded: boolean;
 };
 const initialState: MenuState = {
   menu: null,
@@ -24,6 +26,7 @@ const initialState: MenuState = {
   categories: null,
   delivery: null,
   catalog: null,
+  menuLoaded: false,
 };
 
 const menuSlice = createSlice({
@@ -72,6 +75,10 @@ const menuSlice = createSlice({
       state.categories = null;
       state.delivery = null;
       state.catalog = null;
+      state.menuLoaded = false;
+    },
+    SET_MENU_LOADED: (state, action: PayloadAction<boolean>) => {
+      state.menuLoaded = action.payload;
     },
   },
 });
@@ -87,6 +94,7 @@ export const {
   APPEND_MENU_ITEMS,
   SET_DELIVERY,
   REMOVE_MENU,
+  SET_MENU_LOADED,
 } = menuSlice.actions;
 
 export default menuSlice.reducer;

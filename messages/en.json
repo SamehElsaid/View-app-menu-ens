@@ -67,6 +67,8 @@
     "followUs": "Follow Us",
     "workingHours": "Working Hours",
     "closed": "Closed",
+    "am": "AM",
+    "pm": "PM",
     "days": {
       "sunday": "Sunday",
       "monday": "Monday",

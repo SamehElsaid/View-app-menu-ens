@@ -9,6 +9,7 @@ import PromoBanner from "./PromoBanner";
 import MenuCategory from "./MenuCategory";
 import CategoryFilter from "./CategoryFilter";
 import Footer from "./Footer";
+import WorkingHoursSection from "./WorkingHoursSection";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
 import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
 import { sortCategories, buildCategorySections } from "@/lib/menuCategoryOrder";
@@ -94,7 +95,7 @@ function CoffeeTemplate() {
 
     return (
       <Suspense fallback={null}>
-        {categorySections.map((section) => {
+        {categorySections.filter((section) => section.items.length > 0).map((section) => {
           const category = storeCategories.find(
             (c) => c.id === section.categoryId,
           );
@@ -155,6 +156,8 @@ function CoffeeTemplate() {
           hasMore={hasMore}
           skeletonVariant="coffee"
         />
+
+        <WorkingHoursSection />
       </div>
 
       <Footer
@@ -170,7 +173,6 @@ function CoffeeTemplate() {
         socialInstagram={menu?.menuInfo?.socialInstagram || undefined}
         socialTwitter={menu?.menuInfo?.socialTwitter || undefined}
         socialWhatsapp={menu?.menuInfo?.socialWhatsapp || undefined}
-        workingHours={menu?.menuInfo?.workingHours || undefined}
       />
       {menu?.menuInfo?.ownerPlanType === "free" && <ENSFixedBanner />}
     </main>

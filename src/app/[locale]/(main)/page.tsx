@@ -8,12 +8,11 @@ import RequestStaffButton from "@/components/Global/RequestStaffButton";
 import DeliveryLocationModal from "@/components/Global/DeliveryLocationModal";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
-import MaintenanceView from "@/components/Global/MaintenanceView";
 import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
+import ThemedMaintenanceView from "@/components/Global/ThemedMaintenanceView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
-import Default from "@/components/Templates/Default";
 import SkyTemplate from "@/components/Templates/SkyTemplate";
 import NeonTemplate from "@/components/Templates/NeonTemplate";
 import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
@@ -37,10 +36,11 @@ export default function Page() {
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
+  const menuLoaded = useAppSelector((s) => s.menu.menuLoaded);
   const activeTheme = resolveMenuTheme(menu.theme);
 
-  const showTemplates =
-    menu.menuInfo?.isActive !== false && Boolean(activeTheme);
+  const menuExists = Boolean(menu.menuInfo);
+  const menuActive = menu.menuInfo?.isActive !== false;
 
   useEffect(() => {
     const slug = menu.menuInfo?.slug;
@@ -81,12 +81,18 @@ export default function Page() {
 
   return (
     <main className="menu-template font-body">
-      {menu.menuInfo?.isActive === false ? (
-        <MaintenanceView
-          name={menu.menuInfo.name ?? ""}
-          logo={menu.menuInfo.logo}
+      {!menuLoaded ? null : !menuExists ? (
+        <>
+          <MenuNotFoundView />
+          <OrderChatbotGate />
+        </>
+      ) : !menuActive ? (
+        <ThemedMaintenanceView
+          name={menu.menuInfo!.name ?? ""}
+          logo={menu.menuInfo!.logo}
+          theme={activeTheme}
         />
-      ) : showTemplates ? (
+      ) : (
         <MenuLogoFallbackProvider logo={menu.menuInfo?.logo ?? null}>
           <Suspense fallback={null}>
             <StripInvalidTableParam />
@@ -117,11 +123,6 @@ export default function Page() {
           ) : null}
           <OrderChatbotGate />
         </MenuLogoFallbackProvider>
-      ) : (
-        <>
-          <MenuNotFoundView />
-          <OrderChatbotGate />
-        </>
       )}
     </main>
   );

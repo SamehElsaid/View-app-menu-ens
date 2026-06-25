@@ -1,6 +1,7 @@
 "use client";
 
-import {
+import React, {
+  type CSSProperties,
   FormEvent,
   Fragment,
   KeyboardEvent,
@@ -124,6 +125,26 @@ const NAME_STORAGE_KEY = "ensmenu_ai_order_customer_name";
 const BETA_NOTICE_SESSION_KEY = "ensmenu_ai_order_beta_notice_v4";
 const AI_AVATAR_SRC = "/images/AiAvatar.png";
 
+const FAB_PHRASES_AR = [
+  "كيف أقدر أساعدك؟ ✨",
+  "اسألني عن المنيو 🍽️",
+  "مساعدك الذكي 🤖",
+  "جرّبني الآن 👋",
+  "ازعجتك؟ اسحبني للدائرة الحمرا 🤫",
+];
+
+const FAB_PHRASES_EN = [
+  "How can I help? ✨",
+  "Ask about the menu 🍽️",
+  "Your AI assistant 🤖",
+  "Try me now 👋",
+  "Annoying? Drag me to the X 🤫",
+];
+
+const PHRASE_MIN_MS = 1800;
+const PHRASE_MAX_MS = 3800;
+const PHRASE_FADE_MS = 350;
+
 /** Per menu + mode so free/paid menus and discovery/order do not share n8n session. */
 function buildChatSessionStorageKey(
   menuId: number,
@@ -215,9 +236,7 @@ export default function OrderChatbot({
   );
 
   /** Clear ENS fixed banner (~52px) on free-plan menus. */
-  const chatAnchorClass = isFreePlan
-    ? "bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] sm:bottom-20"
-    : "bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))]";
+
 
   const localeFromDocument =
     typeof document !== "undefined" ? document.documentElement.lang : "";
@@ -229,65 +248,9 @@ export default function OrderChatbot({
     if (isBrowseOnly) {
       return isArabic
         ? {
-            button: "اسأل عن المنيو",
-            title: "مساعد المنيو ✨",
-            placeholder: "اسأل عن الأطباق أو الاقتراحات...",
-            confirm: "تأكيد الطلب",
-            edit: "تعديل الطلب",
-            error: "حصلت مشكلة بسيطة، جرّب تاني.",
-            emptyCart: "السلة فاضية حاليًا",
-            online: "متصل",
-            orderSummaryTitle: "ملخص الطلب",
-            showOrderSummary: "عرض ملخص الطلب",
-            hideOrderSummary: "إخفاء الملخص",
-            orderTotal: (total: string) => `الإجمالي: ${total}`,
-            askTable: "رقم الطاولة غير موجود في الرابط الحالي.",
-            success:
-              "✅ تم إرسال طلبك إلى المطعم بنجاح، وجاري تحضيره الآن. شكرًا لطلبك ونتمنى لك تجربة ممتعة 🌟",
-            add: "إضافة",
-            inlineCartTitle: "تعديل الطلب",
-            removeFromCart: "حذف",
-            quickConfirm: "تأكيد الطلب",
-            customerNameLabel: "اسم حضرتك",
-            customerNamePlaceholder: "مثال: أحمد محمد",
-            sendOrder: "إرسال الطلب",
-            customerNameRequired: "من فضلك اكتب اسمك قبل الإرسال",
-            quickChipsAria: "اقتراحات سريعة",
-            contactWhatsApp: "تواصل عبر واتساب",
-          }
-        : {
-            button: "Ask about the menu",
-            title: "Menu Assistant ✨",
-            placeholder: "Ask about dishes or recommendations...",
-            confirm: "Confirm order",
-            edit: "Edit order",
-            error: "Something went wrong. Please try again.",
-            emptyCart: "Your cart is empty",
-            online: "Online",
-            orderSummaryTitle: "Order summary",
-            showOrderSummary: "Show order summary",
-            hideOrderSummary: "Hide summary",
-            orderTotal: (total: string) => `Total: ${total}`,
-            askTable: "Table number is missing from the current URL.",
-            success:
-              "✅ Your order was sent to the restaurant and is being prepared. Thank you — enjoy your meal! 🌟",
-            add: "Add",
-            inlineCartTitle: "Edit order",
-            removeFromCart: "Remove",
-            quickConfirm: "Confirm order",
-            customerNameLabel: "Your name",
-            customerNamePlaceholder: "e.g. John Smith",
-            sendOrder: "Send order",
-            customerNameRequired: "Please enter your name before sending",
-            quickChipsAria: "Quick suggestions",
-            contactWhatsApp: "Contact on WhatsApp",
-          };
-    }
-    return isArabic
-      ? {
-          button: "اطلب بالذكاء الاصطناعي",
-          title: "مساعد الطلبات الذكي ✨",
-          placeholder: "اكتب طلبك هنا...",
+          button: "اسأل عن المنيو",
+          title: "مساعد المنيو ✨",
+          placeholder: "اسأل عن الأطباق أو الاقتراحات...",
           confirm: "تأكيد الطلب",
           edit: "تعديل الطلب",
           error: "حصلت مشكلة بسيطة، جرّب تاني.",
@@ -311,10 +274,10 @@ export default function OrderChatbot({
           quickChipsAria: "اقتراحات سريعة",
           contactWhatsApp: "تواصل عبر واتساب",
         }
-      : {
-          button: "Order with AI",
-          title: "Smart Order Assistant ✨",
-          placeholder: "Type your order...",
+        : {
+          button: "Ask about the menu",
+          title: "Menu Assistant ✨",
+          placeholder: "Ask about dishes or recommendations...",
           confirm: "Confirm order",
           edit: "Edit order",
           error: "Something went wrong. Please try again.",
@@ -338,6 +301,62 @@ export default function OrderChatbot({
           quickChipsAria: "Quick suggestions",
           contactWhatsApp: "Contact on WhatsApp",
         };
+    }
+    return isArabic
+      ? {
+        button: "اطلب بالذكاء الاصطناعي",
+        title: "مساعد الطلبات الذكي ✨",
+        placeholder: "اكتب طلبك هنا...",
+        confirm: "تأكيد الطلب",
+        edit: "تعديل الطلب",
+        error: "حصلت مشكلة بسيطة، جرّب تاني.",
+        emptyCart: "السلة فاضية حاليًا",
+        online: "متصل",
+        orderSummaryTitle: "ملخص الطلب",
+        showOrderSummary: "عرض ملخص الطلب",
+        hideOrderSummary: "إخفاء الملخص",
+        orderTotal: (total: string) => `الإجمالي: ${total}`,
+        askTable: "رقم الطاولة غير موجود في الرابط الحالي.",
+        success:
+          "✅ تم إرسال طلبك إلى المطعم بنجاح، وجاري تحضيره الآن. شكرًا لطلبك ونتمنى لك تجربة ممتعة 🌟",
+        add: "إضافة",
+        inlineCartTitle: "تعديل الطلب",
+        removeFromCart: "حذف",
+        quickConfirm: "تأكيد الطلب",
+        customerNameLabel: "اسم حضرتك",
+        customerNamePlaceholder: "مثال: أحمد محمد",
+        sendOrder: "إرسال الطلب",
+        customerNameRequired: "من فضلك اكتب اسمك قبل الإرسال",
+        quickChipsAria: "اقتراحات سريعة",
+        contactWhatsApp: "تواصل عبر واتساب",
+      }
+      : {
+        button: "Order with AI",
+        title: "Smart Order Assistant ✨",
+        placeholder: "Type your order...",
+        confirm: "Confirm order",
+        edit: "Edit order",
+        error: "Something went wrong. Please try again.",
+        emptyCart: "Your cart is empty",
+        online: "Online",
+        orderSummaryTitle: "Order summary",
+        showOrderSummary: "Show order summary",
+        hideOrderSummary: "Hide summary",
+        orderTotal: (total: string) => `Total: ${total}`,
+        askTable: "Table number is missing from the current URL.",
+        success:
+          "✅ Your order was sent to the restaurant and is being prepared. Thank you — enjoy your meal! 🌟",
+        add: "Add",
+        inlineCartTitle: "Edit order",
+        removeFromCart: "Remove",
+        quickConfirm: "Confirm order",
+        customerNameLabel: "Your name",
+        customerNamePlaceholder: "e.g. John Smith",
+        sendOrder: "Send order",
+        customerNameRequired: "Please enter your name before sending",
+        quickChipsAria: "Quick suggestions",
+        contactWhatsApp: "Contact on WhatsApp",
+      };
   }, [isArabic, isBrowseOnly]);
 
   const whatsappFabUrl = useMemo(
@@ -370,11 +389,29 @@ export default function OrderChatbot({
   const [expandedSuggestionQtyKeys, setExpandedSuggestionQtyKeys] = useState<
     Set<string>
   >(() => new Set());
+  const [fabPos, setFabPos] = useState<{ x: number; y: number } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isOverDeleteZone, setIsOverDeleteZone] = useState(false);
+  const [isFabDismissed, setIsFabDismissed] = useState(false);
+  const [isSnapping, setIsSnapping] = useState(false);
+  const [fabPhraseIndex, setFabPhraseIndex] = useState(0);
+  const [fabPhraseVisible, setFabPhraseVisible] = useState(true);
   const betaShownThisOpenRef = useRef(false);
   const messagesScrollRef = useRef<HTMLDivElement>(null);
   const orderSummaryPanelRef = useRef<HTMLDivElement>(null);
   const checkoutNameInputRef = useRef<HTMLInputElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
+  const fabRef = useRef<HTMLDivElement>(null);
+  const deleteZoneRef = useRef<HTMLDivElement>(null);
+  const dragStateRef = useRef({
+    active: false,
+    hasMoved: false,
+    isOverDelete: false,
+    originPx: 0,
+    originPy: 0,
+    originFx: 0,
+    originFy: 0,
+  });
 
   const visibleMessages = useMemo(() => {
     if (messages.length > 0) return messages;
@@ -555,6 +592,33 @@ export default function OrderChatbot({
       setShowInlineCartEditor(false);
     }
   }, [cartItems.length]);
+
+  const fabPhrases = isArabic ? FAB_PHRASES_AR : FAB_PHRASES_EN;
+
+  useEffect(() => {
+    if (open) return;
+    let fadeTimer: number;
+    let cycleTimer: number;
+
+    const scheduleNext = () => {
+      const delay = PHRASE_MIN_MS + Math.random() * (PHRASE_MAX_MS - PHRASE_MIN_MS);
+      cycleTimer = window.setTimeout(() => {
+        setFabPhraseVisible(false);
+        fadeTimer = window.setTimeout(() => {
+          setFabPhraseIndex((i) => (i + 1) % fabPhrases.length);
+          setFabPhraseVisible(true);
+          scheduleNext();
+        }, PHRASE_FADE_MS);
+      }, delay);
+    };
+
+    scheduleNext();
+
+    return () => {
+      window.clearTimeout(cycleTimer);
+      window.clearTimeout(fadeTimer);
+    };
+  }, [open, fabPhrases.length]);
 
   const checkoutActive =
     conversationState === "waiting_for_confirmation" ||
@@ -1097,13 +1161,13 @@ export default function OrderChatbot({
     const text = pickReplyText(normalized, result.rawText || "", "");
     const safeText = visibleSuggestions.length
       ? compactReplyWhenSuggestionsExist(
-          text,
-          "",
-          visibleSuggestions.map((s) => s.name),
-          rawSuggestionIds.length
-            ? rawSuggestionIds
-            : visibleSuggestions.map((s) => s.id),
-        )
+        text,
+        "",
+        visibleSuggestions.map((s) => s.name),
+        rawSuggestionIds.length
+          ? rawSuggestionIds
+          : visibleSuggestions.map((s) => s.id),
+      )
       : text;
     appendMessage(
       "bot",
@@ -1196,78 +1260,197 @@ export default function OrderChatbot({
     void submitOrderWithCheckoutName();
   };
 
-  return (
-    <div
-      className={`fixed ${chatAnchorClass} ${isArabic ? "right-5" : "left-5"} z-99992`}
-      dir={direction}
-    >
-      {open ? (
-        <div className="w-[min(92vw,390px)] rounded-3xl border border-zinc-200/80 bg-white shadow-[0_20px_45px_rgba(2,6,23,0.15)] ring-1 ring-black/5 overflow-hidden transition-all duration-300 animate-in fade-in zoom-in-95">
-          <div className="relative overflow-hidden bg-linear-to-br from-violet-600 via-violet-500 to-fuchsia-500 px-4 py-4 text-white">
-            <div className="absolute -top-10 -end-10 h-24 w-24 rounded-full bg-white/15 blur-2xl" />
-            <div className="absolute -bottom-6 start-0 h-16 w-16 rounded-full bg-fuchsia-300/20 blur-xl" />
-            <div className="relative flex items-start justify-between gap-3">
-              <div className="min-w-0 flex-1">
-                <p className="text-md sm:text-[17px] font-semibold leading-snug tracking-tight">
-                  {labels.title}
-                </p>
-                <p className="text-[11px] text-white/90 mt-2 flex items-center gap-2 font-medium">
-                  <span className="inline-flex h-2 w-2 shrink-0 rounded-full bg-emerald-300 shadow-[0_0_0_3px_rgba(16,185,129,0.28)]" />
-                  {labels.online}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="shrink-0 rounded-xl border border-white/25 bg-white/10 p-1.5 hover:bg-white/20 transition"
-                aria-label="Close"
-              >
-                <FiX className="h-4 w-4" />
-              </button>
-            </div>
-          </div>
+  if (isFabDismissed) return null;
 
-          <div className="relative">
-            <div
-              ref={messagesScrollRef}
-              className="h-[360px] sm:h-[380px] overflow-y-auto overscroll-contain bg-linear-to-b from-zinc-50/80 to-white px-3.5 py-3.5 space-y-3"
-            >
-              {showBetaCard ? (
-                <div
-                  className="flex justify-center px-1 pb-1"
-                  role="note"
-                  aria-label="إشعار النسخة التجريبية"
-                >
-                  <p className="max-w-[95%] rounded-lg border border-amber-100/90 bg-amber-50/70 px-2.5 py-2 text-center text-[10px] leading-[1.55] text-zinc-600 sm:text-[11px]">
-                    {BETA_NOTICE_AR}
+  const FAB_SIZE = 56;
+
+  const handleFabPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    if (open) return;
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const rect = fabRef.current?.getBoundingClientRect();
+    dragStateRef.current = {
+      active: true,
+      hasMoved: false,
+      isOverDelete: false,
+      originPx: e.clientX,
+      originPy: e.clientY,
+      originFx: fabPos?.x ?? (rect?.left ?? 0),
+      originFy: fabPos?.y ?? (rect?.top ?? 0),
+    };
+    setIsDragging(true);
+  };
+
+  const handleFabPointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const ds = dragStateRef.current;
+    if (!ds.active) return;
+    const dx = e.clientX - ds.originPx;
+    const dy = e.clientY - ds.originPy;
+    if (!ds.hasMoved && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+      ds.hasMoved = true;
+    }
+    if (!ds.hasMoved) return;
+    const FAB_MARGIN = 12;
+    const newX = Math.max(FAB_MARGIN, Math.min(window.innerWidth - FAB_SIZE - FAB_MARGIN, ds.originFx + dx));
+    const newY = Math.max(FAB_MARGIN, Math.min(window.innerHeight - FAB_SIZE - FAB_MARGIN, ds.originFy + dy));
+    setFabPos({ x: newX, y: newY });
+    if (deleteZoneRef.current) {
+      const dz = deleteZoneRef.current.getBoundingClientRect();
+      const over =
+        e.clientX >= dz.left &&
+        e.clientX <= dz.right &&
+        e.clientY >= dz.top &&
+        e.clientY <= dz.bottom;
+      ds.isOverDelete = over;
+      setIsOverDeleteZone(over);
+    }
+  };
+
+  const handleFabPointerUp = () => {
+    const ds = dragStateRef.current;
+    if (!ds.active) return;
+    const wasMoved = ds.hasMoved;
+    const wasOverDelete = ds.isOverDelete;
+    ds.active = false;
+    ds.hasMoved = false;
+    ds.isOverDelete = false;
+    setIsDragging(false);
+    setIsOverDeleteZone(false);
+    if (wasOverDelete) {
+      setIsFabDismissed(true);
+    } else if (!wasMoved) {
+      handleOpenChat();
+    } else {
+      const SNAP_MARGIN = 16;
+      const svw = window.innerWidth;
+      const svh = window.innerHeight;
+      setFabPos((prev) => {
+        if (!prev) return prev;
+        const cx = prev.x + FAB_SIZE / 2;
+        const cy = prev.y + FAB_SIZE / 2;
+        return {
+          x: cx < svw / 2 ? SNAP_MARGIN : svw - FAB_SIZE - SNAP_MARGIN,
+          y: cy < svh / 2 ? SNAP_MARGIN : svh - FAB_SIZE - SNAP_MARGIN,
+        };
+      });
+      setIsSnapping(true);
+      window.setTimeout(() => setIsSnapping(false), 400);
+    }
+  };
+
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  // Chat panel dimensions (approximate)
+  const CHAT_W = Math.min(vw * 0.92, 390);
+  const CHAT_H = Math.min(vh * 0.88, 620);
+  const EDGE_GAP = 12;
+
+  /**
+   * Resolves the wrapper position:
+   * - FAB closed + custom pos  → exact dragged position
+   * - Chat open + no custom pos → CSS default (bottom corner)
+   * - Chat open + custom pos   → follow FAB position, clamp so panel fits fully on screen
+   */
+  const resolvedPos = (() => {
+    if (!fabPos) return null;
+    if (open) {
+      return {
+        x: Math.max(EDGE_GAP, Math.min(fabPos.x, vw - CHAT_W - EDGE_GAP)),
+        y: Math.max(EDGE_GAP, Math.min(fabPos.y, vh - CHAT_H - EDGE_GAP)),
+      };
+    }
+    return fabPos;
+  })();
+
+  const fabWrapperClass = resolvedPos
+    ? `fixed z-99992`
+    : `fixed bottom-6 start-4 z-99992`;
+
+  const fabWrapperStyle: CSSProperties = resolvedPos
+    ? {
+      left: resolvedPos.x,
+      top: resolvedPos.y,
+      ...(isSnapping
+        ? { transition: "left 380ms cubic-bezier(0.34,1.56,0.64,1), top 380ms cubic-bezier(0.34,1.56,0.64,1)" }
+        : {}),
+    }
+    : {};
+
+  return (
+    <>
+      <div
+        ref={fabRef}
+        className={fabWrapperClass}
+        style={fabWrapperStyle}
+        dir={direction}
+      >
+        {open ? (
+          <div className="w-[min(92vw,390px)] rounded-3xl border border-zinc-200/80 bg-white shadow-[0_20px_45px_rgba(2,6,23,0.15)] ring-1 ring-black/5 overflow-hidden transition-all duration-300 animate-in fade-in zoom-in-95">
+            <div className="relative overflow-hidden bg-linear-to-br from-violet-600 via-violet-500 to-fuchsia-500 px-4 py-4 text-white">
+              <div className="absolute -top-10 -end-10 h-24 w-24 rounded-full bg-white/15 blur-2xl" />
+              <div className="absolute -bottom-6 start-0 h-16 w-16 rounded-full bg-fuchsia-300/20 blur-xl" />
+              <div className="relative flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-md sm:text-[17px] font-semibold leading-snug tracking-tight">
+                    {labels.title}
+                  </p>
+                  <p className="text-[11px] text-white/90 mt-2 flex items-center gap-2 font-medium">
+                    <span className="inline-flex h-2 w-2 shrink-0 rounded-full bg-emerald-300 shadow-[0_0_0_3px_rgba(16,185,129,0.28)]" />
+                    {labels.online}
                   </p>
                 </div>
-              ) : null}
-              {visibleMessages.map((m) => (
-                <Fragment key={m.id}>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="shrink-0 rounded-xl border border-white/25 bg-white/10 p-1.5 hover:bg-white/20 transition"
+                  aria-label="Close"
+                >
+                  <FiX className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <div
+                ref={messagesScrollRef}
+                className="h-[360px] sm:h-[380px] overflow-y-auto overscroll-contain bg-linear-to-b from-zinc-50/80 to-white px-3.5 py-3.5 space-y-3"
+              >
+                {showBetaCard ? (
                   <div
-                    className={`flex transition-all duration-200 ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                    className="flex justify-center px-1 pb-1"
+                    role="note"
+                    aria-label="إشعار النسخة التجريبية"
                   >
+                    <p className="max-w-[95%] rounded-lg border border-amber-100/90 bg-amber-50/70 px-2.5 py-2 text-center text-[10px] leading-[1.55] text-zinc-600 sm:text-[11px]">
+                      {BETA_NOTICE_AR}
+                    </p>
+                  </div>
+                ) : null}
+                {visibleMessages.map((m) => (
+                  <Fragment key={m.id}>
                     <div
-                      className={
-                        m.role === "user"
-                          ? "w-fit max-w-[70%] min-w-20 shrink-0 space-y-2"
-                          : "max-w-[88%] min-w-0 space-y-2"
-                      }
+                      className={`flex transition-all duration-200 ${m.role === "user" ? "justify-end" : "justify-start"}`}
                     >
-                      {m.text.trim() ? (
-                        <div
-                          className={`rounded-2xl px-3.5 py-3 text-[13px] leading-[1.65] shadow-[0_2px_10px_rgba(2,6,23,0.06)] ${
-                            m.role === "user"
-                              ? "w-fit max-w-full min-w-20 whitespace-normal break-normal wrap-break-word bg-linear-to-r from-violet-600 to-fuchsia-500 text-white rounded-br-md"
-                              : "max-w-full whitespace-pre-line wrap-break-word bg-white/95 text-zinc-800 rounded-bl-md border border-zinc-200/80"
-                          }`}
-                        >
-                          {m.text}
-                        </div>
-                      ) : null}
-                      {m.role === "bot"
-                        ? (() => {
+                      <div
+                        className={
+                          m.role === "user"
+                            ? "w-fit max-w-[70%] min-w-20 shrink-0 space-y-2"
+                            : "max-w-[88%] min-w-0 space-y-2"
+                        }
+                      >
+                        {m.text.trim() ? (
+                          <div
+                            className={`rounded-2xl px-3.5 py-3 text-[13px] leading-[1.65] shadow-[0_2px_10px_rgba(2,6,23,0.06)] ${m.role === "user"
+                                ? "w-fit max-w-full min-w-20 whitespace-normal break-normal wrap-break-word bg-linear-to-r from-violet-600 to-fuchsia-500 text-white rounded-br-md"
+                                : "max-w-full whitespace-pre-line wrap-break-word bg-white/95 text-zinc-800 rounded-bl-md border border-zinc-200/80"
+                              }`}
+                          >
+                            {m.text}
+                          </div>
+                        ) : null}
+                        {m.role === "bot"
+                          ? (() => {
                             const cards = suggestionCardsForDisplay(
                               m.suggestions,
                             );
@@ -1404,369 +1587,410 @@ export default function OrderChatbot({
                               </div>
                             );
                           })()
-                        : null}
+                          : null}
+                      </div>
+                    </div>
+                  </Fragment>
+                ))}
+                {isSending ? (
+                  <div className="flex justify-start">
+                    <div className="rounded-2xl rounded-bl-md border border-zinc-200/70 bg-zinc-100 px-3 py-2 text-xs text-zinc-500">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.2s]" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.1s]" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" />
+                      </div>
                     </div>
                   </div>
-                </Fragment>
-              ))}
-              {isSending ? (
-                <div className="flex justify-start">
-                  <div className="rounded-2xl rounded-bl-md border border-zinc-200/70 bg-zinc-100 px-3 py-2 text-xs text-zinc-500">
-                    <div className="flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.2s]" />
-                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce [animation-delay:-0.1s]" />
-                      <span className="h-1.5 w-1.5 rounded-full bg-zinc-400 animate-bounce" />
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-              {!isBrowseOnly && showInlineCartEditor && cartItems.length > 0 ? (
-                <div className="rounded-xl border border-violet-200/90 bg-white p-3 shadow-[0_4px_14px_rgba(124,58,237,0.08)]">
-                  <p className="mb-2 text-xs font-semibold text-zinc-800">
-                    {labels.inlineCartTitle}
-                  </p>
-                  <ul className="max-h-44 space-y-2 overflow-y-auto pe-0.5">
-                    {cartItems.map((item) => {
-                      const localItem = localMenuById.get(item.id);
-                      const name = localItem
-                        ? displayNameForItem(localItem)
-                        : item.name;
-                      return (
-                        <li
-                          key={item.id}
-                          className="flex flex-wrap items-center gap-2 rounded-lg border border-zinc-100 bg-zinc-50/90 p-2 sm:flex-nowrap"
-                        >
-                          <div className="min-w-0 flex-1 basis-full sm:basis-auto">
-                            <p className="truncate text-xs font-semibold text-zinc-800">
-                              {name}
-                            </p>
-                            <p className="text-[11px] text-zinc-500">
-                              {formatPrice(item.price)} × {item.quantity} —{" "}
-                              <span className="font-medium text-zinc-700">
-                                {formatPrice(item.price * item.quantity)}
+                ) : null}
+                {!isBrowseOnly && showInlineCartEditor && cartItems.length > 0 ? (
+                  <div className="rounded-xl border border-violet-200/90 bg-white p-3 shadow-[0_4px_14px_rgba(124,58,237,0.08)]">
+                    <p className="mb-2 text-xs font-semibold text-zinc-800">
+                      {labels.inlineCartTitle}
+                    </p>
+                    <ul className="max-h-44 space-y-2 overflow-y-auto pe-0.5">
+                      {cartItems.map((item) => {
+                        const localItem = localMenuById.get(item.id);
+                        const name = localItem
+                          ? displayNameForItem(localItem)
+                          : item.name;
+                        return (
+                          <li
+                            key={item.id}
+                            className="flex flex-wrap items-center gap-2 rounded-lg border border-zinc-100 bg-zinc-50/90 p-2 sm:flex-nowrap"
+                          >
+                            <div className="min-w-0 flex-1 basis-full sm:basis-auto">
+                              <p className="truncate text-xs font-semibold text-zinc-800">
+                                {name}
+                              </p>
+                              <p className="text-[11px] text-zinc-500">
+                                {formatPrice(item.price)} × {item.quantity} —{" "}
+                                <span className="font-medium text-zinc-700">
+                                  {formatPrice(item.price * item.quantity)}
+                                </span>
+                              </p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-1">
+                              <button
+                                type="button"
+                                aria-label={
+                                  isArabic ? "تقليل الكمية" : "Decrease quantity"
+                                }
+                                onClick={() => handleInlineCartDecrease(item.id)}
+                                className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100"
+                              >
+                                −
+                              </button>
+                              <span className="min-w-6 text-center text-sm font-semibold tabular-nums text-zinc-800">
+                                {item.quantity}
                               </span>
-                            </p>
-                          </div>
-                          <div className="flex shrink-0 items-center gap-1">
-                            <button
-                              type="button"
-                              aria-label={
-                                isArabic ? "تقليل الكمية" : "Decrease quantity"
-                              }
-                              onClick={() => handleInlineCartDecrease(item.id)}
-                              className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100"
-                            >
-                              −
-                            </button>
-                            <span className="min-w-6 text-center text-sm font-semibold tabular-nums text-zinc-800">
-                              {item.quantity}
-                            </span>
-                            <button
-                              type="button"
-                              aria-label={
-                                isArabic ? "زيادة الكمية" : "Increase quantity"
-                              }
-                              disabled={item.quantity >= 999}
-                              onClick={() => handleInlineCartIncrease(item.id)}
-                              className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-40"
-                            >
-                              +
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleInlineCartRemove(item.id)}
-                              className="rounded-md border border-rose-200 bg-rose-50 px-2 py-1.5 text-[10px] font-semibold text-rose-700 transition hover:bg-rose-100"
-                            >
-                              {labels.removeFromCart}
-                            </button>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  <p className="mt-2 border-t border-violet-100 pt-2 text-xs font-bold text-zinc-800">
-                    {labels.orderTotal(formatPrice(totalPrice))}
-                  </p>
+                              <button
+                                type="button"
+                                aria-label={
+                                  isArabic ? "زيادة الكمية" : "Increase quantity"
+                                }
+                                disabled={item.quantity >= 999}
+                                onClick={() => handleInlineCartIncrease(item.id)}
+                                className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-40"
+                              >
+                                +
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleInlineCartRemove(item.id)}
+                                className="rounded-md border border-rose-200 bg-rose-50 px-2 py-1.5 text-[10px] font-semibold text-rose-700 transition hover:bg-rose-100"
+                              >
+                                {labels.removeFromCart}
+                              </button>
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <p className="mt-2 border-t border-violet-100 pt-2 text-xs font-bold text-zinc-800">
+                      {labels.orderTotal(formatPrice(totalPrice))}
+                    </p>
+                  </div>
+                ) : null}
+              </div>
+
+              {!isBrowseOnly && showOrderSummarySheet ? (
+                <button
+                  type="button"
+                  className="absolute inset-0 z-10 bg-zinc-900/25 transition-opacity"
+                  onClick={dismissOrderSummarySheet}
+                  aria-label={labels.hideOrderSummary}
+                />
+              ) : null}
+
+              {!isBrowseOnly && showOrderSummarySheet ? (
+                <div
+                  ref={orderSummaryPanelRef}
+                  className="absolute inset-x-0 bottom-0 z-20 flex max-h-[min(62vh,340px)] flex-col rounded-t-2xl border border-violet-200/90 border-b-0 bg-white shadow-[0_-10px_28px_rgba(124,58,237,0.2)]"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label={labels.orderSummaryTitle}
+                >
+                  <div className="flex shrink-0 flex-col items-center border-b border-violet-100/80 px-3 pb-2 pt-2.5">
+                    <div
+                      className="mb-2 h-1 w-10 shrink-0 rounded-full bg-zinc-300"
+                      aria-hidden
+                    />
+                    <div className="flex w-full items-center justify-between gap-2">
+                      <p className="text-xs font-semibold text-zinc-800">
+                        {labels.orderSummaryTitle}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={dismissOrderSummarySheet}
+                        aria-label={labels.hideOrderSummary}
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-violet-600 transition hover:bg-violet-50"
+                      >
+                        <FiChevronDown className="h-5 w-5" aria-hidden />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-3 py-2.5">
+                    {cartItems.length ? (
+                      <>
+                        <ul className="space-y-2 pe-0.5">
+                          {cartItems.map((item) => {
+                            const localItem = localMenuById.get(item.id);
+                            const name = localItem
+                              ? displayNameForItem(localItem)
+                              : item.name;
+                            const subtotal = item.price * item.quantity;
+                            return (
+                              <li
+                                key={item.id}
+                                className="flex gap-2 rounded-lg border border-zinc-100 bg-zinc-50/80 p-2"
+                              >
+                                <LoadImage
+                                  src={localItem?.image ?? ""}
+                                  alt={name}
+                                  className="h-10 w-10 shrink-0 rounded-md border border-zinc-200 object-cover"
+                                  width={40}
+                                  height={40}
+                                />
+                                <div className="min-w-0 flex-1 text-start">
+                                  <p className="text-xs font-semibold text-zinc-800 leading-snug">
+                                    {name} × {item.quantity}
+                                  </p>
+                                  <p className="mt-0.5 text-[11px] text-zinc-500 leading-snug">
+                                    {formatPrice(item.price)} × {item.quantity} —{" "}
+                                    <span className="font-medium text-zinc-700">
+                                      {formatPrice(subtotal)}
+                                    </span>
+                                  </p>
+                                </div>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                        <p className="border-t border-violet-100 pt-2 text-xs font-bold text-zinc-800">
+                          {labels.orderTotal(formatPrice(totalPrice))}
+                        </p>
+                      </>
+                    ) : (
+                      <p className="text-xs font-semibold text-zinc-700">
+                        {labels.emptyCart}
+                      </p>
+                    )}
+                    {showCheckoutNameStep ? (
+                      <form
+                        onSubmit={handleCheckoutNameFormSubmit}
+                        className="space-y-2.5 rounded-lg border border-violet-100 bg-violet-50/40 p-2.5"
+                      >
+                        <label
+                          htmlFor="checkout-customer-name"
+                          className="block text-xs font-semibold text-zinc-800"
+                        >
+                          {labels.customerNameLabel}
+                        </label>
+                        <input
+                          id="checkout-customer-name"
+                          ref={checkoutNameInputRef}
+                          type="text"
+                          value={checkoutNameInput}
+                          onChange={(e) => setCheckoutNameInput(e.target.value)}
+                          placeholder={labels.customerNamePlaceholder}
+                          autoComplete="name"
+                          disabled={isSending}
+                          className="w-full rounded-lg border border-violet-200 bg-white px-3 py-2.5 text-sm text-zinc-800 outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-300/60"
+                        />
+                        <button
+                          type="submit"
+                          disabled={isSending || !checkoutNameInput.trim()}
+                          className="w-full rounded-lg bg-linear-to-r from-violet-600 to-fuchsia-500 px-3 py-2.5 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {labels.sendOrder}
+                        </button>
+                      </form>
+                    ) : (
+                      <div className="flex gap-2 pb-0.5">
+                        <button
+                          type="button"
+                          onClick={() => void confirmOrder()}
+                          disabled={isSending || !cartItems.length}
+                          className="flex-1 rounded-lg bg-linear-to-r from-violet-600 to-fuchsia-500 px-3 py-2.5 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {labels.confirm}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleEditOrder}
+                          disabled={isSending || !cartItems.length}
+                          className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {labels.edit}
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : null}
             </div>
 
-            {!isBrowseOnly && showOrderSummarySheet ? (
-              <button
-                type="button"
-                className="absolute inset-0 z-10 bg-zinc-900/25 transition-opacity"
-                onClick={dismissOrderSummarySheet}
-                aria-label={labels.hideOrderSummary}
-              />
-            ) : null}
+            <div className="border-t bg-zinc-50 px-3 py-2 space-y-2.5">
+              {!isBrowseOnly &&
+                checkoutActive &&
+                !orderSummarySheetOpen &&
+                cartItems.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={openOrderSummarySheet}
+                  className="flex w-full items-center justify-between gap-2 rounded-xl border border-violet-200 bg-linear-to-r from-violet-50 to-fuchsia-50/80 px-3 py-2.5 text-start transition hover:border-violet-300 hover:from-violet-100"
+                >
+                  <span className="text-xs font-semibold text-violet-800">
+                    {labels.showOrderSummary}
+                  </span>
+                  <span className="shrink-0 text-[11px] font-bold tabular-nums text-violet-900">
+                    {labels.orderTotal(formatPrice(totalPrice))}
+                  </span>
+                </button>
+              ) : null}
 
-            {!isBrowseOnly && showOrderSummarySheet ? (
+              {errorText ? (
+                <p className="text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-2 py-1">
+                  {errorText}
+                </p>
+              ) : null}
+
               <div
-                ref={orderSummaryPanelRef}
-                className="absolute inset-x-0 bottom-0 z-20 flex max-h-[min(62vh,340px)] flex-col rounded-t-2xl border border-violet-200/90 border-b-0 bg-white shadow-[0_-10px_28px_rgba(124,58,237,0.2)]"
-                role="dialog"
-                aria-modal="true"
-                aria-label={labels.orderSummaryTitle}
+                className="sticky bottom-0 z-10 -mx-0.5 space-y-1.5 bg-zinc-50/95 px-1 pb-1.5 pt-1 backdrop-blur-sm"
+                role="toolbar"
+                aria-label={isArabic ? "إجراءات سريعة" : "Quick actions"}
               >
-                <div className="flex shrink-0 flex-col items-center border-b border-violet-100/80 px-3 pb-2 pt-2.5">
-                  <div
-                    className="mb-2 h-1 w-10 shrink-0 rounded-full bg-zinc-300"
-                    aria-hidden
-                  />
-                  <div className="flex w-full items-center justify-between gap-2">
-                    <p className="text-xs font-semibold text-zinc-800">
-                      {labels.orderSummaryTitle}
-                    </p>
+                {!isBrowseOnly &&
+                  cartNotEmpty &&
+                  !showOrderSummarySheet &&
+                  !isSending ? (
+                  <div className="flex justify-center py-0.5">
                     <button
                       type="button"
-                      onClick={dismissOrderSummarySheet}
-                      aria-label={labels.hideOrderSummary}
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-violet-600 transition hover:bg-violet-50"
+                      onClick={handleQuickConfirm}
+                      disabled={isSending}
+                      className="inline-flex min-w-46 items-center justify-center gap-2 rounded-full border border-emerald-200/80 bg-gradient-to-r from-white via-emerald-50/90 to-white px-5 py-2.5 text-[12px] font-semibold tracking-tight text-emerald-900 shadow-[0_2px_12px_rgba(16,185,129,0.14)] ring-1 ring-emerald-100/80 transition hover:border-emerald-300 hover:shadow-[0_4px_16px_rgba(16,185,129,0.2)] hover:ring-emerald-200/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-55"
                     >
-                      <FiChevronDown className="h-5 w-5" aria-hidden />
+                      <span>{labels.quickConfirm}</span>
+                      <span
+                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-linear-to-br from-emerald-500 to-teal-600 text-white shadow-sm"
+                        aria-hidden
+                      >
+                        <FiCheck className="h-3 w-3 stroke-3" />
+                      </span>
                     </button>
                   </div>
-                </div>
-                <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-3 py-2.5">
-                  {cartItems.length ? (
-                    <>
-                      <ul className="space-y-2 pe-0.5">
-                        {cartItems.map((item) => {
-                          const localItem = localMenuById.get(item.id);
-                          const name = localItem
-                            ? displayNameForItem(localItem)
-                            : item.name;
-                          const subtotal = item.price * item.quantity;
-                          return (
-                            <li
-                              key={item.id}
-                              className="flex gap-2 rounded-lg border border-zinc-100 bg-zinc-50/80 p-2"
-                            >
-                              <LoadImage
-                                src={localItem?.image ?? ""}
-                                alt={name}
-                                className="h-10 w-10 shrink-0 rounded-md border border-zinc-200 object-cover"
-                                width={40}
-                                height={40}
-                              />
-                              <div className="min-w-0 flex-1 text-start">
-                                <p className="text-xs font-semibold text-zinc-800 leading-snug">
-                                  {name} × {item.quantity}
-                                </p>
-                                <p className="mt-0.5 text-[11px] text-zinc-500 leading-snug">
-                                  {formatPrice(item.price)} × {item.quantity} —{" "}
-                                  <span className="font-medium text-zinc-700">
-                                    {formatPrice(subtotal)}
-                                  </span>
-                                </p>
-                              </div>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                      <p className="border-t border-violet-100 pt-2 text-xs font-bold text-zinc-800">
-                        {labels.orderTotal(formatPrice(totalPrice))}
-                      </p>
-                    </>
-                  ) : (
-                    <p className="text-xs font-semibold text-zinc-700">
-                      {labels.emptyCart}
-                    </p>
-                  )}
-                  {showCheckoutNameStep ? (
-                    <form
-                      onSubmit={handleCheckoutNameFormSubmit}
-                      className="space-y-2.5 rounded-lg border border-violet-100 bg-violet-50/40 p-2.5"
-                    >
-                      <label
-                        htmlFor="checkout-customer-name"
-                        className="block text-xs font-semibold text-zinc-800"
-                      >
-                        {labels.customerNameLabel}
-                      </label>
-                      <input
-                        id="checkout-customer-name"
-                        ref={checkoutNameInputRef}
-                        type="text"
-                        value={checkoutNameInput}
-                        onChange={(e) => setCheckoutNameInput(e.target.value)}
-                        placeholder={labels.customerNamePlaceholder}
-                        autoComplete="name"
-                        disabled={isSending}
-                        className="w-full rounded-lg border border-violet-200 bg-white px-3 py-2.5 text-sm text-zinc-800 outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-300/60"
-                      />
-                      <button
-                        type="submit"
-                        disabled={isSending || !checkoutNameInput.trim()}
-                        className="w-full rounded-lg bg-linear-to-r from-violet-600 to-fuchsia-500 px-3 py-2.5 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {labels.sendOrder}
-                      </button>
-                    </form>
-                  ) : (
-                    <div className="flex gap-2 pb-0.5">
-                      <button
-                        type="button"
-                        onClick={() => void confirmOrder()}
-                        disabled={isSending || !cartItems.length}
-                        className="flex-1 rounded-lg bg-linear-to-r from-violet-600 to-fuchsia-500 px-3 py-2.5 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {labels.confirm}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handleEditOrder}
-                        disabled={isSending || !cartItems.length}
-                        className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        {labels.edit}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : null}
-          </div>
+                ) : null}
 
-          <div className="border-t bg-zinc-50 px-3 py-2 space-y-2.5">
-            {!isBrowseOnly &&
-            checkoutActive &&
-            !orderSummarySheetOpen &&
-            cartItems.length > 0 ? (
-              <button
-                type="button"
-                onClick={openOrderSummarySheet}
-                className="flex w-full items-center justify-between gap-2 rounded-xl border border-violet-200 bg-linear-to-r from-violet-50 to-fuchsia-50/80 px-3 py-2.5 text-start transition hover:border-violet-300 hover:from-violet-100"
-              >
-                <span className="text-xs font-semibold text-violet-800">
-                  {labels.showOrderSummary}
-                </span>
-                <span className="shrink-0 text-[11px] font-bold tabular-nums text-violet-900">
-                  {labels.orderTotal(formatPrice(totalPrice))}
-                </span>
-              </button>
-            ) : null}
-
-            {errorText ? (
-              <p className="text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-lg px-2 py-1">
-                {errorText}
-              </p>
-            ) : null}
-
-            <div
-              className="sticky bottom-0 z-10 -mx-0.5 space-y-1.5 bg-zinc-50/95 px-1 pb-1.5 pt-1 backdrop-blur-sm"
-              role="toolbar"
-              aria-label={isArabic ? "إجراءات سريعة" : "Quick actions"}
-            >
-              {!isBrowseOnly &&
-              cartNotEmpty &&
-              !showOrderSummarySheet &&
-              !isSending ? (
-                <div className="flex justify-center py-0.5">
-                  <button
-                    type="button"
-                    onClick={handleQuickConfirm}
-                    disabled={isSending}
-                    className="inline-flex min-w-46 items-center justify-center gap-2 rounded-full border border-emerald-200/80 bg-gradient-to-r from-white via-emerald-50/90 to-white px-5 py-2.5 text-[12px] font-semibold tracking-tight text-emerald-900 shadow-[0_2px_12px_rgba(16,185,129,0.14)] ring-1 ring-emerald-100/80 transition hover:border-emerald-300 hover:shadow-[0_4px_16px_rgba(16,185,129,0.2)] hover:ring-emerald-200/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-55"
+                {!isSending && !showOrderSummarySheet && quickChips.length > 0 ? (
+                  <div
+                    key={quickChipsEpoch}
+                    className="relative -mx-1 px-1"
+                    role="group"
+                    aria-label={labels.quickChipsAria}
                   >
-                    <span>{labels.quickConfirm}</span>
-                    <span
-                      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-linear-to-br from-emerald-500 to-teal-600 text-white shadow-sm"
-                      aria-hidden
-                    >
-                      <FiCheck className="h-3 w-3 stroke-3" />
-                    </span>
-                  </button>
-                </div>
-              ) : null}
-
-              {!isSending && !showOrderSummarySheet && quickChips.length > 0 ? (
-                <div
-                  key={quickChipsEpoch}
-                  className="relative -mx-1 px-1"
-                  role="group"
-                  aria-label={labels.quickChipsAria}
-                >
-                  <div className="overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth pb-1 [scrollbar-width:thin] [scrollbar-color:rgba(124,58,237,0.35)_transparent] touch-pan-x [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-violet-300/80 [&::-webkit-scrollbar-track]:bg-transparent">
-                    <div className="flex w-max flex-nowrap gap-2 py-0.5 pe-1 ps-0.5 snap-x snap-mandatory">
-                      {quickChips.map((chip, index) => (
-                        <button
-                          key={`${quickChipsEpoch}_${chip.id}`}
-                          type="button"
-                          onClick={() => void sendMessage(chip.message)}
-                          disabled={isSending}
-                          style={{ animationDelay: `${index * 70}ms` }}
-                          className="shrink-0 snap-start whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 rounded-full border border-violet-200/70 bg-white px-3.5 py-2 text-[11px] font-semibold text-violet-900 shadow-[0_2px_10px_rgba(124,58,237,0.1)] ring-1 ring-violet-100/60 transition duration-300 fill-mode-both hover:border-violet-300 hover:bg-violet-50/80 hover:shadow-[0_4px_14px_rgba(124,58,237,0.16)] active:scale-[0.97] disabled:opacity-50"
-                        >
-                          {chip.label}
-                        </button>
-                      ))}
+                    <div className="overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth pb-1 [scrollbar-width:thin] [scrollbar-color:rgba(124,58,237,0.35)_transparent] touch-pan-x [&::-webkit-scrollbar]:h-1.5 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-violet-300/80 [&::-webkit-scrollbar-track]:bg-transparent">
+                      <div className="flex w-max flex-nowrap gap-2 py-0.5 pe-1 ps-0.5 snap-x snap-mandatory">
+                        {quickChips.map((chip, index) => (
+                          <button
+                            key={`${quickChipsEpoch}_${chip.id}`}
+                            type="button"
+                            onClick={() => void sendMessage(chip.message)}
+                            disabled={isSending}
+                            style={{ animationDelay: `${index * 70}ms` }}
+                            className="shrink-0 snap-start whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 rounded-full border border-violet-200/70 bg-white px-3.5 py-2 text-[11px] font-semibold text-violet-900 shadow-[0_2px_10px_rgba(124,58,237,0.1)] ring-1 ring-violet-100/60 transition duration-300 fill-mode-both hover:border-violet-300 hover:bg-violet-50/80 hover:shadow-[0_4px_14px_rgba(124,58,237,0.16)] active:scale-[0.97] disabled:opacity-50"
+                          >
+                            {chip.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : null}
-            </div>
+                ) : null}
+              </div>
 
-            <form onSubmit={handleSubmit} className="flex items-end gap-2">
-              <textarea
-                ref={chatInputRef}
-                rows={1}
-                value={input}
-                onChange={(e) => {
-                  setInput(e.target.value);
-                  resizeChatInput();
-                }}
-                onKeyDown={handleChatInputKeyDown}
-                placeholder={labels.placeholder}
-                disabled={isSending}
-                className="flex-1 max-h-32 min-h-10 resize-none overflow-y-auto rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm leading-relaxed [overflow-wrap:anywhere] outline-none transition focus:border-violet-300 focus:ring-2 focus:ring-violet-400 disabled:opacity-60"
-              />
-              <button
-                type="submit"
-                disabled={isSending || !input.trim()}
-                className="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-r from-violet-600 to-fuchsia-500 text-white transition hover:opacity-95 disabled:opacity-60"
-                aria-label="Send"
-              >
-                <FiSend className="h-4 w-4" />
-              </button>
-            </form>
+              <form onSubmit={handleSubmit} className="flex items-end gap-2">
+                <textarea
+                  ref={chatInputRef}
+                  rows={1}
+                  value={input}
+                  onChange={(e) => {
+                    setInput(e.target.value);
+                    resizeChatInput();
+                  }}
+                  onKeyDown={handleChatInputKeyDown}
+                  placeholder={labels.placeholder}
+                  disabled={isSending}
+                  className="flex-1 max-h-32 min-h-10 resize-none overflow-y-auto rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm leading-relaxed [overflow-wrap:anywhere] outline-none transition focus:border-violet-300 focus:ring-2 focus:ring-violet-400 disabled:opacity-60"
+                />
+                <button
+                  type="submit"
+                  disabled={isSending || !input.trim()}
+                  className="mb-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-r from-violet-600 to-fuchsia-500 text-white transition hover:opacity-95 disabled:opacity-60"
+                  aria-label="Send"
+                >
+                  <FiSend className="h-4 w-4" />
+                </button>
+              </form>
+            </div>
+          </div>
+        ) : (
+          (() => {
+            const showLabelAbove = fabPos ? fabPos.y >= vh / 2 : true;
+            const fabOnLeftSide = fabPos ? (fabPos.x + FAB_SIZE / 2) < vw / 2 : !isArabic;
+            return (
+              <div dir="ltr" className="relative size-14 overflow-visible">
+              {!isDragging && (
+                <span
+                  dir={isArabic ? "rtl" : "ltr"}
+                  className="pointer-events-none select-none absolute whitespace-nowrap rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-semibold text-violet-700 shadow-sm ring-1 ring-violet-200/60 backdrop-blur-sm"
+                  style={{
+                      opacity: fabPhraseVisible ? 1 : 0,
+                      transition: `opacity ${PHRASE_FADE_MS}ms ease`,
+                      ...(fabOnLeftSide ? { left: 0 } : { right: 0 }),
+                      ...(showLabelAbove
+                        ? { bottom: "calc(100% + 10px)" }
+                        : { top: "calc(100% + 10px)" }),
+                    }}
+                  >
+                    {fabPhrases[fabPhraseIndex]}
+                  </span>
+                )}
+                {TEMP_WHATSAPP_FAB ? (
+                  <a
+                    href={whatsappFabUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={labels.contactWhatsApp}
+                    className="relative flex size-14 items-center justify-center rounded-full border-2 border-white bg-[#25D366] text-white shadow-lg shadow-[#25D366]/35 ring-2 ring-[#25D366]/30 transition hover:scale-105 hover:bg-[#20BD5A] active:scale-95"
+                  >
+                    <FaWhatsapp className="text-[1.75rem]" aria-hidden />
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    onPointerDown={handleFabPointerDown}
+                    onPointerMove={handleFabPointerMove}
+                    onPointerUp={handleFabPointerUp}
+                    style={{ touchAction: "none", cursor: isDragging ? "grabbing" : "grab" }}
+                    className="relative size-14 overflow-hidden rounded-full border-2 border-white bg-white p-1 shadow-lg shadow-purple-500/30 ring-2 ring-violet-200 transition select-none"
+                    aria-label={labels.button}
+                  >
+                    <img
+                      src={AI_AVATAR_SRC}
+                      alt=""
+                      width={56}
+                      height={56}
+                      className="size-full rounded-full object-cover object-center pointer-events-none"
+                      aria-hidden="true"
+                      draggable={false}
+                    />
+                    <span
+                      aria-hidden
+                      className="absolute -top-0.5 -right-0.5 size-3 rounded-full bg-violet-500/90 ring-2 ring-white"
+                    />
+                  </button>
+                )}
+              </div>
+            );
+          })()
+        )}
+      </div>
+
+      {isDragging && (
+        <div className="fixed inset-x-0 bottom-10 z-99993 flex justify-center pointer-events-none">
+          <div
+            ref={deleteZoneRef}
+            className={`pointer-events-auto flex h-16 w-16 items-center justify-center rounded-full border-2 transition-all duration-150 ${isOverDeleteZone
+                ? "border-red-400 bg-red-500 scale-125 shadow-[0_0_24px_rgba(239,68,68,0.55)]"
+                : "border-red-300/80 bg-red-500/85 scale-100 shadow-lg"
+              }`}
+          >
+            <FiX className="h-7 w-7 text-white stroke-[2.5]" aria-hidden />
           </div>
         </div>
-      ) : (
-        <div dir="ltr" className="relative size-14 overflow-visible">
-          {TEMP_WHATSAPP_FAB ? (
-            <a
-              href={whatsappFabUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={labels.contactWhatsApp}
-              className="relative flex size-14 items-center justify-center rounded-full border-2 border-white bg-[#25D366] text-white shadow-lg shadow-[#25D366]/35 ring-2 ring-[#25D366]/30 transition hover:scale-105 hover:bg-[#20BD5A] active:scale-95"
-            >
-              <FaWhatsapp className="text-[1.75rem]" aria-hidden />
-            </a>
-          ) : (
-            <button
-              type="button"
-              onClick={handleOpenChat}
-              className="relative size-14 overflow-hidden rounded-full border-2 border-white bg-white p-1 shadow-lg shadow-purple-500/30 ring-2 ring-violet-200 transition hover:scale-105 active:scale-95"
-              aria-label={labels.button}
-            >
-              <img
-                src={AI_AVATAR_SRC}
-                alt=""
-                width={56}
-                height={56}
-                className="size-full rounded-full object-cover object-center"
-                aria-hidden="true"
-              />
-              <span
-                aria-hidden
-                className="absolute -top-0.5 -right-0.5 size-3 rounded-full bg-violet-500/90 ring-2 ring-white"
-              />
-            </button>
-          )}
-        </div>
       )}
-    </div>
+    </>
   );
 }

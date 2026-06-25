@@ -19,15 +19,6 @@ interface FooterProps {
   addressEn?: string;
   addressAr?: string;
   phone?: string;
-  workingHours?: {
-    sunday?: { open?: string; close?: string; closed?: boolean };
-    monday?: { open?: string; close?: string; closed?: boolean };
-    tuesday?: { open?: string; close?: string; closed?: boolean };
-    wednesday?: { open?: string; close?: string; closed?: boolean };
-    thursday?: { open?: string; close?: string; closed?: boolean };
-    friday?: { open?: string; close?: string; closed?: boolean };
-    saturday?: { open?: string; close?: string; closed?: boolean };
-  };
 }
 
 const Footer = ({
@@ -43,7 +34,6 @@ const Footer = ({
   addressEn,
   addressAr,
   phone,
-  workingHours,
 }: FooterProps) => {
   const locale = useLocale();
   const isArabic = locale === "ar";
@@ -56,43 +46,6 @@ const Footer = ({
     ? footerDescriptionAr
     : footerDescriptionEn;
   const address = isArabic ? addressAr : addressEn;
-
-  // تحويل مواعيد العمل إلى تنسيق قابل للعرض
-  const formatTime = (time?: string) => {
-    if (!time) return "";
-    const [hours, minutes] = time.split(":");
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? "PM" : "AM";
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
-  };
-
-  const daysOfWeek = [
-    { key: "sunday", label: isArabic ? "الأحد" : "Sunday" },
-    { key: "monday", label: isArabic ? "الإثنين" : "Monday" },
-    { key: "tuesday", label: isArabic ? "الثلاثاء" : "Tuesday" },
-    { key: "wednesday", label: isArabic ? "الأربعاء" : "Wednesday" },
-    { key: "thursday", label: isArabic ? "الخميس" : "Thursday" },
-    { key: "friday", label: isArabic ? "الجمعة" : "Friday" },
-    { key: "saturday", label: isArabic ? "السبت" : "Saturday" },
-  ];
-
-  const displayWorkingHours = workingHours
-    ? daysOfWeek
-        .map((day) => {
-          const dayHours = workingHours[day.key as keyof typeof workingHours];
-          if (!dayHours || dayHours.closed) {
-            return null;
-          }
-          const openTime = formatTime(dayHours.open);
-          const closeTime = formatTime(dayHours.close);
-          if (openTime && closeTime) {
-            return { day: day.label, hours: `${openTime} - ${closeTime}` };
-          }
-          return null;
-        })
-        .filter(Boolean)
-    : [];
 
   // روابط السوشيال ميديا
   const socialLinks = [
@@ -197,28 +150,6 @@ const Footer = ({
               </div>
             )}
           </div>
-
-          {/* Working Hours */}
-          {displayWorkingHours.length > 0 && (
-            <div>
-              <h4 className="font-body !text-base font-medium text-[#F4EEE7] mb-4">
-                {isArabic ? "مواعيد العمل" : "Working Hours"}
-              </h4>
-              <div className="space-y-2">
-                {displayWorkingHours.map(
-                  (item, index) =>
-                    item && (
-                      <div key={index} className="text-[#B6AA99] text-base">
-                        <span className="font-medium text-[#F4EEE7]">
-                          {item.day}:
-                        </span>{" "}
-                        <span>{item.hours}</span>
-                      </div>
-                    ),
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Social */}
           {socialLinks.length > 0 && (

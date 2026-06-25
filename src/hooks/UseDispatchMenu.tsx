@@ -11,6 +11,7 @@ import {
   SET_CATEGORIES,
   SET_DELIVERY,
   SET_CATALOG_META,
+  SET_MENU_LOADED,
 } from "@/store/authMenu/authMenu";
 import { useAppDispatch } from "@/store/hooks";
 import Loader from "@/components/Global/Loader";
@@ -77,6 +78,7 @@ export default function UseDispatchMenu({
         catalog ?? (menu ? resolveBootstrapCatalogMeta(menu.length) : null),
       ),
     );
+    dispatch(SET_MENU_LOADED(true));
     queueMicrotask(() => setLoading(false));
   }, [
     menu,

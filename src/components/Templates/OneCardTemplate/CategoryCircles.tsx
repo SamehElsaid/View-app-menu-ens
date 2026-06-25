@@ -80,7 +80,7 @@ const CategoryButton = memo(function CategoryButton({
     <button
       type="button"
       onClick={() => onSelect(id)}
-      className="flex w-[90px] shrink-0 flex-col items-center gap-2 transition-transform duration-200 ease-in hover:scale-[0.95]"
+      className="flex min-w-[90px] max-w-[110px] shrink-0 flex-col items-center gap-2 transition-transform duration-200 ease-in hover:scale-[0.95]"
       aria-pressed={isActive}
     >
       <span
@@ -104,7 +104,7 @@ const CategoryButton = memo(function CategoryButton({
           />
         )}
       </span>
-      <span className="max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-center text-sm font-semibold text-(--onecard-primary,#6b0fd6)">
+      <span className="w-full text-center text-sm font-semibold leading-tight text-(--onecard-primary,#6b0fd6)">
         {label}
       </span>
       <span

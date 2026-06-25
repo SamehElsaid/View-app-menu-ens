@@ -63,10 +63,12 @@
   },
   "footer": {
     "rights": "جميع الحقوق محفوظة.",
-    "designedBy": "Powered by",
+    "designedBy": "تم تطويره بواسطة",
     "followUs": "تابعنا",
     "workingHours": "ساعات العمل",
     "closed": "مغلق",
+    "am": "ص",
+    "pm": "م",
     "days": {
       "sunday": "الأحد",
       "monday": "الإثنين",

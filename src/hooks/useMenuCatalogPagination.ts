@@ -46,6 +46,7 @@ export function useMenuCatalogPagination(activeCategoryId: number) {
   const bootstrapInitRef = useRef(false);
   const eagerAllLoadRef = useRef(false);
   const requestIdRef = useRef(0);
+  const prevLocaleRef = useRef(locale);
   const storeCategoriesRef = useRef(storeCategories);
   const hasMoreRef = useRef(false);
   const activeCategoryRef = useRef(activeCategoryId);
@@ -70,6 +71,26 @@ export function useMenuCatalogPagination(activeCategoryId: number) {
     });
     bumpScopeVersion((value) => value + 1);
   }, [bootstrapCatalog]);
+
+  // When the locale changes (language switch), clear all stale pagination state
+  // so the hook re-initializes correctly once the new locale's catalog arrives.
+  useEffect(() => {
+    if (prevLocaleRef.current === locale) return;
+    prevLocaleRef.current = locale;
+
+    requestIdRef.current++;
+    loadingRef.current = false;
+    setLoading(false);
+    setCategoryItems([]);
+
+    // Clear per-scope page counters — they are locale-specific.
+    scopeStatesRef.current.clear();
+    bumpScopeVersion((v) => v + 1);
+
+    // Allow bootstrap init and eager load to re-run with the new locale's data.
+    bootstrapInitRef.current = false;
+    eagerAllLoadRef.current = false;
+  }, [locale]);
 
   const syncAllCatalogMeta = useCallback(
     (next: ScopeState) => {
