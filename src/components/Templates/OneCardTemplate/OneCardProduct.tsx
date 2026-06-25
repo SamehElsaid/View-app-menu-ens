@@ -149,16 +149,16 @@ function OneCardProductCardInner({
   return (
     <>
       <ViewportGate
-        className={`h-full w-full ${className}`.trim()}
+        className={`w-full h-full ${className}`.trim()}
         placeholder={
           <div
-            className="h-88 overflow-hidden rounded-[1.75rem] bg-zinc-100/80"
+            className="min-h-[400px] overflow-hidden rounded-[1.75rem] bg-zinc-100/80"
             aria-hidden
           />
         }
       >
         <article
-          className="relative h-full w-full cursor-pointer"
+          className="relative w-full h-full cursor-pointer"
           onClick={openDetails}
         >
           <div
@@ -169,7 +169,7 @@ function OneCardProductCardInner({
               backgroundSize: "14px 14px",
             }}
           />
-          <div className="relative z-10 h-88 overflow-hidden rounded-[1.75rem]">
+          <div className="relative z-10 h-full flex items-center overflow-hidden rounded-[1.75rem]">
             <div
               className="pointer-events-none absolute start-2 top-2 z-10 h-20 w-24 opacity-35 sm:start-3 sm:top-3 sm:h-24 sm:w-28"
               aria-hidden
@@ -199,9 +199,7 @@ function OneCardProductCardInner({
               </div>
             ) : null}
 
-        
-
-            <div className="absolute inset-y-4 top-6 start-5 z-20 flex w-[50%] xl:w-[50%] 2xl:w-[44%] min-w-[130px] max-w-68">
+            <div className="relative z-20 ms-5 my-6 flex w-[50%] xl:w-[50%] 2xl:w-[44%] min-w-[130px] max-w-68">
               <div className="flex w-full flex-col justify-between overflow-hidden rounded-[1.25rem] bg-white px-4 py-4 text-center shadow-sm sm:rounded-3xl sm:px-5 sm:py-5 md:px-6 md:py-6">
 
                 <div className="flex min-h-0 flex-col items-center overflow-hidden">
@@ -214,7 +212,7 @@ function OneCardProductCardInner({
                   ) : null}
 
                   <h3
-                    className="line-clamp-3 text-base font-black leading-snug sm:text-lg md:text-xl lg:text-2xl"
+                    className="line-clamp-4 text-base font-black leading-snug w-full sm:text-lg md:text-xl lg:text-2xl"
                     style={{ color: primary }}
                   >
                     {name}

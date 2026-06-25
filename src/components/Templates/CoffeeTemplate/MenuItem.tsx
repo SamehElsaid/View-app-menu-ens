@@ -458,6 +458,8 @@ const MenuItem = ({
               src={image ?? ""}
               alt={locale === "ar" ? displayNameAr : name}
               fill
+              width={200}
+              height={200}
               className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
               disableLazy={false}
             />

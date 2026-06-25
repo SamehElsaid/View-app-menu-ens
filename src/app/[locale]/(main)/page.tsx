@@ -101,10 +101,9 @@ export default function Page() {
                         : menu.theme === "arcane" ? <ArcaneTemplate />
                           : menu.theme === "music" ? <MusicTemplate />
                             : menu.theme === "retro" ? <RetroCoffeeTemplate />
-                              : menu.theme === "onecard" ? <OneCardTemplate />
-                                : menu.theme === "vanilla" ? <VanillaTemplate />
-                                  : menu.theme === "waffle" ? <WaffleTemplate />
-                                    : <Default />}
+                              : menu.theme === "vanilla" ? <VanillaTemplate />
+                                : menu.theme === "waffle" ? <WaffleTemplate />
+                                  : <OneCardTemplate />}
 
           {(tableCartAllowed || delivery?.deliveryOn) ? (
             <Suspense fallback={null}>

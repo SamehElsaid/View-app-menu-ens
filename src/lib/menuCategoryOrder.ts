@@ -3,12 +3,10 @@ import type { Category, MenuItem } from "@/types/menu";
 type Sortable = { sortOrder?: number; id: number };
 
 function compareSortOrder(a: Sortable, b: Sortable): number {
-  const orderDiff = (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
-  if (orderDiff !== 0) return orderDiff;
-  return a.id - b.id;
+  return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
 }
 
-/** Matches dashboard/API: ORDER BY sortOrder ASC, id ASC */
+/** Sorts by sortOrder ASC, preserving API response order for equal sortOrder values. */
 export function sortCategories<T extends Sortable>(categories: T[]): T[] {
   return [...categories].sort(compareSortOrder);
 }

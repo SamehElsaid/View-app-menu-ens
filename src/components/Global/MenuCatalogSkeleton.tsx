@@ -1,7 +1,7 @@
 "use client";
 
 type MenuCatalogSkeletonProps = {
-  variant?: "default" | "onecard";
+  variant?: "default" | "onecard" | "coffee";
   count?: number;
   className?: string;
 };
@@ -19,6 +19,31 @@ export default function MenuCatalogSkeleton({
   count = 6,
   className = "",
 }: MenuCatalogSkeletonProps) {
+  if (variant === "coffee") {
+    return (
+      <div
+        className={`grid gap-4 md:grid-cols-2 ${className}`}
+        aria-hidden
+      >
+        {Array.from({ length: count }).map((_, index) => (
+          <div
+            key={`coffee-skeleton-${index}`}
+            className="overflow-hidden rounded-xl border border-[#3B332E]/90 bg-linear-to-br from-[#252019] to-[#1a1613] p-3 sm:p-4"
+          >
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="size-18 shrink-0 animate-pulse rounded-xl bg-[#2a2520] sm:h-21 sm:w-21" />
+              <div className="flex-1 space-y-2.5">
+                <div className="h-4 w-3/4 animate-pulse rounded-lg bg-[#2a2520]" />
+                <div className="h-3 w-full animate-pulse rounded-lg bg-[#2a2520]" />
+                <div className="h-5 w-20 animate-pulse rounded-lg bg-[#2a2520]" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (variant === "onecard") {
     return (
       <div

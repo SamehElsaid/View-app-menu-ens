@@ -6,12 +6,13 @@ type MenuCatalogSentinelProps = {
   sentinelRef?: React.RefObject<HTMLDivElement | null>;
   loadingMore?: boolean;
   hasMore: boolean;
-  skeletonVariant?: "default" | "onecard";
+  skeletonVariant?: "default" | "onecard" | "coffee";
 };
 
 const SKELETON_MIN_HEIGHT = {
   default: "28rem",
   onecard: "32rem",
+  coffee: "28rem",
 } as const;
 
 export default function MenuCatalogSentinel({

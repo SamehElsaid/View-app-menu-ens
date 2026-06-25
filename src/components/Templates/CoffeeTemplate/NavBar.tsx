@@ -1,27 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import LoadImage from "@/components/ImageLoad";
 import Link from "next/link";
-import { FiLayers, FiX } from "react-icons/fi";
-
-interface Category {
-  id?: number;
-  title: string;
-  titleAr: string;
-}
 
 interface NavbarProps {
   menuName?: string;
   menuLogo?: string;
-  categories?: Category[];
 }
 
-const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
-  const [categoriesOpen, setCategoriesOpen] = useState(false);
+const Navbar = ({ menuName, menuLogo }: NavbarProps) => {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -32,43 +22,10 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
     { en: "Contact", ar: "تواصل معنا" },
   ];
 
-  useEffect(() => {
-    if (!categoriesOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setCategoriesOpen(false);
-    };
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [categoriesOpen]);
-
   const scrollToMenu = () => {
     const menuSection = document.getElementById("menu");
     if (menuSection) {
       menuSection.scrollIntoView({ behavior: "smooth" });
-    }
-  };
-
-  const scrollToCategory = (categoryId?: number, categoryTitle?: string) => {
-    let elementId: string;
-    if (categoryId) {
-      elementId = `category-${categoryId}`;
-    } else if (categoryTitle) {
-      elementId = `category-${categoryTitle
-        .replace(/\s+/g, "-")
-        .toLowerCase()}`;
-    } else {
-      return;
-    }
-
-    const categoryElement = document.getElementById(elementId);
-    if (categoryElement) {
-      categoryElement.scrollIntoView({ behavior: "smooth", block: "start" });
-      setCategoriesOpen(false);
     }
   };
 
@@ -80,157 +37,79 @@ const Navbar = ({ menuName, menuLogo, categories = [] }: NavbarProps) => {
     });
   };
 
-  const categoriesLabel = locale === "ar" ? "التصنيفات" : "Categories";
-  const isAr = locale === "ar";
-  const panelSideClass = isAr
-    ? "right-0 border-l border-[#3B332E]"
-    : "left-0 border-r border-[#3B332E]";
-
   return (
-    <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#17120F]/95 backdrop-blur-md border-b border-[#3B332E]">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-3 group">
-              {menuLogo && (
-                <div className="relative w-10 h-10 rounded-lg overflow-hidden">
-                  <LoadImage
-                    src={menuLogo}
-                    alt={menuName || "Logo"}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <span className="font-body text-xl md:text-lg font-semibold text-[#F2B705]">
-                {menuName ||
-                  (locale === "ar" ? "البلوط الذهبي" : "The Golden Oak")}
-              </span>
-            </Link>
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#17120F]/95 backdrop-blur-md border-b border-[#3B332E]">
+      <div className="container mx-auto px-6 py-4">
+        <div className="flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 group">
+            {menuLogo && (
+              <div className="relative w-10 h-10 rounded-lg overflow-hidden">
+                <LoadImage
+                  src={menuLogo}
+                  alt={menuName || "Logo"}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            )}
+            <span className="font-body text-xl md:text-lg font-semibold text-[#F2B705]">
+              {menuName ||
+                (locale === "ar" ? "البلوط الذهبي" : "The Golden Oak")}
+            </span>
+          </Link>
 
-            <div className="flex flex-wrap items-center justify-end gap-4 md:gap-8 max-w-[min(100%,calc(100vw-12rem))]">
-              {navLinks.map((link) => {
-                if (link.en === "Menu") {
-                  return (
-                    <button
-                      key={link.en}
-                      type="button"
-                      onClick={scrollToMenu}
-                      className="hidden md:block text-[#B6AA99] hover:text-[#F2B705] transition-colors duration-300 text-base font-medium tracking-wide uppercase"
-                    >
-                      {locale === "ar" ? link.ar : link.en}
-                    </button>
-                  );
-                }
+          <div className="flex flex-wrap items-center justify-end gap-4 md:gap-8 max-w-[min(100%,calc(100vw-12rem))]">
+            {navLinks.map((link) => {
+              if (link.en === "Menu") {
                 return (
-                  <a
+                  <button
                     key={link.en}
-                    href={`#${link.en.toLowerCase()}`}
+                    type="button"
+                    onClick={scrollToMenu}
                     className="hidden md:block text-[#B6AA99] hover:text-[#F2B705] transition-colors duration-300 text-base font-medium tracking-wide uppercase"
                   >
                     {locale === "ar" ? link.ar : link.en}
-                  </a>
+                  </button>
                 );
-              })}
-
-              {categories.length > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => setCategoriesOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#3B332E] hover:bg-[#F2B705]/20 text-[#B6AA99] hover:text-[#F2B705] transition-all duration-300"
-                  aria-label={categoriesLabel}
-                  aria-expanded={categoriesOpen}
-                  aria-controls="coffee-categories-panel"
+              }
+              return (
+                <a
+                  key={link.en}
+                  href={`#${link.en.toLowerCase()}`}
+                  className="hidden md:block text-[#B6AA99] hover:text-[#F2B705] transition-colors duration-300 text-base font-medium tracking-wide uppercase"
                 >
-                  <FiLayers className="h-5 w-5 shrink-0" strokeWidth={1.75} />
-                  <span className="hidden sm:inline text-base font-medium">
-                    {categoriesLabel}
-                  </span>
-                </button>
-              ) : null}
+                  {locale === "ar" ? link.ar : link.en}
+                </a>
+              );
+            })}
 
-              <button
-                type="button"
-                onClick={toggleLanguage}
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#3B332E] hover:bg-[#F2B705]/20 text-[#B6AA99] hover:text-[#F2B705] transition-all duration-300"
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#3B332E] hover:bg-[#F2B705]/20 text-[#B6AA99] hover:text-[#F2B705] transition-all duration-300"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
-                  />
-                </svg>
-                <span className="text-base font-medium">
-                  {locale === "ar" ? "EN" : "AR"}
-                </span>
-              </button>
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+                />
+              </svg>
+              <span className="text-base font-medium">
+                {locale === "ar" ? "EN" : "AR"}
+              </span>
+            </button>
           </div>
         </div>
-      </nav>
-
-      {categoriesOpen && categories.length > 0 && (
-        <div
-          className="fixed inset-0 z-100"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="coffee-categories-panel-title"
-        >
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/65 backdrop-blur-[2px]"
-            onClick={() => setCategoriesOpen(false)}
-            aria-label={locale === "ar" ? "إغلاق" : "Close overlay"}
-          />
-          <aside
-            id="coffee-categories-panel"
-            className={`absolute top-0 flex h-full w-full max-w-base flex-col bg-[#221D1A] shadow-2xl ${panelSideClass}`}
-          >
-            <div className="flex items-center justify-between border-b border-[#3B332E] px-5 py-4">
-              <h2
-                id="coffee-categories-panel-title"
-                className="font-body !text-base font-semibold text-[#F2B705]"
-              >
-                {categoriesLabel}
-              </h2>
-              <button
-                type="button"
-                onClick={() => setCategoriesOpen(false)}
-                className="flex h-10 w-10 items-center justify-center rounded-full text-[#B6AA99] transition hover:bg-[#3B332E] hover:text-[#F2B705]"
-                aria-label={locale === "ar" ? "إغلاق" : "Close"}
-              >
-                <FiX className="h-6 w-6" />
-              </button>
-            </div>
-            <nav className="flex-1 overflow-y-auto px-3 py-4">
-              <ul className="flex flex-col gap-1">
-                {categories.map((category) => (
-                  <li key={category.id ?? category.title}>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        scrollToCategory(category.id, category.title)
-                      }
-                      className="w-full rounded-lg px-4 py-3.5 text-start text-[0.9375rem] font-medium text-[#B6AA99] transition hover:bg-[#F2B705]/10 hover:text-[#F2B705]"
-                    >
-                      {locale === "ar" ? category.titleAr : category.title}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          </aside>
-        </div>
-      )}
-    </>
+      </div>
+    </nav>
   );
 };
 
