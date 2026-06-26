@@ -12,7 +12,6 @@ interface MenuItemType {
   tag?: string;
   tagAr?: string;
   image?: string | null;
-  delay?: number;
   originalPrice?: number | null;
   discountPercent?: number | null;
   sizes?: MenuItemSizeOption[] | null;
@@ -56,7 +55,6 @@ const MenuCategory = ({
             key={item.id || item.name || index}
             {...item}
             currency={currency}
-            delay={index * 100}
           />
         ))}
       </div>

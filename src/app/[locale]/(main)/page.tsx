@@ -13,21 +13,7 @@ import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
-import Default from "@/components/Templates/Default";
-import SkyTemplate from "@/components/Templates/SkyTemplate";
-import NeonTemplate from "@/components/Templates/NeonTemplate";
-import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
-import EmeraldTemplate from "@/components/Templates/EmeraldTemplate";
-import NoirTemplate from "@/components/Templates/NoirTemplate";
-import OceanicTemplate from "@/components/Templates/OceanicTemplate";
-import PharaonicTemplate from "@/components/Templates/PharaonicTemplate";
-import ArcaneTemplate from "@/components/Templates/Arcane";
-import MusicTemplate from "@/components/Templates/MusicTemplate";
-import RetroCoffeeTemplate from "@/components/Templates/RetroCoffeeTemplate";
-import OneCardTemplate from "@/components/Templates/OneCardTemplate";
-import { resolveMenuTheme } from "@/lib/resolveMenuTheme";
-import WaffleTemplate from "@/components/Templates/WaffleTemplate";
-import VanillaTemplate from "@/components/Templates/VanillaTemplate";
+import { templates } from "@/shared/theme.config";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -109,53 +95,13 @@ export default function Page() {
   );
 }
 
+
+
+
 const renderTemplate = (theme: string, showTemplates: boolean) => {
-  
-  if (!showTemplates) {
-    return <MenuNotFoundView />
-  }
+  if (!showTemplates) return <MenuNotFoundView />;
 
-  if (theme === "sky") {
-    return <SkyTemplate />
-  }
-  if (theme === "neon") {
-    return <NeonTemplate />
-  }
-  if (theme === "coffee") {
-    return <CoffeeTemplate />
-  }
-  if (theme === "emerald") {
-    return <EmeraldTemplate />
-  }
-  if (theme === "noir") {
-    return <NoirTemplate />
-  }
-  if (theme === "oceanic") {
-    return <OceanicTemplate />
-  }
-  if (theme === "pharaonic") {
-    return <PharaonicTemplate />
-  }
-  if (theme === "arcane") {
-    return <ArcaneTemplate />
-  }
-  if (theme === "music") {
-    return <MusicTemplate />
-  }
-  if (theme === "retro") {
-    return <RetroCoffeeTemplate />
-  }
-  if (theme === "vanilla") {
-    return <VanillaTemplate />
-  }
-  if (theme === "waffle") {
-    return <WaffleTemplate />
-  }
-  if (theme) {
-    return <OneCardTemplate />
-  }
+  const Template = templates[theme];
 
-  return <></>
-
-
-}
+  return Template ? <Template /> : theme ? <templates.default /> : null;
+};

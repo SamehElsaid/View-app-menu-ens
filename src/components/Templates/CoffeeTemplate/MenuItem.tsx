@@ -44,7 +44,6 @@ interface MenuItemProps {
   tag?: string;
   tagAr?: string;
   image?: string | null;
-  delay?: number;
   originalPrice?: number | null;
   discountPercent?: number | null;
   currency?: string;
@@ -62,7 +61,6 @@ const MenuItem = ({
   tag,
   tagAr,
   image,
-  delay = 0,
   originalPrice,
   discountPercent,
   currency = "AED",
@@ -441,8 +439,7 @@ const MenuItem = ({
   return (
     <>
       <div
-        className="animate-fade-in overflow-hidden rounded-xl border border-[#3B332E]/90 bg-gradient-to-br from-[#252019] to-[#1a1613] shadow-base shadow-black/20 sm:p-0"
-        style={{ animationDelay: `${delay}ms` }}
+        className="overflow-hidden rounded-xl border border-[#3B332E]/90 bg-gradient-to-br from-[#252019] to-[#1a1613] shadow-base shadow-black/20 sm:p-0"
       >
       <button
         type="button"
