@@ -54,6 +54,7 @@ export function useMenuCatalogPagination(activeCategoryId: number) {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const loadNextPageRef = useRef<() => Promise<void>>(async () => {});
+  const schedulePrefetchIfNeededRef = useRef<() => void>(() => {});
 
   storeCategoriesRef.current = storeCategories;
   activeCategoryRef.current = activeCategoryId;
@@ -70,6 +71,11 @@ export function useMenuCatalogPagination(activeCategoryId: number) {
       hasMore: bootstrapCatalog.hasMore,
     });
     bumpScopeVersion((value) => value + 1);
+
+    // After (re-)initializing, check if the sentinel is already in the
+    // prefetch zone — this covers locale-change scenarios where the user
+    // hasn't scrolled since the language switch.
+    queueMicrotask(() => schedulePrefetchIfNeededRef.current());
   }, [bootstrapCatalog]);
 
   // When the locale changes (language switch), clear all stale pagination state
@@ -167,6 +173,8 @@ export function useMenuCatalogPagination(activeCategoryId: number) {
 
     void loadNextPageRef.current();
   }, []);
+
+  schedulePrefetchIfNeededRef.current = schedulePrefetchIfNeeded;
 
   const loadNextPage = useCallback(async () => {
     if (!slug || loadingRef.current || !hasMoreRef.current) return;
@@ -307,6 +315,9 @@ export function useMenuCatalogPagination(activeCategoryId: number) {
     void loadInitialCategory(activeCategoryId);
   }, [activeCategoryId, loadInitialCategory, updateScope]);
 
+  // locale and bootstrapCatalog.page are both deps so this effect only fires
+  // once the new locale's bootstrap data has landed in Redux (page resets to 1).
+  // That prevents loading the wrong page number with a stale scope.
   useEffect(() => {
     if (
       activeCategoryId !== 0 ||
@@ -319,7 +330,7 @@ export function useMenuCatalogPagination(activeCategoryId: number) {
 
     eagerAllLoadRef.current = true;
     void loadNextPageRef.current();
-  }, [activeCategoryId, bootstrapCatalog?.hasMore, slug]);
+  }, [activeCategoryId, bootstrapCatalog?.hasMore, bootstrapCatalog?.page, slug, locale]);
 
   const items = useMemo(() => {
     if (activeCategoryId === 0) return allItems;
@@ -378,7 +389,11 @@ export function useMenuCatalogPagination(activeCategoryId: number) {
       observerRef.current = null;
       window.removeEventListener("resize", onResize);
     };
-  }, [hasMore, activeCategoryId]);
+  // locale is intentionally included: after a language switch the sentinel may
+  // already be in the viewport, so the IO would never fire without a re-attach.
+  // Re-attaching causes the browser to fire the callback for any already-visible
+  // element, resuming pagination without requiring a scroll.
+  }, [hasMore, activeCategoryId, locale]);
 
   return {
     items,
