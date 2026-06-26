@@ -37,10 +37,7 @@ export default function Page() {
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
-  const activeTheme = resolveMenuTheme(menu.theme);
 
-  const showTemplates =
-    menu.menuInfo?.isActive !== false && Boolean(activeTheme);
 
   useEffect(() => {
     const slug = menu.menuInfo?.slug;
@@ -79,43 +76,40 @@ export default function Page() {
     void trackMenuView();
   }, [locale, menu.menuInfo?.slug, searchParams]);
 
+
+  if (menu.menuInfo?.isActive === false) {
+    return <MaintenanceView
+      name={menu.menuInfo?.name ?? ""}
+      logo={menu.menuInfo?.logo ?? null}
+    />
+  }
+
   return (
     <main className="menu-template font-body">
-      {menu.menuInfo?.isActive === false ? (
-        <MaintenanceView
-          name={menu.menuInfo.name ?? ""}
-          logo={menu.menuInfo.logo}
-        />
-      ) : showTemplates ? (
-        <MenuLogoFallbackProvider logo={menu.menuInfo?.logo ?? null}>
-          <Suspense fallback={null}>
-            <StripInvalidTableParam />
-          </Suspense>
-          {renderTemplate(menu.theme ?? "")}
+      <MenuLogoFallbackProvider logo={menu.menuInfo?.logo ?? null}>
+        <Suspense fallback={null}>
+          <StripInvalidTableParam />
+        </Suspense>
 
-          {(tableCartAllowed || delivery?.deliveryOn) ? (
-            <Suspense fallback={null}>
-              <RequestStaffButton />
-            </Suspense>
-          ) : null}
-          {delivery?.deliveryOn && !searchParams.get("table")?.trim() ? (
-            <Suspense fallback={null}>
-              <DeliveryLocationModal />
-            </Suspense>
-          ) : null}
-          <OrderChatbotGate />
-        </MenuLogoFallbackProvider>
-      ) : (
-        <>
-          <MenuNotFoundView />
-          <OrderChatbotGate />
-        </>
-      )}
+        {renderTemplate(menu.theme ?? "", Boolean(menu?.menu))}
+
+        {(tableCartAllowed || delivery?.deliveryOn) ? (
+          <Suspense fallback={null}>
+            <RequestStaffButton />
+          </Suspense>
+        ) : null}
+        {delivery?.deliveryOn && !searchParams.get("table")?.trim() ? (
+          <Suspense fallback={null}>
+            <DeliveryLocationModal />
+          </Suspense>
+        ) : null}
+        <OrderChatbotGate />
+      </MenuLogoFallbackProvider>
     </main>
   );
 }
 
-const renderTemplate = (theme: string) => {
+const renderTemplate = (theme: string, showTemplates: boolean) => {
 
   if (theme === "sky") {
     return <SkyTemplate />
@@ -155,6 +149,9 @@ const renderTemplate = (theme: string) => {
   }
   if (theme) {
     return <OneCardTemplate />
+  }
+  if (!showTemplates) {
+    return <MenuNotFoundView />
   }
   return <></>
 
