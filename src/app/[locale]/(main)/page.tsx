@@ -8,11 +8,12 @@ import RequestStaffButton from "@/components/Global/RequestStaffButton";
 import DeliveryLocationModal from "@/components/Global/DeliveryLocationModal";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import MaintenanceView from "@/components/Global/MaintenanceView";
 import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
-import ThemedMaintenanceView from "@/components/Global/ThemedMaintenanceView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
+import Default from "@/components/Templates/Default";
 import SkyTemplate from "@/components/Templates/SkyTemplate";
 import NeonTemplate from "@/components/Templates/NeonTemplate";
 import CoffeeTemplate from "@/components/Templates/CoffeeTemplate";
@@ -25,8 +26,8 @@ import MusicTemplate from "@/components/Templates/MusicTemplate";
 import RetroCoffeeTemplate from "@/components/Templates/RetroCoffeeTemplate";
 import OneCardTemplate from "@/components/Templates/OneCardTemplate";
 import { resolveMenuTheme } from "@/lib/resolveMenuTheme";
-import VanillaTemplate from "@/components/Templates/VanillaTemplate";
 import WaffleTemplate from "@/components/Templates/WaffleTemplate";
+import VanillaTemplate from "@/components/Templates/VanillaTemplate";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -36,11 +37,10 @@ export default function Page() {
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
-  const menuLoaded = useAppSelector((s) => s.menu.menuLoaded);
   const activeTheme = resolveMenuTheme(menu.theme);
 
-  const menuExists = Boolean(menu.menuInfo);
-  const menuActive = menu.menuInfo?.isActive !== false;
+  const showTemplates =
+    menu.menuInfo?.isActive !== false && Boolean(activeTheme);
 
   useEffect(() => {
     const slug = menu.menuInfo?.slug;
@@ -81,35 +81,17 @@ export default function Page() {
 
   return (
     <main className="menu-template font-body">
-      {!menuLoaded ? null : !menuExists ? (
-        <>
-          <MenuNotFoundView />
-          <OrderChatbotGate />
-        </>
-      ) : !menuActive ? (
-        <ThemedMaintenanceView
-          name={menu.menuInfo!.name ?? ""}
-          logo={menu.menuInfo!.logo}
-          theme={activeTheme}
+      {menu.menuInfo?.isActive === false ? (
+        <MaintenanceView
+          name={menu.menuInfo.name ?? ""}
+          logo={menu.menuInfo.logo}
         />
-      ) : (
+      ) : showTemplates ? (
         <MenuLogoFallbackProvider logo={menu.menuInfo?.logo ?? null}>
           <Suspense fallback={null}>
             <StripInvalidTableParam />
           </Suspense>
-          {menu.theme === "sky" ? <SkyTemplate />
-            : menu.theme === "neon" ? <NeonTemplate />
-              : menu.theme === "coffee" ? <CoffeeTemplate />
-                : menu.theme === "emerald" ? <EmeraldTemplate />
-                  : menu.theme === "noir" ? <NoirTemplate />
-                    : menu.theme === "oceanic" ? <OceanicTemplate />
-                      : menu.theme === "pharaonic" ? <PharaonicTemplate />
-                        : menu.theme === "arcane" ? <ArcaneTemplate />
-                          : menu.theme === "music" ? <MusicTemplate />
-                            : menu.theme === "retro" ? <RetroCoffeeTemplate />
-                              : menu.theme === "vanilla" ? <VanillaTemplate />
-                                : menu.theme === "waffle" ? <WaffleTemplate />
-                                  : <OneCardTemplate />}
+          {renderTemplate(menu.theme ?? "")}
 
           {(tableCartAllowed || delivery?.deliveryOn) ? (
             <Suspense fallback={null}>
@@ -123,7 +105,58 @@ export default function Page() {
           ) : null}
           <OrderChatbotGate />
         </MenuLogoFallbackProvider>
+      ) : (
+        <>
+          <MenuNotFoundView />
+          <OrderChatbotGate />
+        </>
       )}
     </main>
   );
+}
+
+const renderTemplate = (theme: string) => {
+
+  if (theme === "sky") {
+    return <SkyTemplate />
+  }
+  if (theme === "neon") {
+    return <NeonTemplate />
+  }
+  if (theme === "coffee") {
+    return <CoffeeTemplate />
+  }
+  if (theme === "emerald") {
+    return <EmeraldTemplate />
+  }
+  if (theme === "noir") {
+    return <NoirTemplate />
+  }
+  if (theme === "oceanic") {
+    return <OceanicTemplate />
+  }
+  if (theme === "pharaonic") {
+    return <PharaonicTemplate />
+  }
+  if (theme === "arcane") {
+    return <ArcaneTemplate />
+  }
+  if (theme === "music") {
+    return <MusicTemplate />
+  }
+  if (theme === "retro") {
+    return <RetroCoffeeTemplate />
+  }
+  if (theme === "vanilla") {
+    return <VanillaTemplate />
+  }
+  if (theme === "waffle") {
+    return <WaffleTemplate />
+  }
+  if (theme) {
+    return <OneCardTemplate />
+  }
+  return <></>
+
+
 }
