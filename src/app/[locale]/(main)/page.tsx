@@ -110,6 +110,10 @@ export default function Page() {
 }
 
 const renderTemplate = (theme: string, showTemplates: boolean) => {
+  
+  if (!showTemplates) {
+    return <MenuNotFoundView />
+  }
 
   if (theme === "sky") {
     return <SkyTemplate />
@@ -150,9 +154,7 @@ const renderTemplate = (theme: string, showTemplates: boolean) => {
   if (theme) {
     return <OneCardTemplate />
   }
-  if (!showTemplates) {
-    return <MenuNotFoundView />
-  }
+
   return <></>
 
 
