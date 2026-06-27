@@ -334,12 +334,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     [isRtl],
   );
 
-  const scrollToProducts = useCallback(() => {
-    const el = productsRef.current;
-    if (!el) return;
-    const top = el.getBoundingClientRect().top + window.scrollY - 96;
-    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
-  }, []);
+
 
   const handleCategorySelect = useCallback(
     (id: number) => {
@@ -347,11 +342,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
       startTransition(() => {
         setActiveCategoryId(id);
       });
-      window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(scrollToProducts);
-      });
     },
-    [scrollToProducts],
+    [],
   );
 
 
