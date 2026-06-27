@@ -140,8 +140,8 @@ const MenuItem = ({
 
   const priceDisplay = itemHasOptions
     ? locale === "ar"
-      ? `من ${displayMinPrice}`
-      : `From ${displayMinPrice}`
+      ? `يبدأ من ${displayMinPrice} ${curr}`
+      : `Start from ${displayMinPrice} ${curr}`
     : normalizedPrice;
 
   useEffect(() => {
