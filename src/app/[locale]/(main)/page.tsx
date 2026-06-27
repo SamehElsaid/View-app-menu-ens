@@ -101,6 +101,8 @@ export default function Page() {
 const renderTemplate = (theme: string, showTemplates: boolean) => {
   if (!showTemplates) return <MenuNotFoundView />;
 
+  console.log(theme);
+
   const Template = templates[theme];
 
   return Template ? <Template /> : theme ? <templates.default /> : null;

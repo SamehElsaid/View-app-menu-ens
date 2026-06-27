@@ -49,7 +49,7 @@ function LoadImageInner({
   const menuLogo = useMenuLogoFallback();
   const [fallbackStage, setFallbackStage] =
     useState<ImageFallbackStage>("primary");
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(disableLazy);
 
   const logoSrc = resolveMenuItemImageSrc(
     "",
@@ -65,8 +65,10 @@ function LoadImageInner({
 
   useEffect(() => {
     setFallbackStage("primary");
-    setIsLoaded(false);
-  }, [src]);
+    if (!disableLazy) {
+      setIsLoaded(false);
+    }
+  }, [src, disableLazy]);
 
   const handleError = (e: SyntheticEvent<HTMLImageElement, Event>) => {
     if (fallbackStage === "primary") {

@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/store/hooks";
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 import { useLocale } from "next-intl";
 import { Navbar } from "./NavBar";
 import { HeroSection } from "./HeroSection";
@@ -10,7 +10,6 @@ import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
 function NeonTemplate() {
   const locale = useLocale();
   const menu = useAppSelector((state) => state.menu);
-  const [selectedCategory, setSelectedCategory] = React.useState("all");
 
   const primaryColor = menu?.menuCustomizations?.primaryColor || "#14b8a6";
   const secondaryColor = menu?.menuCustomizations?.secondaryColor || "#06b6d4";
@@ -30,8 +29,6 @@ function NeonTemplate() {
       <Suspense fallback={null}>
         <HeroSection
           menuData={menu || null}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
           customizations={menu?.menuCustomizations || {}}
         />
       </Suspense>

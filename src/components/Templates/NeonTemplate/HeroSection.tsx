@@ -2,10 +2,11 @@
 
 import React, {
   useState,
-  useMemo,
   useEffect,
+  useMemo,
   useRef,
   useCallback,
+  useTransition,
 } from "react";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { useLocale } from "next-intl";
@@ -17,6 +18,7 @@ import type {
 } from "@/types/menu";
 
 import { FaStar } from "react-icons/fa";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import LoadImage from "@/components/ImageLoad";
 import PromoBanner from "../CoffeeTemplate/PromoBanner";
 import {
@@ -24,6 +26,7 @@ import {
   readSkyCartFromCookie,
   upsertSkyCartFromMenuItemWithOptions,
   getCartQuantityForMenuItem,
+  type SkyCart,
 } from "@/lib/skyTemplateCart";
 import {
   getMenuItemMinPrice,
@@ -33,17 +36,21 @@ import { toast } from "react-toastify";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import {
   sortCategories,
-  sortMenuItems,
-  sortMenuItemsForDisplay,
+  buildCategorySections,
 } from "@/lib/menuCategoryOrder";
-import NeonDetailModal from "./NeonDetailModal";
+import { useMenuCatalogPagination } from "@/hooks/useMenuCatalogPagination";
+import MenuCatalogSentinel from "@/components/Global/MenuCatalogSentinel";
+import MenuCatalogSkeleton from "@/components/Global/MenuCatalogSkeleton";
+import MenuItemDetailModal, {
+  type MenuItemCartOptions,
+} from "@/components/Global/MenuItemDetailModal";
+import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
 
 function NeonMenuItemCard({
   item,
-  currency,
+  currencyLabel,
   primaryColor,
   locale,
-  isTableOrder,
   isProPlan,
   itemName,
   itemDescription,
@@ -51,39 +58,27 @@ function NeonMenuItemCard({
   onOpen,
 }: {
   item: MenuItem;
-  currency: string;
+  currencyLabel: string;
   primaryColor: string;
   locale: string;
-  isTableOrder: boolean;
   isProPlan: boolean;
   itemName: string;
   itemDescription: string;
   categoryName: string;
   onOpen: (item: MenuItem) => void;
 }) {
-  const [pickQty, setPickQty] = useState(1);
-  const [inCart, setInCart] = useState(0);
   const itemHasOptions = hasMenuItemOptions(item);
   const displayMinPrice = getMenuItemMinPrice(item);
   const priceLabel = itemHasOptions
     ? locale === "ar"
-      ? `من ${displayMinPrice}`
-      : `From ${displayMinPrice}`
+      ? `يبدأ من ${displayMinPrice}`
+      : `Start from ${displayMinPrice}`
     : String(item.price);
-
-  useEffect(() => {
-    const sync = () => {
-      const c = readSkyCartFromCookie();
-      setInCart(getCartQuantityForMenuItem(c, item.id));
-    };
-    sync();
-    return subscribeSkyCartUpdated(sync);
-  }, [item.id]);
 
   return (
     <div
       onClick={() => onOpen(item)}
-      className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 transition-all cursor-pointer group hover:shadow-xl hover:-translate-y-2"
+      className="flex flex-col bg-white dark:bg-slate-800 rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 transition-all cursor-pointer group hover:shadow-xl hover:-translate-y-2"
       style={{
         borderColor: undefined,
       }}
@@ -94,11 +89,13 @@ function NeonMenuItemCard({
         e.currentTarget.style.borderColor = "";
       }}
     >
-      <div className="relative h-48 overflow-hidden leading-none">
+      <div className="relative h-48 shrink-0 overflow-hidden leading-none">
         <LoadImage
           src={item.image ?? ""}
           alt={itemName}
           fill
+          width={400}
+          height={400}
           disableLazy={true}
           className="object-cover transition-transform duration-300 group-hover:scale-110"
         />
@@ -109,103 +106,41 @@ function NeonMenuItemCard({
           </div>
         )}
       </div>
-      <div className="p-5">
-        <h3 className="!text-lg font-bold text-slate-900 dark:text-white mb-2 line-clamp-1">
+      <div className="flex flex-1 flex-col p-5">
+        <h3 className="text-lg! font-bold text-slate-900 dark:text-white mb-2 line-clamp-1">
           {itemName}
         </h3>
-        {isProPlan && (
-          <p className="text-lg text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed mb-2">
-            {itemDescription}
-          </p>
-        )}
-        <div className={`${isProPlan ? "mt-4" : "mt-2"} flex flex-col gap-3`}>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <span
-              className="text-base px-3 py-1 rounded-full font-semibold w-fit"
-              style={{
-                backgroundColor: `${primaryColor}15`,
-                color: primaryColor,
-              }}
-            >
-              {categoryName}
-            </span>
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              {!itemHasOptions && item.originalPrice && item.originalPrice > item.price && (
-                <span className="text-slate-400 line-through text-base">
-                  {item.originalPrice} {currency}
-                </span>
-              )}
-              <span
-                className="font-bold text-base"
-                style={{ color: primaryColor }}
-              >
-                {priceLabel} {!itemHasOptions ? currency : ""}
+        {/* flex-1 spacer: description fills available space so bottom row always aligns */}
+        <div className="flex-1">
+          {isProPlan && itemDescription && (
+            <p className="text-base text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed">
+              {itemDescription}
+            </p>
+          )}
+        </div>
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <span
+            className="text-sm px-3 py-1 rounded-full font-semibold shrink-0"
+            style={{
+              backgroundColor: `${primaryColor}15`,
+              color: primaryColor,
+            }}
+          >
+            {categoryName}
+          </span>
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {!itemHasOptions && item.originalPrice && item.originalPrice > item.price && (
+              <span className="text-slate-400 line-through text-sm">
+                {item.originalPrice} {currencyLabel}
               </span>
-            </div>
-          </div>
-          {isTableOrder ? (
-            <div
-              className="flex flex-col gap-2 border-t border-slate-200 pt-3 dark:border-slate-600"
-              onClick={(e) => e.stopPropagation()}
-              role="presentation"
+            )}
+            <span
+              className="font-bold text-base"
+              style={{ color: primaryColor }}
             >
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-1 py-0.5 dark:border-slate-600 dark:bg-slate-900/80">
-                  <button
-                    type="button"
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-base font-bold"
-                    style={{ color: primaryColor }}
-                    onClick={() => setPickQty((q) => Math.max(1, q - 1))}
-                    aria-label={locale === "ar" ? "تقليل" : "Decrease"}
-                  >
-                    −
-                  </button>
-                  <span
-                    className="min-w-7 text-center text-base font-bold tabular-nums"
-                    style={{ color: primaryColor }}
-                  >
-                    {pickQty}
-                  </span>
-                  <button
-                    type="button"
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-base font-bold"
-                    style={{ color: primaryColor }}
-                    onClick={() => setPickQty((q) => q + 1)}
-                    aria-label={locale === "ar" ? "زيادة" : "Increase"}
-                  >
-                    +
-                  </button>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (itemHasOptions) {
-                      onOpen(item);
-                      return;
-                    }
-                    upsertSkyCartFromMenuItemWithOptions(item, pickQty, { locale });
-                    toast.success(
-                      locale === "ar"
-                        ? `تمت إضافة ${pickQty} إلى السلة`
-                        : `Added ${pickQty} to cart`,
-                    );
-                    setPickQty(1);
-                  }}
-                  className="shrink-0 rounded-full px-4 py-2 text-base font-bold text-white shadow-md transition hover:opacity-90"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  {locale === "ar" ? "أضف للسلة" : "Add to cart"}
-                </button>
-              </div>
-              {inCart > 0 ? (
-                <p className="text-center text-base text-slate-500 dark:text-slate-400">
-                  {locale === "ar"
-                    ? `في السلة: ${inCart}`
-                    : `In cart: ${inCart}`}
-                </p>
-              ) : null}
-            </div>
-          ) : null}
+              {priceLabel} {currencyLabel}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -221,50 +156,70 @@ type HeroSectionMenuData = {
 
 type HeroSectionProps = {
   menuData?: HeroSectionMenuData | null;
-  selectedCategory: string;
-  onCategoryChange: (categoryId: string) => void;
   customizations?: Partial<MenuCustomizations> | null;
 };
 
 export const HeroSection: React.FC<HeroSectionProps> = ({
   menuData,
-  selectedCategory,
-  onCategoryChange,
   customizations = {},
 }) => {
   const locale = useLocale();
   const { isOrderingEnabled: isTableOrder } = useIsOrderingEnabled();
-  const [selectedFoodItem, setSelectedFoodItem] = useState<MenuItem | null>(
-    null,
-  );
+  const [selectedFoodItem, setSelectedFoodItem] = useState<MenuItem | null>(null);
   const productsRef = useRef<HTMLDivElement>(null);
   const { openItem } = useTrackMenuItemClick();
+  const getCurrencyLabel = useCurrencyLabel();
+
+  // Two-layer deferred selection: selectedCategoryId updates instantly for visual feedback,
+  // activeCategoryId updates inside startTransition to defer the expensive product-list re-render.
+  const [selectedCategoryId, setSelectedCategoryId] = useState(0);
+  const [activeCategoryId, setActiveCategoryId] = useState(0);
+  const [isPending, startTransition] = useTransition();
+
+  // Cart state — lifted to section level so all cards share a single subscription
+  const [cart, setCart] = useState<SkyCart>(() =>
+    typeof document === "undefined" ? {} : readSkyCartFromCookie(),
+  );
+
+  useEffect(() => {
+    return subscribeSkyCartUpdated(() => setCart(readSkyCartFromCookie()));
+  }, []);
+
+  // Category carousel scroll state
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+  const isRtl = locale === "ar";
 
   const menuInfo =
     menuData?.menuInfo ??
     (Array.isArray(menuData?.menu) ? null : menuData?.menu);
   const customizationsData = customizations ?? {};
-  const menuItems = useMemo(
-    () =>
-      Array.isArray(menuData?.menu)
-        ? menuData.menu
-        : Array.isArray(menuData?.items)
-          ? menuData.items
-          : [],
-    [menuData],
-  );
   const menuCategories = useMemo(
     () => (Array.isArray(menuData?.categories) ? menuData.categories : []),
     [menuData],
   );
 
   const currency = menuInfo?.currency || "AED";
+  const currencyLabel = getCurrencyLabel(currency);
   const isProPlan =
     menuInfo?.ownerPlanType !== "free" && !!menuInfo?.ownerPlanType;
 
-  // Default customization values
   const primaryColor = customizationsData.primaryColor || "#14b8a6";
   const secondaryColor = customizationsData.secondaryColor || "#06b6d4";
+
+  const handleAddToCart = useCallback(
+    (item: MenuItem, quantity: number, options?: MenuItemCartOptions) => {
+      if (quantity <= 0) return;
+      upsertSkyCartFromMenuItemWithOptions(item, quantity, {
+        locale,
+        size: options?.size ?? null,
+        variant: options?.variant ?? null,
+      });
+      toast.success(locale === "ar" ? "تمت الإضافة إلى السلة" : "Added to cart");
+    },
+    [locale],
+  );
   const heroTitle =
     locale === "ar"
       ? customizationsData.heroTitleAr?.trim() || menuInfo?.name || ""
@@ -276,10 +231,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         menuInfo?.description ||
         "";
 
-  // Build categories from menuData with "all" option
+  const { items, initialLoading, loadingMore, hasMore, sentinelRef } =
+    useMenuCatalogPagination(activeCategoryId);
+
+  // Build categories display array with numeric IDs (0 = All)
   const categories = useMemo(() => {
     const allCategory = {
-      id: "all",
+      id: 0,
       name: locale === "ar" ? "الكل" : "All",
       icon: "🍽️",
       image: null as string | null,
@@ -288,7 +246,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     const dbCategories = sortCategories(
       menuCategories.filter((cat) => cat.isActive !== false),
     ).map((cat) => ({
-      id: cat.id.toString(),
+      id: cat.id,
       name: locale === "ar" ? cat.nameAr || cat.name : cat.nameEn || cat.name,
       icon: "🍽️",
       image: cat.image ?? null,
@@ -297,42 +255,84 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
     return [allCategory, ...dbCategories];
   }, [menuCategories, locale]);
 
-  // Group items by category (for "All" view section headers)
-  const groupedItems = useMemo(() => {
-    if (selectedCategory !== "all") return null;
-    const sorted = sortMenuItemsForDisplay(menuItems, menuCategories);
-    const groups: { catId: number; catName: string; catImage: string | null; items: typeof sorted }[] = [];
-    const seen = new Set<number>();
-    for (const item of sorted) {
-      const cid = item.categoryId;
-      if (!seen.has(cid)) {
-        seen.add(cid);
-        const cat = menuCategories.find((c) => c.id === cid);
-        const catName = cat
+  // Group items by category for the "All" view (replaces manual groupedItems)
+  const categorySections = useMemo(
+    () => buildCategorySections(menuCategories, items),
+    [menuCategories, items],
+  );
+
+  // Lookup helper for category name and image used in section headers
+  const getCategoryDisplay = useCallback(
+    (categoryId: number) => {
+      const cat = menuCategories.find((c) => c.id === categoryId);
+      return {
+        name: cat
           ? locale === "ar"
             ? cat.nameAr || cat.name
             : cat.nameEn || cat.name
-          : locale === "ar"
-            ? item.categoryNameAr || item.categoryName
-            : item.categoryNameEn || item.categoryName;
-        groups.push({ catId: cid, catName: catName || "", catImage: cat?.image ?? null, items: [] });
-      }
-      groups[groups.length - 1].items.push(item);
-    }
-    return groups;
-  }, [selectedCategory, menuItems, menuCategories, locale]);
+          : "",
+        image: cat?.image ?? null,
+      };
+    },
+    [menuCategories, locale],
+  );
 
-  // Filter items based on selected category
-  const filteredItems = useMemo(() => {
-    if (selectedCategory === "all") {
-      return sortMenuItemsForDisplay(menuItems, menuCategories);
+  const updateScrollState = useCallback(() => {
+    const el = categoryScrollRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll <= 0) {
+      setCanScrollPrev(false);
+      setCanScrollNext(false);
+      return;
     }
-    return sortMenuItems(
-      menuItems.filter(
-        (item) => item.categoryId?.toString() === selectedCategory,
-      ),
-    );
-  }, [menuItems, menuCategories, selectedCategory]);
+    const absScroll = Math.abs(el.scrollLeft);
+    setCanScrollPrev(absScroll > 2);
+    setCanScrollNext(absScroll < maxScroll - 2);
+  }, []);
+
+  // Track scroll position and container resize
+  useEffect(() => {
+    const el = categoryScrollRef.current;
+    if (!el) return;
+    const frame = requestAnimationFrame(updateScrollState);
+    el.addEventListener("scroll", updateScrollState, { passive: true });
+    const ro = new ResizeObserver(updateScrollState);
+    ro.observe(el);
+    return () => {
+      cancelAnimationFrame(frame);
+      el.removeEventListener("scroll", updateScrollState);
+      ro.disconnect();
+    };
+  }, [updateScrollState]);
+
+  // Auto-scroll the active category button into view (same logic as CategoryCircles)
+  useEffect(() => {
+    const el = categoryScrollRef.current;
+    if (!el) return;
+    const inner = el.firstElementChild as HTMLElement | null;
+    if (!inner) return;
+    const children = Array.from(inner.children) as HTMLElement[];
+    const idx = categories.findIndex((c) => c.id === selectedCategoryId);
+    const child = children[idx < 0 ? 0 : idx];
+    if (!child) return;
+    const containerRect = el.getBoundingClientRect();
+    const childRect = child.getBoundingClientRect();
+    const delta =
+      childRect.left + childRect.width / 2 -
+      (containerRect.left + containerRect.width / 2);
+    el.scrollBy({ left: delta, behavior: "smooth" });
+  }, [selectedCategoryId, categories]);
+
+  const handleCategoryNav = useCallback(
+    (nav: "prev" | "next") => {
+      const el = categoryScrollRef.current;
+      if (!el) return;
+      const sign = isRtl ? -1 : 1;
+      el.scrollBy({ left: (nav === "next" ? 200 : -200) * sign, behavior: "smooth" });
+    },
+    [isRtl],
+  );
 
   const scrollToProducts = useCallback(() => {
     const el = productsRef.current;
@@ -342,27 +342,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   }, []);
 
   const handleCategorySelect = useCallback(
-    (categoryId: string) => {
-      onCategoryChange(categoryId);
+    (id: number) => {
+      setSelectedCategoryId(id);
+      startTransition(() => {
+        setActiveCategoryId(id);
+      });
       window.requestAnimationFrame(() => {
         window.requestAnimationFrame(scrollToProducts);
       });
     },
-    [onCategoryChange, scrollToProducts],
+    [scrollToProducts],
   );
 
-  const selectedModalCategoryName = useMemo(() => {
-    if (!selectedFoodItem) return "";
-    return (
-      categories.find(
-        (cat) => cat.id === selectedFoodItem.categoryId?.toString(),
-      )?.name ||
-      (locale === "ar"
-        ? selectedFoodItem.categoryNameAr || selectedFoodItem.categoryName
-        : selectedFoodItem.categoryNameEn || selectedFoodItem.categoryName) ||
-      ""
-    );
-  }, [selectedFoodItem, categories, locale]);
 
   return (
     <section
@@ -400,62 +391,101 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           ) : null}
         </div>
 
-        {/* Categories Filter */}
-        <div className="mb-16 -mx-4 px-4 md:mx-0 md:px-0">
-          <div
-            className="flex flex-nowrap md:flex-wrap items-center gap-3 md:gap-4 md:justify-center  pb-2 md:pb-0  scroll-smooth [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-            role="tablist"
-            aria-label={locale === "ar" ? "فئات القائمة" : "Menu categories"}
-          >
-            {categories.map((category) => {
-              const isActive = selectedCategory === category.id;
-
-              return (
-                <button
-                  key={category.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={isActive}
-                  onClick={() => handleCategorySelect(category.id)}
-                  className={[
-                    "shrink-0 snap-start flex items-center gap-2 rounded-2xl border-2 px-4 py-2.5 text-sm font-semibold transition-all duration-200 md:gap-3 md:px-6 md:py-3 md:text-base",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--neon-primary)]",
-                    isActive
-                      ? "scale-105 border-transparent text-white shadow-lg active:scale-[0.98]"
-                      : "border-slate-200 bg-white text-slate-700 hover:scale-105 hover:border-[var(--neon-primary)] hover:bg-[color-mix(in_srgb,var(--neon-primary)_10%,white)] hover:text-[var(--neon-primary)] active:scale-[0.98] dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-[color-mix(in_srgb,var(--neon-primary)_18%,#1e293b)]",
-                  ].join(" ")}
-                  style={
-                    {
-                      "--neon-primary": primaryColor,
-                      "--neon-secondary": secondaryColor,
-                      ...(isActive
-                        ? {
-                            background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})`,
-                            boxShadow: `0 10px 15px -3px ${primaryColor}50`,
-                          }
-                        : {}),
-                    } as React.CSSProperties
-                  }
-                >
-                  <span className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full md:h-8 md:w-8">
-                    {category.image ? (
-                      <LoadImage
-                        src={category.image ?? ""}
-                        alt={category.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <span className="flex h-full w-full items-center justify-center text-base md:text-lg">
-                        {category.icon}
+        {/* Categories Filter — circle style matching OneCard */}
+        <div className="relative mb-16">
+          <div className="px-6 py-4 rounded-2xl bg-white dark:bg-slate-800/90 shadow-[0_0_24px_8px_rgba(0,0,0,0.07)]">
+            <div
+              ref={categoryScrollRef}
+              className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              dir={isRtl ? "rtl" : "ltr"}
+            >
+              <div
+                className="flex gap-1"
+                role="tablist"
+                style={{ direction: isRtl ? "rtl" : "ltr" }}
+                aria-label={locale === "ar" ? "فئات القائمة" : "Menu categories"}
+              >
+                {categories.map((category) => {
+                  const isActive = selectedCategoryId === category.id;
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      role="tab"
+                      aria-pressed={isActive}
+                      onClick={() => handleCategorySelect(category.id)}
+                      className="flex min-w-[80px] max-w-[100px] shrink-0 flex-col items-center gap-1.5 transition-transform duration-200 ease-in hover:scale-[0.95]"
+                    >
+                      <span
+                        className={`relative flex h-[60px] w-[60px] shrink-0 overflow-hidden rounded-full ${
+                          isActive ? "border-4" : "border-[3px]"
+                        }`}
+                        style={{ borderColor: primaryColor }}
+                      >
+                        {category.image ? (
+                          <LoadImage
+                            src={category.image}
+                            alt={category.name}
+                            fill
+                            width={200}
+                            height={200}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <span
+                            className="flex h-full w-full items-center justify-center text-2xl"
+                            style={{
+                              backgroundColor: `${primaryColor}15`,
+                              color: primaryColor,
+                            }}
+                          >
+                            {category.icon}
+                          </span>
+                        )}
                       </span>
-                    )}
-                  </span>
-                  <span className="whitespace-nowrap">{category.name}</span>
-                </button>
-              );
-            })}
+                      <span
+                        className="w-full text-center text-xs font-semibold leading-tight"
+                        style={{ color: primaryColor }}
+                      >
+                        {category.name}
+                      </span>
+                      <span
+                        className="h-[3px] w-7 rounded-sm transition-[background] duration-200 ease-in"
+                        style={{
+                          backgroundColor: isActive ? primaryColor : "transparent",
+                        }}
+                        aria-hidden
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
+
+          {/* Prev scroll button */}
+          <button
+            type="button"
+            aria-label={locale === "ar" ? "السابق" : "Scroll previous"}
+            disabled={!canScrollPrev}
+            onClick={() => handleCategoryNav("prev")}
+            className="absolute top-1/2 -start-3 -translate-y-1/2 z-10 flex h-9 w-9 items-center justify-center rounded-full text-white transition-[transform,opacity] duration-200 ease-in enabled:hover:scale-[1.08] disabled:pointer-events-none disabled:cursor-default disabled:opacity-0"
+            style={{ background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+          >
+            <FiChevronLeft className="text-lg rtl:rotate-180" aria-hidden />
+          </button>
+
+          {/* Next scroll button */}
+          <button
+            type="button"
+            aria-label={locale === "ar" ? "التالي" : "Scroll next"}
+            disabled={!canScrollNext}
+            onClick={() => handleCategoryNav("next")}
+            className="absolute top-1/2 -end-3 -translate-y-1/2 z-10 flex h-9 w-9 items-center justify-center rounded-full text-white transition-[transform,opacity] duration-200 ease-in enabled:hover:scale-[1.08] disabled:pointer-events-none disabled:cursor-default disabled:opacity-0"
+            style={{ background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+          >
+            <FiChevronRight className="text-lg rtl:rotate-180" aria-hidden />
+          </button>
         </div>
 
         <div className="container mx-auto px-4">
@@ -463,87 +493,95 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
         </div>
         {/* Menu Items Grid */}
         <div id="neon-menu-products" ref={productsRef} className="scroll-mt-28 space-y-10">
-          {groupedItems ? (
-            /* ── All categories view: grouped with section headers ── */
-            groupedItems.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-slate-600 dark:text-slate-400 text-base">
-                  {locale === "ar" ? "لا توجد عناصر" : "No items available"}
-                </p>
-              </div>
-            ) : (
-              groupedItems.map((group) => (
-                <div key={group.catId}>
-                  {/* Category section header */}
-                  <div className="mb-6 flex items-center gap-3">
-                    {group.catImage ? (
-                      <span
-                        className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 shadow-sm"
-                        style={{ borderColor: `${primaryColor}50` }}
-                      >
-                        <LoadImage
-                          src={group.catImage}
-                          alt={group.catName}
-                          fill
-                          className="object-cover"
-                        />
-                      </span>
-                    ) : (
-                      <span
-                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg"
-                        style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}
-                      >
-                        🍽️
-                      </span>
-                    )}
-                    <div className="flex flex-1 items-center gap-3">
-                      <h3
-                        className="text-xl font-black tracking-tight md:text-2xl"
-                        style={{ color: primaryColor }}
-                      >
-                        {group.catName}
-                      </h3>
-                      <div
-                        className="h-px flex-1 rounded-full opacity-30"
-                        style={{ backgroundColor: primaryColor }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Items grid for this category */}
-                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {group.items.map((item) => {
-                      const itemName =
-                        locale === "ar" ? item.nameAr || item.name : item.nameEn || item.name;
-                      const itemDescription =
-                        locale === "ar"
-                          ? item.descriptionAr || item.description
-                          : item.descriptionEn || item.description;
-                      return (
-                        <NeonMenuItemCard
-                          key={item.id}
-                          item={item}
-                          currency={currency}
-                          primaryColor={primaryColor}
-                          locale={locale}
-                          isTableOrder={isTableOrder}
-                          isProPlan={isProPlan}
-                          itemName={itemName}
-                          itemDescription={itemDescription ?? ""}
-                          categoryName={group.catName}
-                          onOpen={(it) => openItem(it, setSelectedFoodItem)}
-                        />
-                      );
-                    })}
-                  </div>
+          <div
+            className={`transition-opacity duration-150 ${isPending ? "opacity-50 pointer-events-none" : "opacity-100"}`}
+          >
+            {activeCategoryId === 0 ? (
+              /* ── All categories view: grouped with section headers ── */
+              categorySections.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-slate-600 dark:text-slate-400 text-base">
+                    {locale === "ar" ? "لا توجد عناصر" : "No items available"}
+                  </p>
                 </div>
-              ))
-            )
-          ) : (
-            /* ── Single category view ── */
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredItems.length === 0 ? (
-                <div className="col-span-full text-center py-12">
+              ) : (
+                categorySections.map((section) => {
+                  const { name: catName, image: catImage } = getCategoryDisplay(section.categoryId);
+                  return (
+                    <div key={section.categoryId}>
+                      {/* Category section header */}
+                      <div className="mb-6 flex items-center gap-3">
+                        {catImage ? (
+                          <span
+                            className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 shadow-sm"
+                            style={{ borderColor: `${primaryColor}50` }}
+                          >
+                            <LoadImage
+                              src={catImage}
+                              alt={catName}
+                              fill
+                              width={200}
+                              height={200}
+                              className="object-cover"
+                            />
+                          </span>
+                        ) : (
+                          <span
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg"
+                            style={{ backgroundColor: `${primaryColor}15`, color: primaryColor }}
+                          >
+                            🍽️
+                          </span>
+                        )}
+                        <div className="flex flex-1 items-center gap-3">
+                          <h3
+                            className="text-xl font-black tracking-tight md:text-2xl"
+                            style={{ color: primaryColor }}
+                          >
+                            {catName}
+                          </h3>
+                          <div
+                            className="h-px flex-1 rounded-full opacity-30"
+                            style={{ backgroundColor: primaryColor }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Items grid for this category */}
+                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        {section.items.map((item) => {
+                          const itemName =
+                            locale === "ar" ? item.nameAr || item.name : item.nameEn || item.name;
+                          const itemDescription =
+                            locale === "ar"
+                              ? item.descriptionAr || item.description
+                              : item.descriptionEn || item.description;
+                          return (
+                            <NeonMenuItemCard
+                              key={item.id}
+                              item={item}
+                              currencyLabel={currencyLabel}
+                              primaryColor={primaryColor}
+                              locale={locale}
+                              isProPlan={isProPlan}
+                              itemName={itemName}
+                              itemDescription={itemDescription ?? ""}
+                              categoryName={catName}
+                              onOpen={(it) => openItem(it, setSelectedFoodItem)}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })
+              )
+            ) : (
+              /* ── Single category view ── */
+              initialLoading ? (
+                <MenuCatalogSkeleton count={6} />
+              ) : items.length === 0 ? (
+                <div className="text-center py-12">
                   <p className="text-slate-600 dark:text-slate-400 text-base">
                     {locale === "ar"
                       ? "لا توجد عناصر في هذه الفئة"
@@ -551,53 +589,58 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   </p>
                 </div>
               ) : (
-                filteredItems.map((item) => {
-                  const itemName =
-                    locale === "ar" ? item.nameAr || item.name : item.nameEn || item.name;
-                  const itemDescription =
-                    locale === "ar"
-                      ? item.descriptionAr || item.description
-                      : item.descriptionEn || item.description;
-                  const itemCategoryName =
-                    locale === "ar"
-                      ? item.categoryNameAr || item.categoryName
-                      : item.categoryNameEn || item.categoryName;
-                  const categoryName =
-                    categories.find((cat) => cat.id === item.categoryId?.toString())?.name ||
-                    itemCategoryName ||
-                    "";
-                  return (
-                    <NeonMenuItemCard
-                      key={item.id}
-                      item={item}
-                      currency={currency}
-                      primaryColor={primaryColor}
-                      locale={locale}
-                      isTableOrder={isTableOrder}
-                      isProPlan={isProPlan}
-                      itemName={itemName}
-                      itemDescription={itemDescription ?? ""}
-                      categoryName={categoryName}
-                      onOpen={(it) => openItem(it, setSelectedFoodItem)}
-                    />
-                  );
-                })
-              )}
-            </div>
-          )}
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {items.map((item) => {
+                    const itemName =
+                      locale === "ar" ? item.nameAr || item.name : item.nameEn || item.name;
+                    const itemDescription =
+                      locale === "ar"
+                        ? item.descriptionAr || item.description
+                        : item.descriptionEn || item.description;
+                    const categoryName =
+                      categories.find((cat) => cat.id === item.categoryId)?.name ||
+                      (locale === "ar"
+                        ? item.categoryNameAr || item.categoryName
+                        : item.categoryNameEn || item.categoryName) ||
+                      "";
+                    return (
+                      <NeonMenuItemCard
+                        key={item.id}
+                        item={item}
+                        currencyLabel={currencyLabel}
+                        primaryColor={primaryColor}
+                        locale={locale}
+                        isProPlan={isProPlan}
+                        itemName={itemName}
+                        itemDescription={itemDescription ?? ""}
+                        categoryName={categoryName}
+                        onOpen={(it) => openItem(it, setSelectedFoodItem)}
+                      />
+                    );
+                  })}
+                </div>
+              )
+            )}
+          </div>
+
+          <MenuCatalogSentinel
+            sentinelRef={sentinelRef}
+            loadingMore={loadingMore}
+            hasMore={hasMore}
+          />
         </div>
       </div>
 
       {selectedFoodItem ? (
-        <NeonDetailModal
+        <MenuItemDetailModal
           item={selectedFoodItem}
-          onClose={() => setSelectedFoodItem(null)}
-          currency={currency}
-          primaryColor={primaryColor}
-          secondaryColor={secondaryColor}
-          isProPlan={isProPlan}
+          currencyLabel={currencyLabel}
           isTableOrder={isTableOrder}
-          categoryName={selectedModalCategoryName}
+          cartQuantity={getCartQuantityForMenuItem(cart, selectedFoodItem.id)}
+          primary={primaryColor}
+          secondary={secondaryColor}
+          onClose={() => setSelectedFoodItem(null)}
+          onAddToCart={handleAddToCart}
         />
       ) : null}
     </section>
