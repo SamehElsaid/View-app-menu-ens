@@ -25,6 +25,7 @@ import {
   pickVariantLabel,
 } from "@/lib/menuItemOptions";
 import { useCoffeeTheme, hexToRgba } from "./CoffeeThemeContext";
+import { getItemDiscount, applyItemDiscountToPrice, getSelectedTotalStrikethrough } from "@/lib/menuItemDiscount";
 
 export type MenuCardProps = {
   item: MenuItem;
@@ -67,8 +68,8 @@ export default function MenuCard({
 
   const name = pickName(item, locale);
   const description = pickDescription(item, locale);
-  const hasDiscount =
-    item.originalPrice != null && item.originalPrice > item.price;
+  const { hasDiscount, discountedPrice, strikethroughPrice } = getItemDiscount(item);
+  const hasOriginalPrice = strikethroughPrice != null;
 
   const sizes = useMemo(() => getMenuItemSizes(item), [item]);
   const variants = useMemo(() => getMenuItemVariants(item), [item]);
@@ -87,11 +88,18 @@ export default function MenuCard({
     selectedVariant,
   );
 
+  const selectedTotalStrikethrough = getSelectedTotalStrikethrough(
+    item,
+    selectedUnitPrice,
+    selectedSize?.price,
+    selectedVariant?.price,
+  );
+
   const priceDisplay = itemHasOptions
     ? isAr
       ? `من ${displayMinPrice}`
       : `From ${displayMinPrice}`
-    : String(item.price);
+    : String(discountedPrice);
 
   useEffect(() => {
     if (!open) return;
@@ -197,7 +205,7 @@ export default function MenuCard({
             style={{ backgroundColor: primary }}
           >
             <span className="tabular-nums text-xs leading-none">
-              {itemHasOptions ? `${displayMinPrice}+` : item.price}
+              {itemHasOptions ? `${displayMinPrice}+` : discountedPrice}
             </span>
             <span className="mt-0.5 text-[8px] font-medium uppercase opacity-90">
               {currencyLabel}
@@ -241,9 +249,9 @@ export default function MenuCard({
               </p>
             ) : null}
 
-            {hasDiscount ? (
+            {selectedTotalStrikethrough ? (
               <span className="block text-xs tabular-nums line-through opacity-40 font-bold text-zinc-400">
-                {item.originalPrice} {currencyLabel}
+                {selectedTotalStrikethrough} {currencyLabel}
               </span>
             ) : null}
 
@@ -282,7 +290,15 @@ export default function MenuCard({
                         <span className="text-xs font-semibold text-zinc-700">{label}</span>
                       </span>
                       <span className="text-xs font-bold" style={{ color: primary }}>
-                        {size.price} {currencyLabel}
+                        {(() => {
+                          const discSizePrice = applyItemDiscountToPrice(item, size.price);
+                          return discSizePrice !== size.price ? (
+                            <>
+                              <span className="line-through opacity-40 text-xs mr-1">{size.price}</span>
+                              {discSizePrice}
+                            </>
+                          ) : size.price;
+                        })()} {currencyLabel}
                       </span>
                     </label>
                   );
@@ -482,24 +498,23 @@ export default function MenuCard({
             ) : null}
 
             <div className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 sm:mt-2.5">
-              <span
-                className="font-serif text-base font-extrabold tabular-nums sm:text-lg"
-                style={{ color: primary }}
-              >
-                {item.price}{" "}
-                <span className="text-[11px] font-semibold sm:text-xs">
-                  {currencyLabel}
-                </span>
-              </span>
-
-              {hasDiscount ? (
+              {strikethroughPrice ? (
                 <span
                   className="text-xs font-bold tabular-nums line-through sm:text-sm"
                   style={{ color: colors.textMuted }}
                 >
-                  {item.originalPrice} {currencyLabel}
+                  {strikethroughPrice} {currencyLabel}
                 </span>
               ) : null}
+              <span
+                className="font-serif text-base font-extrabold tabular-nums sm:text-lg"
+                style={{ color: primary }}
+              >
+                {discountedPrice}{" "}
+                <span className="text-[11px] font-semibold sm:text-xs">
+                  {currencyLabel}
+                </span>
+              </span>
             </div>
           </div>
         </button>

@@ -23,6 +23,7 @@ import {
   pickSizeLabel,
   pickVariantLabel,
 } from "@/lib/menuItemOptions";
+import { getItemDiscount, applyItemDiscountToPrice } from "@/lib/menuItemDiscount";
 
 type SkyDetailModalProps = {
   item: MenuItem;
@@ -81,9 +82,8 @@ export default function SkyDetailModal({
       ? item.categoryNameAr || item.categoryName
       : item.categoryNameEn || item.categoryName;
 
-  const hasDiscount =
-    Boolean(item.originalPrice && item.discountPercent) &&
-    (item.originalPrice ?? 0) > item.price;
+  const { hasDiscount, discountPercent: itemDiscountPercent, strikethroughPrice } =
+    getItemDiscount(item);
 
   const getCurrency = () => {
     if (locale !== "ar") return currency;
@@ -207,9 +207,9 @@ export default function SkyDetailModal({
             </span>
           ) : null}
 
-          {hasDiscount ? (
+          {hasDiscount && itemDiscountPercent ? (
             <span className="absolute top-4 end-4 z-20 rounded-full bg-red-500 px-3 py-1 text-sm font-bold text-white shadow-md">
-              -{item.discountPercent}%
+              -{itemDiscountPercent}%
             </span>
           ) : null}
         </div>
@@ -240,13 +240,15 @@ export default function SkyDetailModal({
                 <span className="text-xs font-semibold">{getCurrency()}</span>
               )}
             </p>
-            {hasDiscount ? (
+            {hasDiscount && itemDiscountPercent ? (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-(--bg-main)/45 line-through">
-                  {item.originalPrice} {getCurrency()}
-                </span>
+                {strikethroughPrice ? (
+                  <span className="text-xs text-(--bg-main)/45 line-through">
+                    {strikethroughPrice} {getCurrency()}
+                  </span>
+                ) : null}
                 <span className="rounded-full bg-(--bg-main) px-2 py-0.5 text-[10px] font-bold text-white">
-                  -{item.discountPercent}%
+                  -{itemDiscountPercent}%
                 </span>
               </div>
             ) : null}
@@ -283,7 +285,15 @@ export default function SkyDetailModal({
                         </span>
                       </span>
                       <span className="text-sm font-bold text-(--bg-main)">
-                        {size.price} {getCurrency()}
+                        {(() => {
+                          const discSizePrice = applyItemDiscountToPrice(item, size.price);
+                          return discSizePrice !== size.price ? (
+                            <>
+                              <span className="line-through opacity-40 text-xs mr-1">{size.price}</span>
+                              {discSizePrice}
+                            </>
+                          ) : size.price;
+                        })()} {getCurrency()}
                       </span>
                     </label>
                   );

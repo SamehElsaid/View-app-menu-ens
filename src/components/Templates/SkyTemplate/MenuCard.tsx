@@ -10,6 +10,7 @@ import {
   getMenuItemMinPrice,
   hasMenuItemOptions,
 } from "@/lib/menuItemOptions";
+import { getItemDiscount } from "@/lib/menuItemDiscount";
 
 interface MenuCardProps {
   item: MenuItem;
@@ -65,11 +66,12 @@ export default function MenuCard({
 
   const itemHasOptions = hasMenuItemOptions(item);
   const displayMinPrice = getMenuItemMinPrice(item);
+  const { discountedPrice } = getItemDiscount(item);
   const priceDisplay = itemHasOptions
     ? locale === "ar"
       ? `يبدأ من ${displayMinPrice}`
       : `From ${displayMinPrice}`
-    : `${item.price}`;
+    : `${discountedPrice}`;
 
   const handleCardClick = () => {
     trackItem(item.id);
@@ -112,16 +114,18 @@ export default function MenuCard({
             <span className="text-xs font-black tracking-tighter">
               {priceDisplay} {getCurrency()}
             </span>
-            {item.originalPrice && item.discountPercent && (
+            {item.discountPercent ? (
               <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="text-xs text-white/80 line-through">
-                  {item.originalPrice} {getCurrency()}
-                </span>
+                {item.originalPrice ? (
+                  <span className="text-xs text-white/80 line-through">
+                    {item.originalPrice} {getCurrency()}
+                  </span>
+                ) : null}
                 <span className="text-xs font-black bg-white text-(--bg-main) px-1.5 py-0.5 rounded-full">
                   -{item.discountPercent}%
                 </span>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
 

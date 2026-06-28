@@ -8,6 +8,7 @@ import { HiArrowRight } from "react-icons/hi";
 import LoadImage from "@/components/ImageLoad";
 import type { MenuItem } from "@/types/menu";
 import { getMenuItemMinPrice, hasMenuItemOptions } from "@/lib/menuItemOptions";
+import { getItemDiscount } from "@/lib/menuItemDiscount";
 import { useOneCardTheme } from "../OneCardTemplate/OneCardThemeContext";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import MenuItemDetailModal, {
@@ -73,7 +74,8 @@ function WaffleProductCardInner({
   const description = pickDescription(item, locale);
   const imageSrc = item.image?.trim() ?? "";
   const displayMinPrice = getMenuItemMinPrice(item);
-  const priceValue = itemHasOptions ? displayMinPrice : item.price;
+  const { discountedPrice, strikethroughPrice } = getItemDiscount(item);
+  const priceValue = itemHasOptions ? displayMinPrice : discountedPrice;
 
   const openDetails = () => {
     if (item.id) trackItem(item.id);
@@ -160,7 +162,14 @@ function WaffleProductCardInner({
                 >
                   <IoBagHandleOutline className="h-4 w-4" />
                 </span>
-                {priceValue} {currencyLabel}
+                <span className="flex flex-col">
+                  {strikethroughPrice ? (
+                    <span className="text-[10px] tabular-nums text-gray-400 line-through leading-none mb-0.5">
+                      {strikethroughPrice} {currencyLabel}
+                    </span>
+                  ) : null}
+                  {priceValue} {currencyLabel}
+                </span>
               </span>
             </div>
 

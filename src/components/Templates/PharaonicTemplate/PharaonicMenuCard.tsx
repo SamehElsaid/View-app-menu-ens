@@ -15,6 +15,8 @@ import {
   usePharaonicTouchDevice,
   pharaonicHaptic,
 } from "./usePharaonicTouchDevice";
+import { getItemDiscount } from "@/lib/menuItemDiscount";
+import { getMenuItemMinPrice, hasMenuItemOptions } from "@/lib/menuItemOptions";
 
 type PharaonicMenuCardProps = {
   item: MenuItem;
@@ -45,6 +47,10 @@ export default function PharaonicMenuCard({
   const desc = locale === "ar" ? item.descriptionAr : item.descriptionEn;
   const catLabel = locale === "ar" ? item.categoryNameAr : item.categoryNameEn;
   const inCart = cartQuantity > 0;
+  const { discountedPrice, strikethroughPrice } = getItemDiscount(item);
+  const itemHasOptions = hasMenuItemOptions(item);
+  const displayMinPrice = getMenuItemMinPrice(item);
+  const cardPriceDisplay = itemHasOptions ? String(displayMinPrice) : String(discountedPrice);
 
   const openDetails = () => {
     if (isTouch) pharaonicHaptic(8);
@@ -141,11 +147,16 @@ export default function PharaonicMenuCard({
               {catLabel}
             </span>
             <span className="shrink-0 text-end">
+              {strikethroughPrice ? (
+                <span className="block text-[11px] tabular-nums text-[#c4b59a]/60 line-through">
+                  {strikethroughPrice}
+                </span>
+              ) : null}
               <span
                 className="block text-lg font-bold leading-none md:text-xl"
                 style={{ color: primary }}
               >
-                {item.price}
+                {cardPriceDisplay}
               </span>
               <span className="text-[10px] tracking-wide text-[#c4b59a]/90">
                 {currencyLabel}

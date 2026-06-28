@@ -25,6 +25,7 @@ import {
   pickSizeLabel,
   pickVariantLabel,
 } from "@/lib/menuItemOptions";
+import { getItemDiscount, applyItemDiscountToPrice } from "@/lib/menuItemDiscount";
 
 type DishModalProps = {
   dish: MenuItem | null;
@@ -95,8 +96,7 @@ export default function DishModal({
   const isAr = locale === "ar";
   const dishName = isAr ? dish.nameAr : dish.nameEn;
   const dishDescription = isAr ? dish.descriptionAr : dish.descriptionEn;
-  const hasDiscount =
-    dish.originalPrice != null && dish.originalPrice > dish.price;
+  const { hasDiscount, strikethroughPrice } = getItemDiscount(dish);
 
   const backdrop = hexToRgba(primary, 0.45);
   const modalShadow = `0 24px 80px ${hexToRgba(primary, 0.2)}, 0 8px 24px rgba(0,0,0,0.12)`;
@@ -191,9 +191,9 @@ export default function DishModal({
             </span>
           ) : null}
           <div className="absolute start-3 end-3 bottom-3 hidden max-w-full items-center gap-2 rounded-2xl bg-white/95 px-4 py-2.5 shadow-lg backdrop-blur-md sm:end-4 sm:bottom-4 sm:start-auto sm:flex sm:gap-3 sm:px-5 sm:py-3">
-            {hasDiscount ? (
+            {strikethroughPrice ? (
               <span className="text-sm font-semibold text-stone-400 line-through tabular-nums sm:text-lg">
-                {dish.originalPrice} {currencyLabel}
+                {strikethroughPrice} {currencyLabel}
               </span>
             ) : null}
             <span
@@ -221,9 +221,9 @@ export default function DishModal({
             </h4>
 
             <div className="mb-4 flex flex-wrap items-end justify-between gap-2 rounded-xl border border-stone-100 bg-stone-50/80 px-3 py-2.5 sm:hidden">
-              {hasDiscount ? (
+              {strikethroughPrice ? (
                 <span className="text-xs font-semibold text-stone-400 line-through tabular-nums">
-                  {dish.originalPrice} {currencyLabel}
+                  {strikethroughPrice} {currencyLabel}
                 </span>
               ) : null}
               <div className="flex items-baseline gap-1.5">
@@ -308,7 +308,15 @@ export default function DishModal({
                           className="text-sm font-bold"
                           style={{ color: primary }}
                         >
-                          {size.price} {currencyLabel}
+                          {(() => {
+                            const discSizePrice = applyItemDiscountToPrice(item, size.price);
+                            return discSizePrice !== size.price ? (
+                              <>
+                                <span className="line-through opacity-40 text-xs mr-1">{size.price}</span>
+                                {discSizePrice}
+                              </>
+                            ) : size.price;
+                          })()} {currencyLabel}
                         </span>
                       </label>
                     );

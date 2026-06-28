@@ -32,25 +32,12 @@ import {
   type MoodKey,
 } from "./moodEnergy";
 import { useMusicBrandStyle } from "./useMusicBrandStyle";
+import { getItemDiscount, getSelectedTotalStrikethrough } from "@/lib/menuItemDiscount";
 
 type TracksProps = {
   items: MenuItem[];
   currency: string;
 };
-
-function getItemDiscount(item: MenuItem) {
-  const hasDiscount =
-    item.originalPrice != null && item.originalPrice > item.price;
-  const discountPercent =
-    item.discountPercent ??
-    (hasDiscount && item.originalPrice
-      ? Math.round(
-          ((item.originalPrice - item.price) / item.originalPrice) * 100,
-        )
-      : null);
-
-  return { hasDiscount, discountPercent };
-}
 
 function pickCategoryLabel(
   item: MenuItem,
@@ -190,7 +177,7 @@ function ProductDetailModal({
   const categoryLabel = pickCategoryLabel(item, categories, locale);
   const productMood = getProductMood(item, allItems);
   const feedTheme = getProductTheme(productMood);
-  const { hasDiscount, discountPercent } = getItemDiscount(item);
+  const { hasDiscount, discountPercent, discountedPrice: modalDiscountedPrice, strikethroughPrice } = getItemDiscount(item);
   const brandStyle = useMusicBrandStyle();
 
   const sizes = useMemo(() => getMenuItemSizes(item), [item]);
@@ -210,11 +197,18 @@ function ProductDetailModal({
     selectedVariant,
   );
 
+  const selectedTotalStrikethrough = getSelectedTotalStrikethrough(
+    item,
+    selectedUnitPrice,
+    selectedSize?.price,
+    selectedVariant?.price,
+  );
+
   const priceDisplay = itemHasOptions
     ? isAr
       ? `من ${displayMinPrice}`
       : `From ${displayMinPrice}`
-    : String(item.price);
+    : String(modalDiscountedPrice);
 
   useEffect(() => {
     setSelectedSize(sizes[0] ?? null);
@@ -321,9 +315,9 @@ function ProductDetailModal({
                     </span>
                   ) : null}
                   <div className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-0.5">
-                    {hasDiscount && item.originalPrice ? (
+                    {selectedTotalStrikethrough ? (
                       <span className="text-sm font-semibold tabular-nums text-[color:var(--music-text-muted)] line-through">
-                        {currencyLabel} {item.originalPrice}
+                        {currencyLabel} {selectedTotalStrikethrough}
                       </span>
                     ) : null}
                     <span className="music-feed__price font-bold transition-colors duration-300">
@@ -465,7 +459,7 @@ function ProductMenuCard({
 }) {
   const isAr = locale === "ar";
   const name = pickItemName(item, locale);
-  const { hasDiscount, discountPercent } = getItemDiscount(item);
+  const { hasDiscount, discountPercent, discountedPrice, strikethroughPrice: cardStrikethroughPrice } = getItemDiscount(item);
   const [pickQty, setPickQty] = useState(1);
   const inCart = cartQuantity > 0;
   const isHighlighted = isActive || inCart;
@@ -517,15 +511,15 @@ function ProductMenuCard({
             {name}
           </h4>
           <div className="mt-auto flex flex-wrap items-baseline justify-center gap-x-1.5 gap-y-0.5 pt-1.5 text-center">
-            {hasDiscount && item.originalPrice ? (
+            {cardStrikethroughPrice ? (
               <span className="text-[11px] font-semibold tabular-nums text-brand-tomato/55 line-through sm:text-xs">
-                {currencyLabel} {item.originalPrice}
+                {currencyLabel} {cardStrikethroughPrice}
               </span>
             ) : null}
             <span className="text-xs font-bold tabular-nums text-brand-coral sm:text-sm">
               {itemHasOpts
                 ? `${currencyLabel} ${isAr ? `من ${displayMinPriceCard}` : `From ${displayMinPriceCard}`}`
-                : `${currencyLabel} ${item.price}`}
+                : `${currencyLabel} ${discountedPrice}`}
             </span>
           </div>
         </div>

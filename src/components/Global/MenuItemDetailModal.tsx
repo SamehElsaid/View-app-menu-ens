@@ -21,6 +21,7 @@ import {
   pickSizeLabel,
   pickVariantLabel,
 } from "@/lib/menuItemOptions";
+import { getItemDiscount, applyItemDiscountToPrice, getSelectedTotalStrikethrough } from "@/lib/menuItemDiscount";
 import { hexToRgba } from "@/lib/colorUtils";
 
 export type MenuItemCartOptions = {
@@ -180,6 +181,13 @@ function MenuItemDetailModalInner({
     selectedSize,
     selectedVariant,
   );
+  const { hasDiscount, discountPercent, strikethroughPrice } = getItemDiscount(item);
+  const selectedTotalStrikethrough = getSelectedTotalStrikethrough(
+    item,
+    selectedUnitPrice,
+    selectedSize?.price,
+    selectedVariant?.price,
+  );
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -274,12 +282,24 @@ function MenuItemDetailModalInner({
             </p>
           ) : null}
 
-          <p
-            className="mt-3 text-2xl font-black tabular-nums"
-            style={{ color: primary }}
-          >
-            {selectedUnitPrice} {currencyLabel}
-          </p>
+          <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
+            {selectedTotalStrikethrough ? (
+              <span className="text-base tabular-nums text-zinc-400 line-through">
+                {selectedTotalStrikethrough} {currencyLabel}
+              </span>
+            ) : null}
+            <p
+              className="text-2xl font-black tabular-nums"
+              style={{ color: primary }}
+            >
+              {selectedUnitPrice} {currencyLabel}
+            </p>
+            {hasDiscount && discountPercent ? (
+              <span className="rounded-full px-2 py-0.5 text-xs font-bold text-white" style={{ backgroundColor: primary }}>
+                -{discountPercent}%
+              </span>
+            ) : null}
+          </div>
 
           {sizes.length > 0 ? (
             <OptionPicker title={isAr ? "الحجم" : "Size"} primary={primary}>
@@ -316,7 +336,15 @@ function MenuItemDetailModalInner({
                       className="text-sm font-black tabular-nums"
                       style={{ color: primary }}
                     >
-                      {size.price} {currencyLabel}
+                      {(() => {
+                        const discSizePrice = applyItemDiscountToPrice(item, size.price);
+                        return discSizePrice !== size.price ? (
+                          <>
+                            <span className="line-through opacity-50 text-xs mr-1">{size.price}</span>
+                            {discSizePrice}
+                          </>
+                        ) : size.price;
+                      })()} {currencyLabel}
                     </span>
                   </label>
                 );

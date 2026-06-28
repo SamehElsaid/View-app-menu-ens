@@ -25,6 +25,7 @@ import {
   pickVariantLabel,
 } from "@/lib/menuItemOptions";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
+import { getItemDiscount, applyItemDiscountToPrice } from "@/lib/menuItemDiscount";
 
 function currencyLabel(code: string, locale: string): string {
   if (locale === "ar") {
@@ -82,17 +83,37 @@ const MenuItem = ({
     typeof price === "number" ? price.toString() : (price || "");
 
   const curr = currencyLabel(currency, locale);
-  const hasDiscount = Boolean(originalPrice && discountPercent);
-
-  const priceLine =
-    originalPrice &&
-    originalPrice >
-      parseFloat(normalizedPrice.replace(/[^0-9.]/g, "") || "0");
 
   const priceNum =
     typeof price === "number"
       ? price
       : parseFloat(normalizedPrice.replace(/[^0-9.]/g, "") || "0");
+
+  /**
+   * Derive discount data from the raw props using the same global rule:
+   * when originalPrice is null and discountPercent is set, priceNum is the
+   * base price and discountedPrice = priceNum × (1 - discountPercent/100).
+   */
+  const hasOriginalPriceProp =
+    originalPrice != null &&
+    originalPrice > priceNum;
+  const hasDiscountPercentProp =
+    discountPercent != null && discountPercent > 0;
+
+  const hasDiscount = hasOriginalPriceProp || hasDiscountPercentProp;
+
+  const discountedPriceNum =
+    hasDiscountPercentProp && !hasOriginalPriceProp
+      ? Math.round(priceNum * (1 - discountPercent! / 100) * 100) / 100
+      : priceNum;
+
+  const strikethroughPriceNum: number | null = hasOriginalPriceProp
+    ? (originalPrice as number)
+    : hasDiscountPercentProp
+      ? priceNum
+      : null;
+
+  const priceLine = hasOriginalPriceProp ? originalPrice : null;
 
   const stubItem: MenuItem = useMemo(
     () => ({
@@ -142,7 +163,7 @@ const MenuItem = ({
     ? locale === "ar"
       ? `يبدأ من ${displayMinPrice} ${curr}`
       : `Start from ${displayMinPrice} ${curr}`
-    : normalizedPrice;
+    : String(discountedPriceNum);
 
   useEffect(() => {
     if (!open) return;
@@ -274,9 +295,9 @@ const MenuItem = ({
           )}
 
           <div className="flex flex-col items-stretch gap-2 border-t border-[#3B332E]/80 pt-5">
-            {priceLine ? (
+            {strikethroughPriceNum ? (
               <span className="text-end text-base tabular-nums tracking-tight text-[#857a6c] line-through">
-                {originalPrice}
+                {strikethroughPriceNum}
                 <span className="ms-1.5">{curr}</span>
               </span>
             ) : null}
@@ -286,9 +307,9 @@ const MenuItem = ({
                   ? priceDisplay
                   : `${selectedUnitPrice} ${curr}`}
               </span>
-              {hasDiscount ? (
-                <span className="text-base font-medium text-[#8a8278]">
-                  ({discountPercent}% off)
+              {hasDiscount && discountPercent ? (
+                <span className="text-sm font-medium text-[#8a8278]">
+                  -{discountPercent}%
                 </span>
               ) : null}
             </span>
@@ -323,7 +344,15 @@ const MenuItem = ({
                         <span className="text-sm font-semibold text-[#F4EEE7]">{label}</span>
                       </span>
                       <span className="text-sm font-bold text-[#F2B705]">
-                        {size.price} {curr}
+                        {(() => {
+                          const discSizePrice = applyItemDiscountToPrice(stubItem, size.price);
+                          return discSizePrice !== size.price ? (
+                            <>
+                              <span className="line-through opacity-40 text-xs mr-1">{size.price}</span>
+                              {discSizePrice}
+                            </>
+                          ) : size.price;
+                        })()} {curr}
                       </span>
                     </label>
                   );
@@ -476,12 +505,12 @@ const MenuItem = ({
               </div>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1 border-s border-[#3B332E]/50 ps-3">
-              {priceLine && (
+              {strikethroughPriceNum ? (
                 <span className="text-base tabular-nums text-[#857a6c] line-through sm:text-base">
-                  {originalPrice}
+                  {strikethroughPriceNum}
                   <span className="ms-1">{curr}</span>
                 </span>
-              )}
+              ) : null}
               <span className="flex flex-wrap items-baseline justify-end gap-x-1 font-body text-base font-semibold tabular-nums tracking-tight text-[#F2B705] sm:text-lg md:text-xl">
                 <span>{priceDisplay}</span>
                 {!itemHasOptions && (
@@ -489,9 +518,9 @@ const MenuItem = ({
                     {curr}
                   </span>
                 )}
-                {hasDiscount ? (
-                  <span className="whitespace-nowrap text-[10px] font-medium text-[#7d756a] sm:text-base">
-                    ({discountPercent}% off)
+                {hasDiscount && discountPercent ? (
+                  <span className="whitespace-nowrap text-[10px] font-medium text-[#7d756a] sm:text-xs">
+                    -{discountPercent}%
                   </span>
                 ) : null}
               </span>

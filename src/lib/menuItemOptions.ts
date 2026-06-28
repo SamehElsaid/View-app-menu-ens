@@ -3,6 +3,7 @@ import type {
   MenuItemSizeOption,
   MenuItemVariantOption,
 } from "@/types/menu";
+import { getItemDiscount, applyItemDiscountToPrice } from "@/lib/menuItemDiscount";
 
 function toFiniteNumber(val: unknown): number | null {
   const n = Number(val);
@@ -41,16 +42,13 @@ export function hasMenuItemOptions(item: MenuItem): boolean {
 
 export function getMenuItemMinPrice(item: MenuItem): number {
   const sizes = getMenuItemSizes(item);
-  const variants = getMenuItemVariants(item);
-  const variantMin = variants.length
-    ? Math.min(...variants.map((variant) => variant.price))
-    : 0;
 
   if (sizes.length) {
-    return Math.min(...sizes.map((size) => size.price)) + variantMin;
+    const minSizePrice = Math.min(...sizes.map((size) => size.price));
+    return applyItemDiscountToPrice(item, minSizePrice);
   }
 
-  return item.price + variantMin;
+  return getItemDiscount(item).discountedPrice;
 }
 
 export function computeMenuItemUnitPrice(
@@ -58,7 +56,10 @@ export function computeMenuItemUnitPrice(
   size?: MenuItemSizeOption | null,
   variant?: MenuItemVariantOption | null,
 ): number {
-  const basePrice = size?.price ?? item.price;
+  const { discountedPrice } = getItemDiscount(item);
+  const basePrice = size
+    ? applyItemDiscountToPrice(item, size.price)
+    : discountedPrice;
   return basePrice + (variant?.price ?? 0);
 }
 

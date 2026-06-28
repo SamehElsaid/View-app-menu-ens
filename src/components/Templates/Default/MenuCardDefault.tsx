@@ -24,6 +24,7 @@ import {
   pickSizeLabel,
   pickVariantLabel,
 } from "@/lib/menuItemOptions";
+import { getItemDiscount, applyItemDiscountToPrice, getSelectedTotalStrikethrough } from "@/lib/menuItemDiscount";
 
 interface MenuCardProps {
   item: MenuItem;
@@ -88,6 +89,13 @@ const MenuCardDefaultInner = ({
     item,
     selectedSize,
     selectedVariant,
+  );
+  const { discountedPrice, strikethroughPrice, discountPercent } = getItemDiscount(item);
+  const selectedTotalStrikethrough = getSelectedTotalStrikethrough(
+    item,
+    selectedUnitPrice,
+    selectedSize?.price,
+    selectedVariant?.price,
   );
 
   const currencySymbol = useMemo(() => {
@@ -166,7 +174,7 @@ const MenuCardDefaultInner = ({
     ? locale === "ar"
       ? `من ${displayMinPrice}`
       : `From ${displayMinPrice}`
-    : String(item.price);
+    : String(discountedPrice);
 
   return (
     <>
@@ -198,6 +206,11 @@ const MenuCardDefaultInner = ({
 
           <div className="w-full flex items-center justify-between mt-auto pt-6 border-t border-(--bg-main)/10 gap-2">
             <div className="flex min-w-0 flex-wrap items-end gap-x-2 gap-y-1 text-start">
+              {strikethroughPrice ? (
+                <span className="text-sm tabular-nums text-(--bg-main)/50 line-through font-medium shrink-0">
+                  {strikethroughPrice} {getCurrency()}
+                </span>
+              ) : null}
               <span className="text-(--bg-main) font-black text-lg flex items-end gap-1 shrink-0">
                 <span className="flex items-center gap-1">
                   <span
@@ -344,6 +357,11 @@ const MenuCardDefaultInner = ({
                   direction === "rtl" ? "right-6" : "left-6"
                 }`}
               >
+                {selectedTotalStrikethrough ? (
+                  <span className="block text-sm tabular-nums text-white/60 line-through mb-0.5">
+                    {selectedTotalStrikethrough} {getCurrency()}
+                  </span>
+                ) : null}
                 <span className="text-xl font-black tracking-tighter">
                   {selectedUnitPrice} {getCurrency()}
                 </span>
@@ -397,7 +415,15 @@ const MenuCardDefaultInner = ({
                             </span>
                           </span>
                           <span className="text-sm font-black text-(--bg-main)">
-                            {size.price} {getCurrency()}
+                            {(() => {
+                              const discSizePrice = applyItemDiscountToPrice(item, size.price);
+                              return discSizePrice !== size.price ? (
+                                <>
+                                  <span className="line-through opacity-40 text-xs mr-1">{size.price}</span>
+                                  {discSizePrice}
+                                </>
+                              ) : size.price;
+                            })()} {getCurrency()}
                           </span>
                         </label>
                       );
@@ -524,17 +550,19 @@ const MenuCardDefaultInner = ({
 
               <div className="mt-2 h-px bg-(--bg-main)/10" />
 
-              {item.originalPrice && item.discountPercent ? (
+              {discountPercent ? (
                 <div className="flex items-center justify-between p-4 bg-(--bg-main)/5 rounded-2xl mt-4">
                   <span className="text-(--bg-main)/70 font-medium">
                     {locale === "ar" ? "السعر الأصلي" : "Original Price"}
                   </span>
                   <div className="flex items-center gap-3">
-                    <span className="text-lg text-(--bg-main)/50 line-through font-medium">
-                      {item.originalPrice} {getCurrency()}
-                    </span>
+                    {strikethroughPrice ? (
+                      <span className="text-lg text-(--bg-main)/50 line-through font-medium">
+                        {strikethroughPrice} {getCurrency()}
+                      </span>
+                    ) : null}
                     <span className="text-base font-black bg-(--bg-main) text-white px-3 py-1 rounded-full">
-                      -{item.discountPercent}%
+                      -{discountPercent}%
                     </span>
                   </div>
                 </div>

@@ -7,6 +7,7 @@ import { IoCartOutline } from "react-icons/io5";
 import LoadImage from "@/components/ImageLoad";
 import type { MenuItem } from "@/types/menu";
 import { getMenuItemMinPrice, hasMenuItemOptions } from "@/lib/menuItemOptions";
+import { getItemDiscount } from "@/lib/menuItemDiscount";
 import { useOneCardTheme } from "../OneCardTemplate/OneCardThemeContext";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import MenuItemDetailModal, {
@@ -69,8 +70,9 @@ function VanillaProductCardInner({
   const description = pickDescription(item, locale);
   const imageSrc = item.image?.trim() ?? "";
   const displayMinPrice = getMenuItemMinPrice(item);
+  const { discountedPrice, strikethroughPrice } = getItemDiscount(item);
 
-  const priceValue = itemHasOptions ? displayMinPrice : item.price;
+  const priceValue = itemHasOptions ? displayMinPrice : discountedPrice;
 
   const openDetails = () => {
     if (item.id) trackItem(item.id);
@@ -132,13 +134,20 @@ function VanillaProductCardInner({
             <div className="my-3 flex items-center justify-center gap-2">
               <Flourish />
               <span
-                className="flex items-baseline gap-1"
+                className="flex flex-col items-center gap-0.5"
                 style={{ color: primary }}
               >
-                <span className="text-[28px] font-black tabular-nums leading-none">
-                  {priceValue}
+                {strikethroughPrice ? (
+                  <span className="text-xs tabular-nums text-gray-400 line-through">
+                    {strikethroughPrice} {currencyLabel}
+                  </span>
+                ) : null}
+                <span className="flex items-baseline gap-1">
+                  <span className="text-[28px] font-black tabular-nums leading-none">
+                    {priceValue}
+                  </span>
+                  <span className="text-xs font-bold">{currencyLabel}</span>
                 </span>
-                <span className="text-xs font-bold">{currencyLabel}</span>
               </span>
               <Flourish flip />
             </div>

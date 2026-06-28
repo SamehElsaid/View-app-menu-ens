@@ -24,6 +24,7 @@ import {
   pickVariantLabel,
 } from "@/lib/menuItemOptions";
 import LoadImage from "@/components/ImageLoad";
+import { getItemDiscount, applyItemDiscountToPrice, getSelectedTotalStrikethrough } from "@/lib/menuItemDiscount";
 
 interface ProductModalProps {
   item: MenuItem | null;
@@ -97,15 +98,27 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
       ? (item.descriptionAr ?? item.description)
       : (item.descriptionEn ?? item.description)
     : "";
-  const hasDiscount =
-    !!item?.originalPrice && (item.originalPrice as number) > item.price;
-  const savedAmount =
-    hasDiscount && item ? (item.originalPrice as number) - item.price : 0;
-  const discountPct =
-    item?.discountPercent ??
-    (hasDiscount && item
-      ? Math.round((savedAmount / (item.originalPrice as number)) * 100)
-      : 0);
+  const {
+    hasDiscount,
+    discountPercent: discountPct,
+    discountedPrice,
+    strikethroughPrice,
+  } = item
+    ? getItemDiscount(item)
+    : {
+        hasDiscount: false,
+        discountPercent: null,
+        discountedPrice: 0,
+        strikethroughPrice: null as number | null,
+      };
+  const selectedTotalStrikethrough = item
+    ? getSelectedTotalStrikethrough(item, selectedUnitPrice, selectedSize?.price, selectedVariant?.price)
+    : null;
+  const savedAmount = selectedTotalStrikethrough
+    ? Math.round((selectedTotalStrikethrough - selectedUnitPrice) * 100) / 100
+    : strikethroughPrice
+      ? Math.round((strikethroughPrice - discountedPrice) * 100) / 100
+      : 0;
 
   const priceDisplay = itemHasOptions
     ? isAr
@@ -169,7 +182,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                 <FiX className="w-5 h-5" />
               </motion.button>
 
-              {hasDiscount && (
+              {hasDiscount && discountPct ? (
                 <motion.div
                   initial={{ scale: 0, rotate: -15 }}
                   animate={{ scale: 1, rotate: 0 }}
@@ -184,7 +197,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                 >
                   -{discountPct}%
                 </motion.div>
-              )}
+              ) : null}
             </div>
 
             <div className="p-7 md:p-8 text-center md:text-start">
@@ -220,11 +233,11 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                       {isAr ? "السعر" : "Price"}
                     </span>
                     <div className="flex items-baseline justify-center gap-2">
-                      {hasDiscount && (
+                      {selectedTotalStrikethrough ? (
                         <span className="text-white/40 line-through text-lg font-bold">
-                          {item.originalPrice}
+                          {selectedTotalStrikethrough}
                         </span>
-                      )}
+                      ) : null}
                       <span className="text-cyan-400 font-extrabold text-2xl font-body leading-none">
                         {itemHasOptions ? priceDisplay : selectedUnitPrice}
                       </span>
@@ -236,7 +249,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                     </div>
                   </div>
 
-                  {hasDiscount && (
+                  {selectedTotalStrikethrough ? (
                     <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-center gap-3">
                       <span className="text-base text-emerald-300/90 font-semibold">
                         {isAr ? "وفّرت" : "You save"}
@@ -245,7 +258,7 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                         {savedAmount} {currency}
                       </span>
                     </div>
-                  )}
+                  ) : null}
                 </motion.div>
 
                 {sizes.length > 0 ? (
@@ -288,7 +301,15 @@ const ProductModalO = ({ item, onClose, currency }: ProductModalProps) => {
                               </span>
                             </span>
                             <span className="text-sm font-bold text-cyan-400">
-                              {size.price} {currency}
+                              {(() => {
+                                const discSizePrice = applyItemDiscountToPrice(item, size.price);
+                                return discSizePrice !== size.price ? (
+                                  <>
+                                    <span className="line-through opacity-40 text-xs mr-1">{size.price}</span>
+                                    {discSizePrice}
+                                  </>
+                                ) : size.price;
+                              })()} {currency}
                             </span>
                           </label>
                         );

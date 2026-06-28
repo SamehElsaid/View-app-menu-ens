@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useLocale } from "next-intl";
 import type { MenuItemOProps } from "@/types/types";
 import LoadImage from "@/components/ImageLoad";
+import { getItemDiscount } from "@/lib/menuItemDiscount";
 
 /** First letter uppercase, rest lowercase (Latin scripts; Arabic unchanged visually). */
 function sentenceCaseName(raw: string | undefined | null): string {
@@ -33,10 +34,18 @@ const MenuItemO = ({
     ? (item.descriptionAr ?? item.description)
     : (item.descriptionEn ?? item.description);
 
-  const hasDiscount = !!item.originalPrice && item.originalPrice > item.price;
-  const savedAmount = hasDiscount
+  const {
+    hasDiscount,
+    discountPercent: displayDiscountPercent,
+    discountedPrice,
+    strikethroughPrice,
+  } = getItemDiscount(item);
+  const hasOriginalPrice = item.originalPrice != null && item.originalPrice > item.price;
+  const savedAmount = hasOriginalPrice
     ? (item.originalPrice as number) - item.price
-    : 0;
+    : strikethroughPrice
+      ? strikethroughPrice - discountedPrice
+      : 0;
 
   return (
     <div
@@ -60,7 +69,7 @@ const MenuItemO = ({
           </div>
 
           {/* Discount Badge */}
-          {hasDiscount && (
+          {hasDiscount && displayDiscountPercent ? (
             <motion.span
               initial={{ scale: 0, rotate: -15 }}
               animate={{ scale: 1, rotate: 0 }}
@@ -73,14 +82,9 @@ const MenuItemO = ({
               }}
               className="absolute top-4 start-4 z-20 bg-linear-to-br from-rose-500 to-red-600 text-white text-[12px] font-extrabold px-3 py-1.5 rounded-full shadow-[0_8px_20px_rgba(244,63,94,0.45)] ring-2 ring-white/20"
             >
-              -
-              {item.discountPercent ??
-                Math.round(
-                  (savedAmount / (item.originalPrice as number)) * 100,
-                )}
-              %
+              -{displayDiscountPercent}%
             </motion.span>
-          )}
+          ) : null}
 
           {/* Always-visible expand button */}
           <div className="absolute top-3 end-3 z-20">
@@ -123,13 +127,13 @@ const MenuItemO = ({
 
           <div className="mt-4 flex flex-col items-center gap-2">
             <div className="flex items-baseline justify-center gap-2">
-              {hasDiscount && (
+              {strikethroughPrice ? (
                 <span className="text-white/40 line-through text-base font-medium">
-                  {item.originalPrice}
+                  {strikethroughPrice}
                 </span>
-              )}
+              ) : null}
               <span className="text-cyan-400 font-extrabold text-xl leading-none font-body">
-                {item.price}
+                {discountedPrice}
               </span>
               <span className="text-cyan-500/70 text-[11px] font-bold uppercase tracking-widest">
                 {currency}

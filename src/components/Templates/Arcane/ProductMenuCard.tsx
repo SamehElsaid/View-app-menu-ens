@@ -31,7 +31,8 @@ export default function ProductMenuCard({
   const { primary, secondary } = useArcaneTheme();
   const [pickQty, setPickQty] = useState(1);
   const name = isAr ? item.nameAr : item.nameEn;
-  const { hasDiscount, discountPercent } = getItemDiscount(item);
+  const { hasDiscount, discountPercent, discountedPrice, strikethroughPrice } =
+    getItemDiscount(item);
   const inCart = cartQuantity > 0;
   const btnGlow = hexToRgba(primary, 0.3);
   const primarySoft = hexToRgba(primary, 0.12);
@@ -106,16 +107,16 @@ export default function ProductMenuCard({
           <div
             className={`mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 ${isAr ? "justify-end" : ""}`}
           >
-            {hasDiscount && item.originalPrice ? (
+            {strikethroughPrice ? (
               <span className="text-xs font-semibold tabular-nums text-[#999999] line-through">
-                {currencyLabel} {item.originalPrice}
+                {currencyLabel} {strikethroughPrice}
               </span>
             ) : null}
             <span
               className="text-sm font-black tabular-nums sm:text-base"
               style={{ color: primary }}
             >
-              {currencyLabel} {item.price}
+              {currencyLabel} {discountedPrice}
             </span>
           </div>
         </div>

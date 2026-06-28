@@ -19,7 +19,8 @@ import {
   getCartQuantityForMenuItem,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
-import { hasMenuItemOptions } from "@/lib/menuItemOptions";
+import { getMenuItemMinPrice, hasMenuItemOptions } from "@/lib/menuItemOptions";
+import { getItemDiscount } from "@/lib/menuItemDiscount";
 import { toast } from "react-toastify";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import NoirDetailModal from "./NoirDetailModal";
@@ -121,6 +122,15 @@ function NoirMenuCard({
   const desc = locale === "ar" ? item.descriptionAr : item.descriptionEn;
   const catLabel = locale === "ar" ? item.categoryNameAr : item.categoryNameEn;
 
+  const { discountedPrice, strikethroughPrice } = getItemDiscount(item);
+  const itemHasOptions = hasMenuItemOptions(item);
+  const displayMinPrice = getMenuItemMinPrice(item);
+  const cardPriceDisplay = itemHasOptions
+    ? locale === "ar"
+      ? `من ${displayMinPrice}`
+      : `From ${displayMinPrice}`
+    : String(discountedPrice);
+
   const defaultShadow = "0 4px 24px rgba(0,0,0,0.25)";
   const hoverShadow = `0 16px 48px rgba(0,0,0,0.5), 0 0 24px ${hexToRgba(primary, 0.2)}`;
 
@@ -181,7 +191,12 @@ function NoirMenuCard({
             <span className="text-base font-body tracking-wide text-cyan">
               {currencyLabel}
             </span>
-            <span className="text-lavender">{item.price}</span>
+            {strikethroughPrice ? (
+              <span className="text-sm text-white/40 line-through tabular-nums">
+                {strikethroughPrice}
+              </span>
+            ) : null}
+            <span className="text-lavender">{cardPriceDisplay}</span>
           </span>
         </div>
 

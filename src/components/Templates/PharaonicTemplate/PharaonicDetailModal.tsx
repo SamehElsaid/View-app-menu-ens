@@ -32,6 +32,7 @@ import {
   pickSizeLabel,
   pickVariantLabel,
 } from "@/lib/menuItemOptions";
+import { getItemDiscount, applyItemDiscountToPrice } from "@/lib/menuItemDiscount";
 
 type PharaonicDetailModalProps = {
   item: MenuItem;
@@ -68,6 +69,9 @@ export default function PharaonicDetailModal({
     selectedSize,
     selectedVariant,
   );
+
+  const { discountPercent, discountedPrice, strikethroughPrice } =
+    getItemDiscount(item);
 
   const name = locale === "ar" ? item.nameAr : item.nameEn;
   const desc = locale === "ar" ? item.descriptionAr : item.descriptionEn;
@@ -122,7 +126,7 @@ export default function PharaonicDetailModal({
     ? locale === "ar"
       ? `من ${displayMinPrice}`
       : `From ${displayMinPrice}`
-    : String(item.price);
+    : String(discountedPrice);
 
   const priceBlock = (
     <div className="flex flex-wrap items-end justify-between gap-2">
@@ -137,19 +141,19 @@ export default function PharaonicDetailModal({
           {currencyLabel}
         </span>
       </div>
-      {item.originalPrice && item.originalPrice > item.price ? (
+      {strikethroughPrice ? (
         <div className="text-end">
           <span className="block text-xs text-[#8a7d68] line-through">
-            {item.originalPrice} {currencyLabel}
+            {strikethroughPrice} {currencyLabel}
           </span>
-          {item.discountPercent ? (
+          {discountPercent ? (
             <span
               className="mt-0.5 inline-block rounded-sm px-1.5 py-0.5 text-[9px] font-bold uppercase text-[#0c0a08]"
               style={{ background: primary }}
             >
               {locale === "ar"
-                ? `${item.discountPercent}٪`
-                : `-${item.discountPercent}%`}
+                ? `${discountPercent}٪`
+                : `-${discountPercent}%`}
             </span>
           ) : null}
         </div>
@@ -198,7 +202,15 @@ export default function PharaonicDetailModal({
                   <span className="text-sm text-[#e8dcc8]">{label}</span>
                 </span>
                 <span className="text-xs font-semibold text-[#f5e6c8]">
-                  {size.price} {currencyLabel}
+                  {(() => {
+                    const discSizePrice = applyItemDiscountToPrice(item, size.price);
+                    return discSizePrice !== size.price ? (
+                      <>
+                        <span className="line-through opacity-40 text-xs mr-1">{size.price}</span>
+                        {discSizePrice}
+                      </>
+                    ) : size.price;
+                  })()} {currencyLabel}
                 </span>
               </label>
             );
@@ -380,15 +392,14 @@ export default function PharaonicDetailModal({
                 "linear-gradient(to top, rgba(12,10,8,0.75) 0%, transparent 55%)",
             }}
           />
-          {item.discountPercent &&
-          !(item.originalPrice && item.originalPrice > item.price) ? (
+          {discountPercent ? (
             <span
               className="absolute top-2.5 end-2.5 rounded-sm px-2 py-0.5 text-[9px] font-bold uppercase text-[#0c0a08]"
               style={{ background: primary }}
             >
               {locale === "ar"
-                ? `${item.discountPercent}٪`
-                : `-${item.discountPercent}%`}
+                ? `${discountPercent}٪`
+                : `-${discountPercent}%`}
             </span>
           ) : null}
           <button

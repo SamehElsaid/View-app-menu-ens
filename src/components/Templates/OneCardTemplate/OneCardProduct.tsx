@@ -14,6 +14,7 @@ import {
   hasMenuItemOptions,
 } from "@/lib/menuItemOptions";
 import { hexToRgba, useOneCardTheme } from "@/components/Templates/OneCardTemplate/OneCardThemeContext";
+import { getItemDiscount } from "@/lib/menuItemDiscount";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import MenuItemDetailModal, {
   type MenuItemCartOptions,
@@ -112,12 +113,13 @@ function OneCardProductCardInner({
   const categoryLabel = pickCategoryLabel(item, locale);
   const productImageSrc = item.image?.trim() ?? "";
   const displayMinPrice = getMenuItemMinPrice(item);
+  const { discountedPrice, strikethroughPrice } = getItemDiscount(item);
 
   const cardPriceLabel = itemHasOptions
     ? isAr
       ? `يبدأ من ${displayMinPrice}`
       : `From ${displayMinPrice}`
-    : String(item.price);
+    : String(discountedPrice);
 
   const openDetails = () => {
     if (item.id) trackItem(item.id);
@@ -232,6 +234,11 @@ function OneCardProductCardInner({
                 </div>
 
                 <div className="mt-3 flex flex-col items-center gap-2 sm:mt-4 sm:gap-2.5">
+                  {strikethroughPrice ? (
+                    <span className="text-[10px] tabular-nums text-gray-400 line-through sm:text-xs">
+                      {strikethroughPrice} {currencyLabel}
+                    </span>
+                  ) : null}
                   <span
                     className="text-xs font-black tabular-nums sm:text-sm md:text-base"
                     style={{ color: primary }}

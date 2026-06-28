@@ -22,6 +22,7 @@ import {
   pickSizeLabel,
   pickVariantLabel,
 } from "@/lib/menuItemOptions";
+import { getItemDiscount, applyItemDiscountToPrice } from "@/lib/menuItemDiscount";
 
 type NeonDetailModalProps = {
   item: MenuItem;
@@ -66,6 +67,7 @@ export default function NeonDetailModal({
     selectedSize,
     selectedVariant,
   );
+  const { discountedPrice: neonDiscountedPrice, strikethroughPrice: neonStrikethroughPrice, discountPercent: neonDiscountPercent } = getItemDiscount(item);
 
   const itemName =
     locale === "ar" ? item.nameAr || item.name : item.nameEn || item.name;
@@ -131,7 +133,7 @@ export default function NeonDetailModal({
     ? locale === "ar"
       ? `من ${displayMinPrice}`
       : `From ${displayMinPrice}`
-    : String(item.price);
+    : String(neonDiscountedPrice);
 
   return (
     <div
@@ -236,14 +238,19 @@ export default function NeonDetailModal({
             </p>
           ) : null}
 
-          {item.originalPrice && item.originalPrice > item.price ? (
+          {neonStrikethroughPrice ? (
             <div className="mb-6 flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 dark:bg-slate-800/80">
               <span className="text-sm text-slate-500 dark:text-slate-400">
                 {locale === "ar" ? "السعر الأصلي" : "Original price"}
               </span>
-              <span className="text-base text-slate-400 line-through">
-                {item.originalPrice} {getCurrency()}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-base text-slate-400 line-through">
+                  {neonStrikethroughPrice} {getCurrency()}
+                </span>
+                {neonDiscountPercent ? (
+                  <span className="text-sm font-bold text-green-600">-{neonDiscountPercent}%</span>
+                ) : null}
+              </div>
             </div>
           ) : null}
 
@@ -285,7 +292,15 @@ export default function NeonDetailModal({
                         className="text-sm font-bold"
                         style={{ color: primaryColor }}
                       >
-                        {size.price} {getCurrency()}
+                        {(() => {
+                          const discSizePrice = applyItemDiscountToPrice(item, size.price);
+                          return discSizePrice !== size.price ? (
+                            <>
+                              <span className="line-through opacity-40 text-xs mr-1">{size.price}</span>
+                              {discSizePrice}
+                            </>
+                          ) : size.price;
+                        })()} {getCurrency()}
                       </span>
                     </label>
                   );

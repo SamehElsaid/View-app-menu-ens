@@ -73,9 +73,15 @@ export default function FeaturedProduct({
       ? current.descriptionAr
       : current.descriptionEn
     : "";
-  const { hasDiscount, discountPercent } = current
-    ? getItemDiscount(current)
-    : { hasDiscount: false, discountPercent: null as number | null };
+  const { hasDiscount, discountPercent, discountedPrice, strikethroughPrice } =
+    current
+      ? getItemDiscount(current)
+      : {
+          hasDiscount: false,
+          discountPercent: null as number | null,
+          discountedPrice: current?.price ?? 0,
+          strikethroughPrice: null as number | null,
+        };
   const inCartQty = current ? (cartById[current.id]?.quantity ?? 0) : 0;
 
   return (
@@ -146,16 +152,16 @@ export default function FeaturedProduct({
             <div
               className={`flex flex-wrap items-baseline gap-x-3 gap-y-1 ${isAr ? "justify-end" : ""}`}
             >
-              {hasDiscount && current?.originalPrice ? (
+              {strikethroughPrice ? (
                 <span className="text-lg font-semibold tabular-nums text-[#999999] line-through sm:text-xl md:text-2xl">
-                  {currencyLabel} {current.originalPrice}
+                  {currencyLabel} {strikethroughPrice}
                 </span>
               ) : null}
               <p
                 className="font-body text-2xl font-black tabular-nums sm:text-3xl md:text-4xl"
                 style={{ color: primary }}
               >
-                {currencyLabel} {current?.price}
+                {currencyLabel} {discountedPrice}
               </p>
             </div>
           </div>

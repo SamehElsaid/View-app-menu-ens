@@ -25,6 +25,7 @@ import {
   pickSizeLabel,
   pickVariantLabel,
 } from "@/lib/menuItemOptions";
+import { getItemDiscount, applyItemDiscountToPrice } from "@/lib/menuItemDiscount";
 import { useAppSelector } from "@/store/hooks";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 
@@ -130,11 +131,12 @@ function EmeraldMenuCard({
   const [cardPickQty, setCardPickQty] = useState(1);
   const itemHasOptions = hasMenuItemOptions(dish);
   const displayMinPrice = getMenuItemMinPrice(dish);
+  const { discountedPrice, strikethroughPrice } = getItemDiscount(dish);
   const priceDisplay = itemHasOptions
     ? locale === "ar"
       ? `من ${displayMinPrice}`
       : `From ${displayMinPrice}`
-    : String(dish.price);
+    : String(discountedPrice);
   const badgeText = dish.discountPercent
     ? `${dish.discountPercent}% off`
     : null;
@@ -182,7 +184,12 @@ function EmeraldMenuCard({
             {badgeText}
           </span>
         )}
-        <div className="absolute bottom-3 end-3 bg-white/95    rounded-full px-3 py-1 shadow-base">
+        <div className="absolute bottom-3 end-3 bg-white/95 rounded-full px-3 py-1 shadow-base flex items-center gap-2">
+          {strikethroughPrice ? (
+            <span className="text-sm tabular-nums text-stone-400 line-through">
+              {strikethroughPrice}
+            </span>
+          ) : null}
           <span
             className="font-sans font-700 text-base"
             style={{ color: primary }}
@@ -325,6 +332,8 @@ function EmeraldDishModal({
   );
   const itemHasOptions = dish ? hasMenuItemOptions(dish) : false;
   const displayMinPrice = dish ? getMenuItemMinPrice(dish) : 0;
+  const { discountedPrice: dishDiscountedPrice, strikethroughPrice: dishStrikethroughPrice } =
+    dish ? getItemDiscount(dish) : { discountedPrice: 0, strikethroughPrice: null as number | null };
 
   const [selectedSize, setSelectedSize] = useState<MenuItemSizeOption | null>(
     null,
@@ -377,7 +386,7 @@ function EmeraldDishModal({
     ? locale === "ar"
       ? `من ${displayMinPrice}`
       : `From ${displayMinPrice}`
-    : String(dish?.price ?? 0);
+    : String(dishDiscountedPrice);
 
   if (!dish) return null;
 
@@ -434,9 +443,9 @@ function EmeraldDishModal({
           ) : null}
 
           <div className="absolute bottom-4 end-4 bg-white/95 backdrop-blur-md rounded-2xl px-5 py-3 shadow-lg flex items-center gap-3">
-            {dish.originalPrice ? (
+            {dishStrikethroughPrice ? (
               <span className="font-sans font-600 text-lg text-stone-400 line-through tabular-nums">
-                {dish.originalPrice} {currencyLabel}
+                {dishStrikethroughPrice} {currencyLabel}
               </span>
             ) : null}
             <span
@@ -527,7 +536,15 @@ function EmeraldDishModal({
                         className="text-sm font-bold"
                         style={{ color: primary }}
                       >
-                        {size.price} {currencyLabel}
+                        {(() => {
+                          const discSizePrice = applyItemDiscountToPrice(item, size.price);
+                          return discSizePrice !== size.price ? (
+                            <>
+                              <span className="line-through opacity-40 text-xs mr-1">{size.price}</span>
+                              {discSizePrice}
+                            </>
+                          ) : size.price;
+                        })()} {currencyLabel}
                       </span>
                     </label>
                   );

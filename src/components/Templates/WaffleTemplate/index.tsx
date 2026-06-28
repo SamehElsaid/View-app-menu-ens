@@ -6,6 +6,7 @@ import { useAppSelector } from "@/store/hooks";
 import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
 import { sortCategories } from "@/lib/menuCategoryOrder";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
+import AdVBanner from "../components/AdBanner";
 import {
   OneCardThemeProvider,
   useOneCardThemeFromStore,
@@ -43,6 +44,10 @@ function WaffleTemplateContent() {
 
       <div className="relative z-10 mx-auto w-full px-3.5 pb-8 pt-0 sm:px-4">
         <NavBar />
+
+        <div className="mt-4">
+          <AdVBanner compact />
+        </div>
 
         <div className="mt-1">
           <Suspense fallback={null}>

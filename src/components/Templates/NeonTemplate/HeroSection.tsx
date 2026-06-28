@@ -32,6 +32,7 @@ import {
   getMenuItemMinPrice,
   hasMenuItemOptions,
 } from "@/lib/menuItemOptions";
+import { getItemDiscount } from "@/lib/menuItemDiscount";
 import { toast } from "react-toastify";
 import { useTrackMenuItemClick } from "@/hooks/useTrackMenuItemClick";
 import {
@@ -69,11 +70,12 @@ function NeonMenuItemCard({
 }) {
   const itemHasOptions = hasMenuItemOptions(item);
   const displayMinPrice = getMenuItemMinPrice(item);
+  const { discountedPrice, strikethroughPrice } = getItemDiscount(item);
   const priceLabel = itemHasOptions
     ? locale === "ar"
       ? `يبدأ من ${displayMinPrice}`
       : `Start from ${displayMinPrice}`
-    : String(item.price);
+    : String(discountedPrice);
 
   return (
     <div
@@ -129,11 +131,11 @@ function NeonMenuItemCard({
             {categoryName}
           </span>
           <div className="flex items-center gap-2 flex-wrap justify-end">
-            {!itemHasOptions && item.originalPrice && item.originalPrice > item.price && (
+            {!itemHasOptions && strikethroughPrice ? (
               <span className="text-slate-400 line-through text-sm">
-                {item.originalPrice} {currencyLabel}
+                {strikethroughPrice} {currencyLabel}
               </span>
-            )}
+            ) : null}
             <span
               className="font-bold text-base"
               style={{ color: primaryColor }}

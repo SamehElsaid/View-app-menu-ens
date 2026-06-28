@@ -23,6 +23,7 @@ import {
   pickSizeLabel,
   pickVariantLabel,
 } from "@/lib/menuItemOptions";
+import { getItemDiscount, applyItemDiscountToPrice } from "@/lib/menuItemDiscount";
 
 type NoirDetailModalProps = {
   item: MenuItem;
@@ -64,9 +65,8 @@ export default function NoirDetailModal({
   const desc = locale === "ar" ? item.descriptionAr : item.descriptionEn;
   const catLabel = locale === "ar" ? item.categoryNameAr : item.categoryNameEn;
 
-  const hasDiscount =
-    Boolean(item.originalPrice && item.discountPercent) &&
-    (item.originalPrice ?? 0) > item.price;
+  const { hasDiscount, discountPercent, discountedPrice, strikethroughPrice } =
+    getItemDiscount(item);
 
   const panelShadow = `0 0 40px ${hexToRgba(primary, 0.22)}, 0 24px 48px rgba(0,0,0,0.55)`;
   const closeGlow = shadowGlow(primary, 20, 0.25);
@@ -122,7 +122,7 @@ export default function NoirDetailModal({
     ? locale === "ar"
       ? `من ${displayMinPrice}`
       : `From ${displayMinPrice}`
-    : String(item.price);
+    : String(discountedPrice);
 
   const modal = (
     <div
@@ -217,13 +217,15 @@ export default function NoirDetailModal({
                 {itemHasOptions ? priceDisplay : selectedUnitPrice}
               </span>
             </p>
-            {hasDiscount ? (
+            {hasDiscount && discountPercent ? (
               <div className="flex items-center gap-2">
-                <span className="font-body text-xs text-text-secondary line-through">
-                  {item.originalPrice} {currencyLabel}
-                </span>
+                {strikethroughPrice ? (
+                  <span className="font-body text-xs text-text-secondary line-through">
+                    {strikethroughPrice} {currencyLabel}
+                  </span>
+                ) : null}
                 <span className="rounded-full bg-linear-to-br from-violet to-cyan px-2 py-0.5 text-[10px] font-medium text-white">
-                  -{item.discountPercent}%
+                  -{discountPercent}%
                 </span>
               </div>
             ) : null}
@@ -267,7 +269,15 @@ export default function NoirDetailModal({
                         </span>
                       </span>
                       <span className="font-body text-xs text-lavender">
-                        {size.price} {currencyLabel}
+                        {(() => {
+                          const discSizePrice = applyItemDiscountToPrice(item, size.price);
+                          return discSizePrice !== size.price ? (
+                            <>
+                              <span className="line-through opacity-40 text-xs mr-1">{size.price}</span>
+                              {discSizePrice}
+                            </>
+                          ) : size.price;
+                        })()} {currencyLabel}
                       </span>
                     </label>
                   );

@@ -22,6 +22,7 @@ import {
   type SkyCart,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
+import { getItemDiscount } from "@/lib/menuItemDiscount";
 
 function SkyTemplate() {
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
@@ -76,7 +77,7 @@ function SkyTemplate() {
         id: item.id,
         quantity: nextQuantity,
         name: item.name,
-        price: item.price,
+        price: getItemDiscount(item).discountedPrice,
         image: item.image ?? "",
       };
 
