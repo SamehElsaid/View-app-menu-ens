@@ -79,7 +79,7 @@ export default function FeaturedProduct({
       : {
           hasDiscount: false,
           discountPercent: null as number | null,
-          discountedPrice: current?.price ?? 0,
+          discountedPrice: 0,
           strikethroughPrice: null as number | null,
         };
   const inCartQty = current ? (cartById[current.id]?.quantity ?? 0) : 0;

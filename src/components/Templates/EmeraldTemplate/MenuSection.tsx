@@ -537,7 +537,7 @@ function EmeraldDishModal({
                         style={{ color: primary }}
                       >
                         {(() => {
-                          const discSizePrice = applyItemDiscountToPrice(item, size.price);
+                          const discSizePrice = applyItemDiscountToPrice(dish, size.price);
                           return discSizePrice !== size.price ? (
                             <>
                               <span className="line-through opacity-40 text-xs mr-1">{size.price}</span>

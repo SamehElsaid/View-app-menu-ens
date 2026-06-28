@@ -48,6 +48,7 @@ function Loader({
             animationDirection: "reverse",
           }}
         />
+        
 
         {/* avatar inside the rings */}
         <div className="absolute inset-2 rounded-full overflow-hidden shadow-md">
