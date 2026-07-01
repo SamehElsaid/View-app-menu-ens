@@ -7,10 +7,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { DELIVERY_ZONE_PARAM } from "@/hooks/useIsOrderingEnabled";
 import type { DeliveryGovernorate } from "@/types/menu";
+import { tryRedirectToNearestBranch } from "@/lib/nearbyBranchRedirect";
 import { MdLocationOn, MdLocationOff } from "react-icons/md";
 import { FiX } from "react-icons/fi";
 
-const MAX_DELIVERY_RADIUS_KM = 10;
+const MAX_DELIVERY_RADIUS_KM = 120;
 
 /** Haversine formula — returns distance in kilometres between two GPS points. */
 function haversineKm(
@@ -104,13 +105,29 @@ export default function DeliveryLocationModal() {
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
-      handleDismiss();
+      setModalState("denied");
       return;
     }
+    if (!menuInfo?.slug) return;
+
     setModalState("requesting");
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const { latitude, longitude } = position.coords;
+        const nextParams = new URLSearchParams(searchParams.toString());
+        nextParams.delete(DELIVERY_ZONE_PARAM);
+
+        const branchOutcome = await tryRedirectToNearestBranch({
+          menuSlug: menuInfo.slug,
+          lat: latitude,
+          lng: longitude,
+          locale,
+          pathname,
+          search: nextParams.toString(),
+        });
+
+        if (branchOutcome === "redirecting") return;
+
         const result = findNearestGovernorate(
           latitude,
           longitude,
@@ -120,15 +137,21 @@ export default function DeliveryLocationModal() {
           setFoundGovernorate(result.governorate);
           setModalState("found");
         } else {
-          handleDismiss();
+          setModalState("not_found");
         }
       },
       () => {
-        handleDismiss();
+        setModalState("denied");
       },
-      { enableHighAccuracy: true, timeout: 10_000 },
+      { enableHighAccuracy: true, timeout: 15_000, maximumAge: 60_000 },
     );
-  }, [delivery?.governorates, handleDismiss]);
+  }, [
+    delivery?.governorates,
+    locale,
+    menuInfo?.slug,
+    pathname,
+    searchParams,
+  ]);
 
   const handleConfirm = useCallback(() => {
     if (foundGovernorate) {
@@ -152,7 +175,7 @@ export default function DeliveryLocationModal() {
               `يمكننا التوصيل إلى ${name} بسعر ${price} ${menuInfo?.currency ?? ""}`,
             confirmBtn: "تأكيد الطلب من هذه المنطقة",
             notFoundTitle: "خارج نطاق التوصيل",
-            notFoundSubtitle: "عذرًا، موقعك خارج نطاق التوصيل (10 كم)",
+            notFoundSubtitle: "عذرًا، موقعك خارج نطاق التوصيل لهذا الفرع",
             deniedTitle: "لم يتم الوصول إلى الموقع",
             deniedSubtitle: "يرجى السماح بالوصول إلى موقعك لتفعيل التوصيل",
             browseOnly: "تصفح القائمة فقط",
@@ -169,7 +192,7 @@ export default function DeliveryLocationModal() {
             confirmBtn: "Confirm delivery to this area",
             notFoundTitle: "Outside delivery range",
             notFoundSubtitle:
-              "Sorry, your location is outside our delivery range (10 km)",
+              "Sorry, your location is outside this branch delivery range",
             deniedTitle: "Location access denied",
             deniedSubtitle:
               "Please allow location access in your browser to use delivery",

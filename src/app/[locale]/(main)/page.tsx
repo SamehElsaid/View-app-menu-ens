@@ -6,6 +6,7 @@ import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import RequestStaffButton from "@/components/Global/RequestStaffButton";
 import DeliveryLocationModal from "@/components/Global/DeliveryLocationModal";
+import MenuGeoRedirect from "@/components/Global/MenuGeoRedirect";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import MaintenanceView from "@/components/Global/MaintenanceView";
@@ -79,6 +80,11 @@ export default function Page() {
 
         {renderTemplate(menu.theme ?? "", Boolean(menu?.menu))}
 
+        {!searchParams.get("table")?.trim() ? (
+          <Suspense fallback={null}>
+            <MenuGeoRedirect />
+          </Suspense>
+        ) : null}
         {(tableCartAllowed || delivery?.deliveryOn) ? (
           <Suspense fallback={null}>
             <RequestStaffButton />
