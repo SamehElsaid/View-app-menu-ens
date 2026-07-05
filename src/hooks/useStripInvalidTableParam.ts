@@ -16,6 +16,7 @@ export function useStripInvalidTableParam(): void {
   const pathname = usePathname();
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
   const tableCartAllowed = useTableCartAllowed();
+  const deliveryContext = useAppSelector((state) => state.menu.deliveryContext);
 
   useEffect(() => {
     const tableParam =
@@ -25,8 +26,9 @@ export function useStripInvalidTableParam(): void {
 
     if (!tableParam || !menuInfo) return;
 
-    const deliveryZone = searchParams.get("deliveryZone")?.trim();
-    if (deliveryZone) {
+    const hasDeliveryContext =
+      deliveryContext.governorateId != null || deliveryContext.distance != null;
+    if (hasDeliveryContext) {
       const params = new URLSearchParams(searchParams.toString());
       if (
         params.has("table") ||
@@ -65,5 +67,5 @@ export function useStripInvalidTableParam(): void {
     if (validity !== false) return;
 
     stripTableParams();
-  }, [searchParams, menuInfo, tableCartAllowed, router, pathname]);
+  }, [searchParams, menuInfo, tableCartAllowed, router, pathname, deliveryContext]);
 }

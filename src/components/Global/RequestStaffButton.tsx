@@ -14,7 +14,7 @@ import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { arabCurrencies, Currency } from "@/constants/currencies";
 import { axiosPost } from "@/shared/axiosCall";
 import { FiX, FiSearch, FiMapPin } from "react-icons/fi";
@@ -41,11 +41,11 @@ import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import arLabels from "react-phone-number-input/locale/ar";
 import enLabels from "react-phone-number-input/locale/en";
 import { fetchBranchDeliveryQuote } from "@/lib/fetchDeliveryQuote";
-import {
-  setDistanceDeliveryParams,
-  clearDistanceDeliveryParams,
-} from "@/lib/deliveryParams";
 import { resolveDeliveryLocation } from "@/lib/resolveDeliveryLocation";
+import {
+  SET_DELIVERY_DISTANCE,
+  SET_DELIVERY_GOVERNORATE,
+} from "@/store/authMenu/authMenu";
 
 const DEFAULT_ACCENT = "hsl(271, 81%, 56%)";
 const DEFAULT_CART_SHAPE = "rounded-full";
@@ -148,6 +148,7 @@ export default function RequestStaffButton() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const dispatch = useAppDispatch();
   const menuInfo = useAppSelector((s) => s.menu.menuInfo);
   const menuCustomizations = useAppSelector((s) => s.menu.menuCustomizations);
   const storeMenu = useAppSelector((s) => s.menu.menu);
@@ -256,35 +257,24 @@ export default function RequestStaffButton() {
 
   const changeGovernorate = useCallback(
     (id: number) => {
-      const nextParams = new URLSearchParams(searchParams.toString());
-      clearDistanceDeliveryParams(nextParams);
-      nextParams.set("deliveryZone", String(id));
-      const path = nextParams.toString()
-        ? `${pathname}?${nextParams.toString()}`
-        : pathname;
-      router.replace(path, { scroll: false });
+      dispatch(SET_DELIVERY_GOVERNORATE(id));
       setShowGovSearch(false);
       setGovSearchText("");
       setFieldErrors((p) => ({ ...p, govArea: "" }));
     },
-    [pathname, router, searchParams],
+    [dispatch],
   );
 
   const applyDistanceDelivery = useCallback(
     (branchId: number, lat: number, lng: number, fee: number, km: number) => {
-      const nextParams = new URLSearchParams(searchParams.toString());
-      setDistanceDeliveryParams(nextParams, branchId, lat, lng);
-      const path = nextParams.toString()
-        ? `${pathname}?${nextParams.toString()}`
-        : pathname;
-      router.replace(path, { scroll: false });
+      dispatch(SET_DELIVERY_DISTANCE({ branchId, lat, lng }));
       setDistanceDeliveryFee(fee);
       setDistanceDeliveryKm(km);
       setShowGovSearch(false);
       setGovSearchText("");
       setFieldErrors((p) => ({ ...p, govArea: "" }));
     },
-    [pathname, router, searchParams],
+    [dispatch],
   );
 
   const detectLocation = useCallback(() => {
@@ -294,8 +284,6 @@ export default function RequestStaffButton() {
       async (pos) => {
         const { latitude, longitude } = pos.coords;
         const nextParams = new URLSearchParams(searchParams.toString());
-        nextParams.delete("deliveryZone");
-        clearDistanceDeliveryParams(nextParams);
 
         const result = await resolveDeliveryLocation({
           menuSlug: menuInfo.slug,

@@ -1,4 +1,5 @@
 export const DELIVERY_BRANCH_PARAM = "deliveryBranch";
+export const DELIVERY_ZONE_PARAM = "deliveryZone";
 export const DELIVERY_LAT_PARAM = "deliveryLat";
 export const DELIVERY_LNG_PARAM = "deliveryLng";
 

@@ -2,37 +2,29 @@
 
 import { useEffect, useRef } from "react";
 import { useLocale } from "next-intl";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
-import { DELIVERY_ZONE_PARAM } from "@/hooks/useIsOrderingEnabled";
-import { setDistanceDeliveryParams } from "@/lib/deliveryParams";
-import { resolveDeliveryLocation } from "@/lib/resolveDeliveryLocation";
-
-const branchRedirectCheckedKey = (slug: string) =>
-  `ens_menu_branch_geo_checked_${slug}`;
+import { tryRedirectToNearestBranch } from "@/lib/nearbyBranchRedirect";
 
 /**
- * On load, silently resolve group redirect + delivery pricing from geolocation.
+ * On load, silently redirect to a closer group branch when needed.
+ * Delivery location + pricing confirmation is handled by DeliveryLocationModal.
  */
 export default function MenuGeoRedirect() {
   const locale = useLocale();
   const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const menuSlug = useAppSelector((s) => s.menu.menuInfo?.slug);
-  const menuInfo = useAppSelector((s) => s.menu.menuInfo);
   const delivery = useAppSelector((s) => s.menu.delivery);
-  const branches = useAppSelector((s) => s.menu.branches);
   const startedForSlugRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!menuSlug || !menuInfo?.slug) return;
-    if (searchParams.get(DELIVERY_ZONE_PARAM)?.trim() === "0") return;
+    if (!menuSlug) return;
     if (searchParams.get("table")?.trim()) return;
+    /** Modal runs resolveDeliveryLocation (includes branch redirect + user confirm). */
+    if (delivery?.deliveryOn) return;
 
     if (typeof window === "undefined") return;
-    if (sessionStorage.getItem(branchRedirectCheckedKey(menuSlug))) return;
-
     if (!navigator.geolocation) return;
 
     if (startedForSlugRef.current === menuSlug) return;
@@ -42,70 +34,22 @@ export default function MenuGeoRedirect() {
       async (position) => {
         const { latitude, longitude } = position.coords;
         const nextParams = new URLSearchParams(searchParams.toString());
-        nextParams.delete(DELIVERY_ZONE_PARAM);
-        nextParams.delete("deliveryBranch");
-        nextParams.delete("deliveryLat");
-        nextParams.delete("deliveryLng");
 
-        const result = await resolveDeliveryLocation({
+        await tryRedirectToNearestBranch({
           menuSlug,
           lat: latitude,
           lng: longitude,
           locale,
           pathname,
           search: nextParams.toString(),
-          deliveryMode: delivery?.deliveryMode,
-          branches,
-          governorates: delivery?.governorates ?? [],
-          branchDisplayName: (branch) =>
-            branch.name?.trim() || menuInfo.name,
         });
-
-        if (result.kind === "redirecting") return;
-
-        if (result.kind === "out_of_range") {
-          startedForSlugRef.current = null;
-          return;
-        }
-
-        if (result.kind === "distance") {
-          setDistanceDeliveryParams(
-            nextParams,
-            result.branchId,
-            result.lat,
-            result.lng,
-          );
-          const path = nextParams.toString()
-            ? `${pathname}?${nextParams.toString()}`
-            : pathname;
-          router.replace(path, { scroll: false });
-        } else if (result.kind === "governorate") {
-          nextParams.set(DELIVERY_ZONE_PARAM, String(result.governorate.id));
-          const path = nextParams.toString()
-            ? `${pathname}?${nextParams.toString()}`
-            : pathname;
-          router.replace(path, { scroll: false });
-        }
-
-        sessionStorage.setItem(branchRedirectCheckedKey(menuSlug), "1");
       },
       () => {
-        sessionStorage.setItem(branchRedirectCheckedKey(menuSlug), "1");
+        startedForSlugRef.current = null;
       },
       { enableHighAccuracy: true, timeout: 15_000, maximumAge: 60_000 },
     );
-  }, [
-    branches,
-    delivery?.deliveryMode,
-    delivery?.governorates,
-    locale,
-    menuInfo?.name,
-    menuInfo?.slug,
-    menuSlug,
-    pathname,
-    router,
-    searchParams,
-  ]);
+  }, [delivery?.deliveryOn, locale, menuSlug, pathname, searchParams]);
 
   return null;
 }

@@ -5,6 +5,25 @@ import type { MenuCatalogMeta } from "@/types/menuCatalog";
 import { mergeMenuItemsById } from "@/lib/menuItemNormalize";
 import { sortMenuItemsForDisplay } from "@/lib/menuCategoryOrder";
 
+export type DistanceDeliveryContext = {
+  branchId: number;
+  lat: number;
+  lng: number;
+};
+
+export type DeliveryContextState = {
+  /** User dismissed delivery modal (browse-only mode) */
+  browseOnly: boolean;
+  distance: DistanceDeliveryContext | null;
+  governorateId: number | null;
+};
+
+const initialDeliveryContext: DeliveryContextState = {
+  browseOnly: false,
+  distance: null,
+  governorateId: null,
+};
+
 type MenuState = {
   menu: MenuItem[] | null;
   menuInfo: MenuInfo | null;
@@ -15,6 +34,8 @@ type MenuState = {
   delivery: Delivery | null;
   branches: MenuBranch[];
   catalog: MenuCatalogMeta | null;
+  /** In-memory delivery location; resets on page refresh */
+  deliveryContext: DeliveryContextState;
   /** true once UseDispatchMenu has finished its first dispatch cycle */
   menuLoaded: boolean;
 };
@@ -28,6 +49,7 @@ const initialState: MenuState = {
   delivery: null,
   branches: [],
   catalog: null,
+  deliveryContext: initialDeliveryContext,
   menuLoaded: false,
 };
 
@@ -71,6 +93,30 @@ const menuSlice = createSlice({
     SET_BRANCHES: (state, action: PayloadAction<MenuBranch[]>) => {
       state.branches = action.payload;
     },
+    SET_DELIVERY_DISTANCE: (
+      state,
+      action: PayloadAction<DistanceDeliveryContext>,
+    ) => {
+      state.deliveryContext = {
+        browseOnly: false,
+        distance: action.payload,
+        governorateId: null,
+      };
+    },
+    SET_DELIVERY_GOVERNORATE: (state, action: PayloadAction<number>) => {
+      state.deliveryContext = {
+        browseOnly: false,
+        distance: null,
+        governorateId: action.payload,
+      };
+    },
+    SET_DELIVERY_BROWSE_ONLY: (state) => {
+      state.deliveryContext = {
+        browseOnly: true,
+        distance: null,
+        governorateId: null,
+      };
+    },
     REMOVE_MENU: (state) => {
       state.menu = null;
       state.menuInfo = null;
@@ -81,6 +127,7 @@ const menuSlice = createSlice({
       state.delivery = null;
       state.branches = [];
       state.catalog = null;
+      state.deliveryContext = initialDeliveryContext;
       state.menuLoaded = false;
     },
     SET_MENU_LOADED: (state, action: PayloadAction<boolean>) => {
@@ -100,6 +147,9 @@ export const {
   APPEND_MENU_ITEMS,
   SET_DELIVERY,
   SET_BRANCHES,
+  SET_DELIVERY_DISTANCE,
+  SET_DELIVERY_GOVERNORATE,
+  SET_DELIVERY_BROWSE_ONLY,
   REMOVE_MENU,
   SET_MENU_LOADED,
 } = menuSlice.actions;

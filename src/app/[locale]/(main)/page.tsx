@@ -14,6 +14,7 @@ import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
+import StripLegacyDeliveryParams from "@/components/Global/StripLegacyDeliveryParams";
 import { templates } from "@/shared/theme.config";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
@@ -75,6 +76,7 @@ export default function Page() {
     <main className="menu-template font-body">
       <MenuLogoFallbackProvider logo={menu.menuInfo?.logo ?? null}>
         <Suspense fallback={null}>
+          <StripLegacyDeliveryParams />
           <StripInvalidTableParam />
         </Suspense>
 

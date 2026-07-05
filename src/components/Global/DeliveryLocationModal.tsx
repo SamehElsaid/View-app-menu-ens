@@ -10,18 +10,18 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useAppSelector } from "@/store/hooks";
-import { DELIVERY_ZONE_PARAM } from "@/hooks/useIsOrderingEnabled";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import type { DeliveryGovernorate } from "@/types/menu";
-import {
-  readDeliveryBranchFromParams,
-  setDistanceDeliveryParams,
-} from "@/lib/deliveryParams";
 import {
   resolveDeliveryLocation,
   type ResolvedDistanceDelivery,
 } from "@/lib/resolveDeliveryLocation";
+import {
+  SET_DELIVERY_BROWSE_ONLY,
+  SET_DELIVERY_DISTANCE,
+  SET_DELIVERY_GOVERNORATE,
+} from "@/store/authMenu/authMenu";
 import { MdLocationOn, MdLocationOff } from "react-icons/md";
 import { FiX } from "react-icons/fi";
 
@@ -30,12 +30,13 @@ type ModalState = "idle" | "requesting" | "found" | "not_found" | "denied";
 export default function DeliveryLocationModal() {
   const locale = useLocale();
   const isArabic = locale === "ar";
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const dispatch = useAppDispatch();
   const delivery = useAppSelector((s) => s.menu.delivery);
   const branches = useAppSelector((s) => s.menu.branches);
   const menuInfo = useAppSelector((s) => s.menu.menuInfo);
+  const deliveryContext = useAppSelector((s) => s.menu.deliveryContext);
 
   const hasMounted = useSyncExternalStore(
     () => () => {},
@@ -49,13 +50,10 @@ export default function DeliveryLocationModal() {
     useState<ResolvedDistanceDelivery | null>(null);
   const autoLocationRequestedRef = useRef(false);
 
-  const deliveryZoneParam = searchParams.get(DELIVERY_ZONE_PARAM)?.trim() ?? "";
-  const branchParams = readDeliveryBranchFromParams(searchParams);
   const deliveryAlreadySet =
-    (deliveryZoneParam !== "" && deliveryZoneParam !== "0") ||
-    (branchParams.branchId != null &&
-      branchParams.lat != null &&
-      branchParams.lng != null);
+    deliveryContext.browseOnly ||
+    deliveryContext.governorateId != null ||
+    deliveryContext.distance != null;
 
   const isDistanceMode =
     delivery?.deliveryMode === "distance" && branches.length > 0;
@@ -67,46 +65,36 @@ export default function DeliveryLocationModal() {
     (isDistanceMode || hasGovernorateMode) &&
     !deliveryAlreadySet;
 
+  const resetModal = useCallback(() => {
+    setModalState("idle");
+    setFoundGovernorate(null);
+    setFoundDistance(null);
+  }, []);
+
   const confirmGovernorate = useCallback(
     (gov: DeliveryGovernorate) => {
-      const nextParams = new URLSearchParams(searchParams.toString());
-      nextParams.set(DELIVERY_ZONE_PARAM, String(gov.id));
-      nextParams.delete("deliveryBranch");
-      nextParams.delete("deliveryLat");
-      nextParams.delete("deliveryLng");
-      const path = nextParams.toString()
-        ? `${pathname}?${nextParams.toString()}`
-        : pathname;
-      router.replace(path, { scroll: false });
+      dispatch(SET_DELIVERY_GOVERNORATE(gov.id));
     },
-    [pathname, router, searchParams],
+    [dispatch],
   );
 
   const confirmDistance = useCallback(
     (resolved: ResolvedDistanceDelivery) => {
-      const nextParams = new URLSearchParams(searchParams.toString());
-      setDistanceDeliveryParams(
-        nextParams,
-        resolved.branchId,
-        resolved.lat,
-        resolved.lng,
+      dispatch(
+        SET_DELIVERY_DISTANCE({
+          branchId: resolved.branchId,
+          lat: resolved.lat,
+          lng: resolved.lng,
+        }),
       );
-      const path = nextParams.toString()
-        ? `${pathname}?${nextParams.toString()}`
-        : pathname;
-      router.replace(path, { scroll: false });
     },
-    [pathname, router, searchParams],
+    [dispatch],
   );
 
   const handleDismiss = useCallback(() => {
-    const nextParams = new URLSearchParams(searchParams.toString());
-    nextParams.set(DELIVERY_ZONE_PARAM, "0");
-    const path = nextParams.toString()
-      ? `${pathname}?${nextParams.toString()}`
-      : pathname;
-    router.replace(path, { scroll: false });
-  }, [pathname, router, searchParams]);
+    resetModal();
+    dispatch(SET_DELIVERY_BROWSE_ONLY());
+  }, [dispatch, resetModal]);
 
   const requestLocation = useCallback(() => {
     if (!navigator.geolocation) {
@@ -123,10 +111,6 @@ export default function DeliveryLocationModal() {
       async (position) => {
         const { latitude, longitude } = position.coords;
         const nextParams = new URLSearchParams(searchParams.toString());
-        nextParams.delete(DELIVERY_ZONE_PARAM);
-        nextParams.delete("deliveryBranch");
-        nextParams.delete("deliveryLat");
-        nextParams.delete("deliveryLng");
 
         const result = await resolveDeliveryLocation({
           menuSlug: menuInfo.slug,
@@ -189,7 +173,8 @@ export default function DeliveryLocationModal() {
     } else if (foundGovernorate) {
       confirmGovernorate(foundGovernorate);
     }
-  }, [confirmDistance, confirmGovernorate, foundDistance, foundGovernorate]);
+    resetModal();
+  }, [confirmDistance, confirmGovernorate, foundDistance, foundGovernorate, resetModal]);
 
   const customizations = useAppSelector((s) => s.menu.menuCustomizations);
   const accentColor = customizations?.primaryColor?.trim() || "#7000B5";
@@ -344,6 +329,13 @@ export default function DeliveryLocationModal() {
                 style={{ background: accentColor }}
               >
                 {labels.confirmBtn}
+              </button>
+              <button
+                type="button"
+                onClick={handleDismiss}
+                className="w-full rounded-xl border border-zinc-200 py-2.5 text-base text-zinc-500 transition hover:bg-zinc-50"
+              >
+                {labels.browseOnly}
               </button>
             </>
           )}

@@ -4,13 +4,10 @@ import { useSearchParams } from "next/navigation";
 import { useTableCartAllowed } from "./useTableCartAllowed";
 import { useAppSelector } from "@/store/hooks";
 import { isValidTableParam } from "@/lib/menuTable";
-import { readDeliveryBranchFromParams } from "@/lib/deliveryParams";
-
-export const DELIVERY_ZONE_PARAM = "deliveryZone";
 
 /**
  * Ordering is enabled in table mode (?table=) or delivery mode
- * (?deliveryZone= for governorates, ?deliveryBranch= for distance pricing).
+ * (in-memory delivery context from geolocation / user selection).
  */
 export function useIsOrderingEnabled(): {
   isOrderingEnabled: boolean;
@@ -26,24 +23,20 @@ export function useIsOrderingEnabled(): {
   const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
   const menuInfo = useAppSelector((s) => s.menu.menuInfo);
+  const deliveryContext = useAppSelector((s) => s.menu.deliveryContext);
 
-  const deliveryZoneParam = searchParams.get(DELIVERY_ZONE_PARAM)?.trim() ?? "";
-  const { branchId, lat, lng } = readDeliveryBranchFromParams(searchParams);
   const tableNumber = searchParams.get("table")?.trim() ?? "";
   const tableValidity = tableNumber
     ? isValidTableParam(menuInfo, tableNumber)
     : null;
 
+  const { distance, governorateId } = deliveryContext;
+
   const isDistanceDelivery =
-    branchId != null &&
-    lat != null &&
-    lng != null &&
-    Boolean(delivery?.deliveryOn);
+    distance != null && Boolean(delivery?.deliveryOn);
 
   const isGovernorateDelivery =
-    Boolean(deliveryZoneParam) &&
-    deliveryZoneParam !== "0" &&
-    Boolean(delivery?.deliveryOn);
+    governorateId != null && Boolean(delivery?.deliveryOn);
 
   const isDeliveryOrder = isDistanceDelivery || isGovernorateDelivery;
 
@@ -58,12 +51,9 @@ export function useIsOrderingEnabled(): {
     isDeliveryOrder,
     isDistanceDelivery,
     tableNumber,
-    governorateId:
-      isGovernorateDelivery && deliveryZoneParam
-        ? parseInt(deliveryZoneParam, 10)
-        : null,
-    deliveryBranchId: branchId,
-    deliveryLat: lat,
-    deliveryLng: lng,
+    governorateId: isGovernorateDelivery ? governorateId : null,
+    deliveryBranchId: distance?.branchId ?? null,
+    deliveryLat: distance?.lat ?? null,
+    deliveryLng: distance?.lng ?? null,
   };
 }
