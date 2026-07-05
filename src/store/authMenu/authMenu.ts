@@ -1,4 +1,4 @@
-import { MenuItem, MenuInfo, MenuCustomizations, Category, Delivery } from "@/types/menu";
+import { MenuItem, MenuInfo, MenuCustomizations, Category, Delivery, MenuBranch } from "@/types/menu";
 import { Ad } from "@/types/Ad";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import type { MenuCatalogMeta } from "@/types/menuCatalog";
@@ -13,6 +13,7 @@ type MenuState = {
   menuCustomizations: MenuCustomizations | null;
   categories: Category[] | null;
   delivery: Delivery | null;
+  branches: MenuBranch[];
   catalog: MenuCatalogMeta | null;
   /** true once UseDispatchMenu has finished its first dispatch cycle */
   menuLoaded: boolean;
@@ -25,6 +26,7 @@ const initialState: MenuState = {
   menuCustomizations: null,
   categories: null,
   delivery: null,
+  branches: [],
   catalog: null,
   menuLoaded: false,
 };
@@ -66,6 +68,9 @@ const menuSlice = createSlice({
     SET_DELIVERY: (state, action: PayloadAction<Delivery | null>) => {
       state.delivery = action.payload;
     },
+    SET_BRANCHES: (state, action: PayloadAction<MenuBranch[]>) => {
+      state.branches = action.payload;
+    },
     REMOVE_MENU: (state) => {
       state.menu = null;
       state.menuInfo = null;
@@ -74,6 +79,7 @@ const menuSlice = createSlice({
       state.menuCustomizations = null;
       state.categories = null;
       state.delivery = null;
+      state.branches = [];
       state.catalog = null;
       state.menuLoaded = false;
     },
@@ -93,6 +99,7 @@ export const {
   SET_CATALOG_META,
   APPEND_MENU_ITEMS,
   SET_DELIVERY,
+  SET_BRANCHES,
   REMOVE_MENU,
   SET_MENU_LOADED,
 } = menuSlice.actions;

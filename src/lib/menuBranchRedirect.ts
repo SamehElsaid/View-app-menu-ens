@@ -27,7 +27,9 @@ export function redirectToMenuSlug(
 
   if (useCookieRedirect) {
     writeDevSubDomainToCookie(slug);
-    window.location.assign(`${pathPart}${searchPart}`);
+    const path = pathPart.startsWith("/") ? pathPart : `/${pathPart}`;
+    const url = `${window.location.origin}${path}${searchPart ? `?${searchPart}` : ""}`;
+    window.location.replace(url);
     return;
   }
 

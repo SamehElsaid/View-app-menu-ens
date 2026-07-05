@@ -127,8 +127,23 @@ export interface DeliveryGovernorate {
   updatedAt: string;
 }
 
+export type DeliveryMode = "governorates" | "distance";
+
+export interface MenuBranch {
+  id: number;
+  phone?: string | null;
+  latitude: number | string | null;
+  longitude: number | string | null;
+  deliveryBasePrice?: number | null;
+  deliveryPricePerKm?: number | null;
+  maxDeliveryRadiusKm?: number | null;
+  name?: string | null;
+  address?: string | null;
+}
+
 export interface Delivery {
   deliveryOn: boolean;
+  deliveryMode?: DeliveryMode;
   deliveryWhatsAppOn?: boolean;
   deliveryPhone: string;
   phoneNumber: string;

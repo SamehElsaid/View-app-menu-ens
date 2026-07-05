@@ -40,6 +40,12 @@ import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import arLabels from "react-phone-number-input/locale/ar";
 import enLabels from "react-phone-number-input/locale/en";
+import { fetchBranchDeliveryQuote } from "@/lib/fetchDeliveryQuote";
+import {
+  setDistanceDeliveryParams,
+  clearDistanceDeliveryParams,
+} from "@/lib/deliveryParams";
+import { resolveDeliveryLocation } from "@/lib/resolveDeliveryLocation";
 
 const DEFAULT_ACCENT = "hsl(271, 81%, 56%)";
 const DEFAULT_CART_SHAPE = "rounded-full";
@@ -63,6 +69,9 @@ type StaffCallPayload = {
   customerAddress?: string;
   orderNotes?: string;
   governorateId?: number | null;
+  branchId?: number;
+  customerLat?: number;
+  customerLng?: number;
   items: Array<{
     menuItemId: number;
     quantity: number;
@@ -145,7 +154,7 @@ export default function RequestStaffButton() {
   const isMenuActive = menuInfo?.isActive !== false;
   const isArabic = locale === "ar";
   const tableCartAllowed = useTableCartAllowed();
-  const { isOrderingEnabled, isDeliveryOrder, tableNumber, governorateId } =
+  const { isOrderingEnabled, isDeliveryOrder, isDistanceDelivery, tableNumber, governorateId, deliveryBranchId, deliveryLat, deliveryLng } =
     useIsOrderingEnabled();
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [open, setOpen] = useState(false);
@@ -169,15 +178,70 @@ export default function RequestStaffButton() {
   const CartIcon = CART_ICON_MAP[DEFAULT_CART_ICON];
 
   const delivery = useAppSelector((s) => s.menu.delivery);
+  const branches = useAppSelector((s) => s.menu.branches);
   const [showGovSearch, setShowGovSearch] = useState(false);
   const [govSearchText, setGovSearchText] = useState("");
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [distanceDeliveryFee, setDistanceDeliveryFee] = useState<number | null>(
+    null,
+  );
+  const [distanceDeliveryKm, setDistanceDeliveryKm] = useState<number | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (
+      !isDistanceDelivery ||
+      !menuInfo?.slug ||
+      deliveryBranchId == null ||
+      deliveryLat == null ||
+      deliveryLng == null
+    ) {
+      setDistanceDeliveryFee(null);
+      setDistanceDeliveryKm(null);
+      return;
+    }
+
+    let cancelled = false;
+    void fetchBranchDeliveryQuote(
+      menuInfo.slug,
+      deliveryBranchId,
+      deliveryLat,
+      deliveryLng,
+      locale,
+    ).then((quote) => {
+      if (cancelled) return;
+      setDistanceDeliveryFee(quote?.inRange ? quote.deliveryFee : null);
+      setDistanceDeliveryKm(quote?.distanceKm ?? null);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    deliveryBranchId,
+    deliveryLat,
+    deliveryLng,
+    isDistanceDelivery,
+    locale,
+    menuInfo?.slug,
+  ]);
 
   const currentGovernorate = useMemo<DeliveryGovernorate | null>(() => {
-    if (!isDeliveryOrder || !governorateId || !delivery?.governorates?.length)
+    if (
+      !isDeliveryOrder ||
+      isDistanceDelivery ||
+      !governorateId ||
+      !delivery?.governorates?.length
+    )
       return null;
     return delivery.governorates.find((g) => g.id === governorateId) ?? null;
-  }, [isDeliveryOrder, governorateId, delivery?.governorates]);
+  }, [
+    isDeliveryOrder,
+    isDistanceDelivery,
+    governorateId,
+    delivery?.governorates,
+  ]);
 
   const filteredGovernorates = useMemo<DeliveryGovernorate[]>(() => {
     if (!delivery?.governorates?.length) return [];
@@ -193,6 +257,7 @@ export default function RequestStaffButton() {
   const changeGovernorate = useCallback(
     (id: number) => {
       const nextParams = new URLSearchParams(searchParams.toString());
+      clearDistanceDeliveryParams(nextParams);
       nextParams.set("deliveryZone", String(id));
       const path = nextParams.toString()
         ? `${pathname}?${nextParams.toString()}`
@@ -205,38 +270,74 @@ export default function RequestStaffButton() {
     [pathname, router, searchParams],
   );
 
+  const applyDistanceDelivery = useCallback(
+    (branchId: number, lat: number, lng: number, fee: number, km: number) => {
+      const nextParams = new URLSearchParams(searchParams.toString());
+      setDistanceDeliveryParams(nextParams, branchId, lat, lng);
+      const path = nextParams.toString()
+        ? `${pathname}?${nextParams.toString()}`
+        : pathname;
+      router.replace(path, { scroll: false });
+      setDistanceDeliveryFee(fee);
+      setDistanceDeliveryKm(km);
+      setShowGovSearch(false);
+      setGovSearchText("");
+      setFieldErrors((p) => ({ ...p, govArea: "" }));
+    },
+    [pathname, router, searchParams],
+  );
+
   const detectLocation = useCallback(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation || !menuInfo?.slug) return;
     setIsDetectingLocation(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const { latitude, longitude } = pos.coords;
-        const govs = delivery?.governorates ?? [];
-        let nearest: DeliveryGovernorate | null = null;
-        let minDist = Infinity;
-        for (const g of govs) {
-          const dLat = ((g.lat - latitude) * Math.PI) / 180;
-          const dLon = ((g.lan - longitude) * Math.PI) / 180;
-          const a =
-            Math.sin(dLat / 2) ** 2 +
-            Math.cos((latitude * Math.PI) / 180) *
-              Math.cos((g.lat * Math.PI) / 180) *
-              Math.sin(dLon / 2) ** 2;
-          const dist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          if (dist < minDist) {
-            minDist = dist;
-            nearest = g;
-          }
+        const nextParams = new URLSearchParams(searchParams.toString());
+        nextParams.delete("deliveryZone");
+        clearDistanceDeliveryParams(nextParams);
+
+        const result = await resolveDeliveryLocation({
+          menuSlug: menuInfo.slug,
+          lat: latitude,
+          lng: longitude,
+          locale,
+          pathname,
+          search: nextParams.toString(),
+          deliveryMode: delivery?.deliveryMode,
+          branches,
+          governorates: delivery?.governorates ?? [],
+          branchDisplayName: (branch) => branch.name?.trim() || menuInfo.name,
+        });
+
+        if (result.kind === "redirecting") {
+          setIsDetectingLocation(false);
+          return;
         }
-        if (nearest && minDist <= 10) {
-          changeGovernorate(nearest.id);
-        } else {
-          toast.warning(
-            isArabic
-              ? "موقعك خارج نطاق التوصيل"
-              : "Location outside delivery range",
+
+        if (result.kind === "distance") {
+          applyDistanceDelivery(
+            result.branchId,
+            result.lat,
+            result.lng,
+            result.quote.deliveryFee ?? 0,
+            result.quote.distanceKm,
           );
+          setIsDetectingLocation(false);
+          return;
         }
+
+        if (result.kind === "governorate") {
+          changeGovernorate(result.governorate.id);
+          setIsDetectingLocation(false);
+          return;
+        }
+
+        toast.warning(
+          isArabic
+            ? "موقعك خارج نطاق التوصيل"
+            : "Location outside delivery range",
+        );
         setIsDetectingLocation(false);
       },
       () => {
@@ -249,7 +350,19 @@ export default function RequestStaffButton() {
       },
       { enableHighAccuracy: true, timeout: 10_000 },
     );
-  }, [changeGovernorate, delivery?.governorates, isArabic]);
+  }, [
+    applyDistanceDelivery,
+    branches,
+    changeGovernorate,
+    delivery?.deliveryMode,
+    delivery?.governorates,
+    isArabic,
+    locale,
+    menuInfo?.name,
+    menuInfo?.slug,
+    pathname,
+    searchParams,
+  ]);
 
   const labels = useMemo(
     () =>
@@ -462,12 +575,18 @@ export default function RequestStaffButton() {
       total: number,
     ): string => {
       const currency = menuInfo?.currency ?? "";
-      const govName = currentGovernorate
+      const deliveryFee = isDistanceDelivery
+        ? (distanceDeliveryFee ?? 0)
+        : (currentGovernorate?.price ?? 0);
+      const areaName = isDistanceDelivery
         ? isArabic
-          ? currentGovernorate.nameAr
-          : currentGovernorate.nameEn
-        : "";
-      const govFee = currentGovernorate?.price ?? 0;
+          ? "توصيل حسب المسافة"
+          : "Distance delivery"
+        : currentGovernorate
+          ? isArabic
+            ? currentGovernorate.nameAr
+            : currentGovernorate.nameEn
+          : "";
 
       const lines: string[] = [];
 
@@ -476,7 +595,7 @@ export default function RequestStaffButton() {
         lines.push("─────────────────");
         lines.push(`👤 *الاسم:* ${name}`);
         if (phone) lines.push(`📞 *التليفون:* ${phone}`);
-        if (govName) lines.push(`📍 *المنطقة:* ${govName}`);
+        if (areaName) lines.push(`📍 *المنطقة:* ${areaName}`);
         if (address) lines.push(`🏠 *تفاصيل العنوان:* ${address}`);
         if (notes) lines.push(`📝 *ملاحظات:* ${notes}`);
         lines.push("─────────────────");
@@ -495,16 +614,17 @@ export default function RequestStaffButton() {
         }
         lines.push("─────────────────");
         lines.push(`💵 *الإجمالي:* ${total.toFixed(2)} ${currency}`);
-        if (govFee > 0) lines.push(`🚚 *رسوم التوصيل:* ${govFee} ${currency}`);
+        if (deliveryFee > 0)
+          lines.push(`🚚 *رسوم التوصيل:* ${deliveryFee} ${currency}`);
         lines.push(
-          `💰 *المجموع الكلي:* ${(total + govFee).toFixed(2)} ${currency}`,
+          `💰 *المجموع الكلي:* ${(total + deliveryFee).toFixed(2)} ${currency}`,
         );
       } else {
         lines.push("🛵 *New Delivery Order*");
         lines.push("─────────────────");
         lines.push(`👤 *Name:* ${name}`);
         if (phone) lines.push(`📞 *Phone:* ${phone}`);
-        if (govName) lines.push(`📍 *Area:* ${govName}`);
+        if (areaName) lines.push(`📍 *Area:* ${areaName}`);
         if (address) lines.push(`🏠 *Address:* ${address}`);
         if (notes) lines.push(`📝 *Notes:* ${notes}`);
         lines.push("─────────────────");
@@ -523,15 +643,22 @@ export default function RequestStaffButton() {
         }
         lines.push("─────────────────");
         lines.push(`💵 *Subtotal:* ${total.toFixed(2)} ${currency}`);
-        if (govFee > 0) lines.push(`🚚 *Delivery fee:* ${govFee} ${currency}`);
+        if (deliveryFee > 0)
+          lines.push(`🚚 *Delivery fee:* ${deliveryFee} ${currency}`);
         lines.push(
-          `💰 *Grand total:* ${(total + govFee).toFixed(2)} ${currency}`,
+          `💰 *Grand total:* ${(total + deliveryFee).toFixed(2)} ${currency}`,
         );
       }
 
       return lines.join("\n");
     },
-    [currentGovernorate, isArabic, menuInfo?.currency],
+    [
+      currentGovernorate,
+      distanceDeliveryFee,
+      isArabic,
+      isDistanceDelivery,
+      menuInfo?.currency,
+    ],
   );
 
   const sendWhatsAppNotification = useCallback(
@@ -578,7 +705,10 @@ export default function RequestStaffButton() {
       } else if (!isValidPhoneNumber(customerPhone)) {
         errors.phone = labels.invalidPhone;
       }
-      if (!currentGovernorate) {
+      if (!isDistanceDelivery && !currentGovernorate) {
+        errors.govArea = labels.enterDeliveryArea;
+      }
+      if (isDistanceDelivery && distanceDeliveryFee == null) {
         errors.govArea = labels.enterDeliveryArea;
       }
       if (!customerAddress.trim()) {
@@ -619,7 +749,20 @@ export default function RequestStaffButton() {
             ? { customerPhone: customerPhone.trim() }
             : {}),
         ...(orderNotes.trim() ? { orderNotes: orderNotes.trim() } : {}),
-        ...(isDeliveryOrder && governorateId ? { governorateId } : {}),
+        ...(isDeliveryOrder && governorateId && !isDistanceDelivery
+          ? { governorateId }
+          : {}),
+        ...(isDeliveryOrder &&
+        isDistanceDelivery &&
+        deliveryBranchId != null &&
+        deliveryLat != null &&
+        deliveryLng != null
+          ? {
+              branchId: deliveryBranchId,
+              customerLat: deliveryLat,
+              customerLng: deliveryLng,
+            }
+          : {}),
         items: cartItemsForOrder.map((item) => ({
           menuItemId: item.id,
           quantity: item.quantity,
@@ -999,31 +1142,48 @@ export default function RequestStaffButton() {
                             </span>
                           </div>
 
-                          {!showGovSearch && currentGovernorate ? (
+                          {!showGovSearch &&
+                          ((isDistanceDelivery && distanceDeliveryFee != null) ||
+                            currentGovernorate) ? (
                             <div className="bg-white px-3 py-3 space-y-2.5">
                               <div className="flex items-center justify-between gap-3">
                                 <div className="min-w-0">
                                   <p className="truncate text-base font-bold text-zinc-900">
-                                    {isArabic
-                                      ? currentGovernorate.nameAr
-                                      : currentGovernorate.nameEn}
+                                    {isDistanceDelivery
+                                      ? isArabic
+                                        ? "توصيل حسب المسافة"
+                                        : "Distance delivery"
+                                      : isArabic
+                                        ? currentGovernorate!.nameAr
+                                        : currentGovernorate!.nameEn}
                                   </p>
                                   <p className="text-sm text-zinc-400">
                                     🚚 {labels.deliveryFee}:{" "}
                                     <span className="font-semibold text-zinc-600">
-                                      {currentGovernorate.price}{" "}
+                                      {isDistanceDelivery
+                                        ? distanceDeliveryFee
+                                        : currentGovernorate!.price}{" "}
                                       {menuInfo?.currency ?? ""}
                                     </span>
+                                    {isDistanceDelivery &&
+                                    distanceDeliveryKm != null ? (
+                                      <span className="ms-1">
+                                        (≈ {distanceDeliveryKm.toFixed(1)}{" "}
+                                        {isArabic ? "كم" : "km"})
+                                      </span>
+                                    ) : null}
                                   </p>
                                 </div>
-                                <button
-                                  type="button"
-                                  onClick={() => setShowGovSearch(true)}
-                                  className="shrink-0 flex items-center gap-1.5 rounded-full border border-(--bg-main)/30 bg-(--bg-main)/6 px-3 py-1 text-sm font-semibold text-(--bg-main) transition hover:bg-(--bg-main)/15 active:scale-95"
-                                >
-                                  <FiMapPin className="h-3.5 w-3.5" />
-                                  {labels.changeArea}
-                                </button>
+                                {!isDistanceDelivery ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowGovSearch(true)}
+                                    className="shrink-0 flex items-center gap-1.5 rounded-full border border-(--bg-main)/30 bg-(--bg-main)/6 px-3 py-1 text-sm font-semibold text-(--bg-main) transition hover:bg-(--bg-main)/15 active:scale-95"
+                                  >
+                                    <FiMapPin className="h-3.5 w-3.5" />
+                                    {labels.changeArea}
+                                  </button>
+                                ) : null}
                               </div>
 
                               <div className="border-t border-zinc-100" />
@@ -1049,7 +1209,7 @@ export default function RequestStaffButton() {
                                 )}
                               </button>
                             </div>
-                          ) : (
+                          ) : !isDistanceDelivery ? (
                             <div className="bg-white">
                               <div className="flex items-center gap-2 border-b border-zinc-100 px-3 py-2.5">
                                 <FiSearch className="h-4 w-4 shrink-0 text-(--bg-main)/60" />
@@ -1132,6 +1292,29 @@ export default function RequestStaffButton() {
                                   </li>
                                 )}
                               </ul>
+                            </div>
+                          ) : (
+                            <div className="bg-white px-3 py-3">
+                              <button
+                                type="button"
+                                onClick={detectLocation}
+                                disabled={isDetectingLocation}
+                                className="flex w-full items-center justify-center gap-2 rounded-xl border border-(--bg-main)/25 bg-(--bg-main)/5 py-2.5 text-sm font-medium text-(--bg-main) transition hover:bg-(--bg-main)/12 active:scale-[0.98] disabled:opacity-50"
+                              >
+                                {isDetectingLocation ? (
+                                  <>
+                                    <span className="h-4 w-4 rounded-full border-2 border-t-transparent border-(--bg-main) animate-spin" />
+                                    {isArabic
+                                      ? "جاري التحديد..."
+                                      : "Detecting..."}
+                                  </>
+                                ) : (
+                                  <>
+                                    <MdMyLocation className="h-4 w-4" />
+                                    {labels.detectLocation}
+                                  </>
+                                )}
+                              </button>
                             </div>
                           )}
                         </div>

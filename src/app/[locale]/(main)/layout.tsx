@@ -12,6 +12,7 @@ import {
   MenuCustomizations,
   Category,
   Delivery,
+  MenuBranch,
 } from "@/types/menu";
 import { Ad } from "@/types/Ad";
 import { cookies, headers } from "next/headers";
@@ -215,6 +216,7 @@ export default async function MainLayout({
         }
         categories={(data?.categories as Category[]) ?? null}
         delivery={(data?.delivery as Delivery) ?? null}
+        branches={(data?.branches as MenuBranch[]) ?? []}
         catalog={bootstrapCatalog}
       />
       <Header />

@@ -4,22 +4,23 @@ import { useSearchParams } from "next/navigation";
 import { useTableCartAllowed } from "./useTableCartAllowed";
 import { useAppSelector } from "@/store/hooks";
 import { isValidTableParam } from "@/lib/menuTable";
+import { readDeliveryBranchFromParams } from "@/lib/deliveryParams";
 
 export const DELIVERY_ZONE_PARAM = "deliveryZone";
 
 /**
- * Returns whether ordering (add-to-cart + cart button) is currently active.
- * Ordering is enabled in two modes:
- *  - Table mode:    URL has `?table=<number>` and the plan is paid.
- *  - Delivery mode: URL has `?deliveryZone=<id>` (set after location confirmed)
- *                   and delivery is turned on in the menu config.
- *                   Delivery is available on all plan types.
+ * Ordering is enabled in table mode (?table=) or delivery mode
+ * (?deliveryZone= for governorates, ?deliveryBranch= for distance pricing).
  */
 export function useIsOrderingEnabled(): {
   isOrderingEnabled: boolean;
   isDeliveryOrder: boolean;
+  isDistanceDelivery: boolean;
   tableNumber: string;
   governorateId: number | null;
+  deliveryBranchId: number | null;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
 } {
   const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
@@ -27,14 +28,24 @@ export function useIsOrderingEnabled(): {
   const menuInfo = useAppSelector((s) => s.menu.menuInfo);
 
   const deliveryZoneParam = searchParams.get(DELIVERY_ZONE_PARAM)?.trim() ?? "";
+  const { branchId, lat, lng } = readDeliveryBranchFromParams(searchParams);
   const tableNumber = searchParams.get("table")?.trim() ?? "";
   const tableValidity = tableNumber
     ? isValidTableParam(menuInfo, tableNumber)
     : null;
 
-  const isDeliveryOrder =
-    Boolean(deliveryZoneParam) &&
+  const isDistanceDelivery =
+    branchId != null &&
+    lat != null &&
+    lng != null &&
     Boolean(delivery?.deliveryOn);
+
+  const isGovernorateDelivery =
+    Boolean(deliveryZoneParam) &&
+    deliveryZoneParam !== "0" &&
+    Boolean(delivery?.deliveryOn);
+
+  const isDeliveryOrder = isDistanceDelivery || isGovernorateDelivery;
 
   const isTableOrder =
     Boolean(tableNumber) &&
@@ -45,7 +56,14 @@ export function useIsOrderingEnabled(): {
   return {
     isOrderingEnabled: isTableOrder || isDeliveryOrder,
     isDeliveryOrder,
+    isDistanceDelivery,
     tableNumber,
-    governorateId: deliveryZoneParam ? parseInt(deliveryZoneParam, 10) : null,
+    governorateId:
+      isGovernorateDelivery && deliveryZoneParam
+        ? parseInt(deliveryZoneParam, 10)
+        : null,
+    deliveryBranchId: branchId,
+    deliveryLat: lat,
+    deliveryLng: lng,
   };
 }
