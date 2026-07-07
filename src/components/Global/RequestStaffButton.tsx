@@ -43,6 +43,11 @@ import enLabels from "react-phone-number-input/locale/en";
 import { fetchBranchDeliveryQuote } from "@/lib/fetchDeliveryQuote";
 import { resolveDeliveryLocation } from "@/lib/resolveDeliveryLocation";
 import {
+  resolveDeliveryAreaLabelSync,
+  resolveDeliveryAreaNames,
+  isGenericDeliveryAreaLabel,
+} from "@/lib/deliveryAreaName";
+import {
   SET_DELIVERY_DISTANCE,
   SET_DELIVERY_GOVERNORATE,
 } from "@/store/authMenu/authMenu";
@@ -88,6 +93,32 @@ type StaffCallPayload = {
     } | null;
   }>;
 };
+
+function resolveDeliveryWhatsAppPhone(
+  delivery: { deliveryPhone?: string | null; phoneNumber?: string | null } | null,
+): string {
+  if (!delivery) return "";
+  for (const raw of [delivery.deliveryPhone, delivery.phoneNumber]) {
+    const clean = String(raw ?? "")
+      .trim()
+      .replace(/[^0-9]/g, "");
+    if (clean) return clean;
+  }
+  return "";
+}
+
+function shouldSendDeliveryWhatsApp(
+  delivery: { deliveryWhatsAppOn?: boolean } | null,
+): boolean {
+  return delivery?.deliveryWhatsAppOn !== false;
+}
+
+function buildWhatsAppOrderUrl(
+  cleanPhone: string,
+  message: string,
+): string {
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+}
 
 const updateURL = (
   menuOpen: boolean,
@@ -179,6 +210,7 @@ export default function RequestStaffButton() {
   const CartIcon = CART_ICON_MAP[DEFAULT_CART_ICON];
 
   const delivery = useAppSelector((s) => s.menu.delivery);
+  const deliveryContext = useAppSelector((s) => s.menu.deliveryContext);
   const branches = useAppSelector((s) => s.menu.branches);
   const [showGovSearch, setShowGovSearch] = useState(false);
   const [govSearchText, setGovSearchText] = useState("");
@@ -266,8 +298,24 @@ export default function RequestStaffButton() {
   );
 
   const applyDistanceDelivery = useCallback(
-    (branchId: number, lat: number, lng: number, fee: number, km: number) => {
-      dispatch(SET_DELIVERY_DISTANCE({ branchId, lat, lng }));
+    (
+      branchId: number,
+      lat: number,
+      lng: number,
+      fee: number,
+      km: number,
+      areaNameAr?: string,
+      areaNameEn?: string,
+    ) => {
+      dispatch(
+        SET_DELIVERY_DISTANCE({
+          branchId,
+          lat,
+          lng,
+          ...(areaNameAr?.trim() ? { areaNameAr: areaNameAr.trim() } : {}),
+          ...(areaNameEn?.trim() ? { areaNameEn: areaNameEn.trim() } : {}),
+        }),
+      );
       setDistanceDeliveryFee(fee);
       setDistanceDeliveryKm(km);
       setShowGovSearch(false);
@@ -304,12 +352,19 @@ export default function RequestStaffButton() {
         }
 
         if (result.kind === "distance") {
+          const areaNames = await resolveDeliveryAreaNames(
+            result.lat,
+            result.lng,
+            delivery?.governorates ?? [],
+          );
           applyDistanceDelivery(
             result.branchId,
             result.lat,
             result.lng,
             result.quote.deliveryFee ?? 0,
             result.quote.distanceKm,
+            areaNames.nameAr,
+            areaNames.nameEn,
           );
           setIsDetectingLocation(false);
           return;
@@ -376,6 +431,8 @@ export default function RequestStaffButton() {
             notesPlaceholder: "ملاحظات إضافية",
             confirm: "تأكيد الطلب",
             success: "تم تأكيد الطلب بنجاح",
+            whatsAppPopupBlocked:
+              "تم حفظ الطلب. اسمح بالنوافذ المنبثقة أو افتح واتساب يدوياً لإرسال الطلب.",
             enterName: "يرجى إدخال الاسم",
             enterPhone: "يرجى إدخال رقم الهاتف",
             enterAddress: "يرجى إدخال تفاصيل العنوان",
@@ -414,6 +471,8 @@ export default function RequestStaffButton() {
             notesPlaceholder: "Additional notes",
             confirm: "Confirm order",
             success: "Order confirmed successfully",
+            whatsAppPopupBlocked:
+              "Order saved. Allow pop-ups or open WhatsApp manually to send the order.",
             enterName: "Please enter your name",
             enterPhone: "Please enter your phone number",
             enterAddress: "Please enter address details",
@@ -553,6 +612,86 @@ export default function RequestStaffButton() {
     setCart(readSkyCartFromCookie());
   };
 
+  const deliveryAreaLabel = useMemo(() => {
+    if (currentGovernorate) {
+      return isArabic
+        ? currentGovernorate.nameAr
+        : currentGovernorate.nameEn;
+    }
+    if (isDistanceDelivery) {
+      return resolveDeliveryAreaLabelSync(
+        isArabic,
+        deliveryLat,
+        deliveryLng,
+        deliveryContext.distance
+          ? {
+              nameAr: deliveryContext.distance.areaNameAr ?? "",
+              nameEn: deliveryContext.distance.areaNameEn ?? "",
+            }
+          : null,
+        delivery?.governorates ?? [],
+      );
+    }
+    return "";
+  }, [
+    currentGovernorate,
+    delivery?.governorates,
+    deliveryContext.distance,
+    deliveryLat,
+    deliveryLng,
+    isArabic,
+    isDistanceDelivery,
+  ]);
+
+  useEffect(() => {
+    if (
+      !isDistanceDelivery ||
+      deliveryLat == null ||
+      deliveryLng == null ||
+      deliveryBranchId == null
+    ) {
+      return;
+    }
+    const storedLabel =
+      deliveryContext.distance?.areaNameAr?.trim() ||
+      deliveryContext.distance?.areaNameEn?.trim() ||
+      "";
+    if (storedLabel && !isGenericDeliveryAreaLabel(storedLabel)) {
+      return;
+    }
+
+    let cancelled = false;
+    void resolveDeliveryAreaNames(
+      deliveryLat,
+      deliveryLng,
+      delivery?.governorates ?? [],
+    ).then((areaNames) => {
+      if (cancelled || (!areaNames.nameAr && !areaNames.nameEn)) return;
+      dispatch(
+        SET_DELIVERY_DISTANCE({
+          branchId: deliveryBranchId,
+          lat: deliveryLat,
+          lng: deliveryLng,
+          areaNameAr: areaNames.nameAr,
+          areaNameEn: areaNames.nameEn,
+        }),
+      );
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    delivery?.governorates,
+    deliveryBranchId,
+    deliveryContext.distance?.areaNameAr,
+    deliveryContext.distance?.areaNameEn,
+    deliveryLat,
+    deliveryLng,
+    dispatch,
+    isDistanceDelivery,
+  ]);
+
   const buildWhatsAppMessage = useCallback(
     (
       name: string,
@@ -566,15 +705,7 @@ export default function RequestStaffButton() {
       const deliveryFee = isDistanceDelivery
         ? (distanceDeliveryFee ?? 0)
         : (currentGovernorate?.price ?? 0);
-      const areaName = isDistanceDelivery
-        ? isArabic
-          ? "توصيل حسب المسافة"
-          : "Distance delivery"
-        : currentGovernorate
-          ? isArabic
-            ? currentGovernorate.nameAr
-            : currentGovernorate.nameEn
-          : "";
+      const areaName = deliveryAreaLabel;
 
       const lines: string[] = [];
 
@@ -642,6 +773,7 @@ export default function RequestStaffButton() {
     },
     [
       currentGovernorate,
+      deliveryAreaLabel,
       distanceDeliveryFee,
       isArabic,
       isDistanceDelivery,
@@ -657,11 +789,10 @@ export default function RequestStaffButton() {
       notes: string,
       items: typeof cartItemsForOrder,
       total: number,
-    ) => {
-      if (delivery?.deliveryWhatsAppOn === false) return;
-      const waPhone = delivery?.deliveryPhone ?? delivery?.phoneNumber ?? "";
-      if (!waPhone) return;
-      const cleanPhone = waPhone.replace(/[^0-9]/g, "");
+    ): boolean => {
+      if (!shouldSendDeliveryWhatsApp(delivery)) return false;
+      const cleanPhone = resolveDeliveryWhatsAppPhone(delivery);
+      if (!cleanPhone) return false;
       const message = buildWhatsAppMessage(
         name,
         phone,
@@ -670,15 +801,10 @@ export default function RequestStaffButton() {
         items,
         total,
       );
-      const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-      window.open(url, "_blank", "noopener,noreferrer");
+      const url = buildWhatsAppOrderUrl(cleanPhone, message);
+      return Boolean(window.open(url, "_blank"));
     },
-    [
-      buildWhatsAppMessage,
-      delivery?.deliveryPhone,
-      delivery?.deliveryWhatsAppOn,
-      delivery?.phoneNumber,
-    ],
+    [buildWhatsAppMessage, delivery],
   );
 
   const confirmOrder = async () => {
@@ -720,6 +846,28 @@ export default function RequestStaffButton() {
       toast.warning(labels.noValidItems);
       return;
     }
+
+    const orderItems = cartItemsForOrder;
+    const orderTotal = totalPrice;
+    const orderName = customerName.trim();
+    const orderPhone = customerPhone.trim();
+    const orderAddress = customerAddress.trim();
+    const orderNotesText = orderNotes.trim();
+    const notifyWhatsApp =
+      isDeliveryOrder &&
+      shouldSendDeliveryWhatsApp(delivery) &&
+      resolveDeliveryWhatsAppPhone(delivery) !== "";
+    /** Open WhatsApp in the same click handler so pop-up blockers allow it. */
+    const whatsAppOpened =
+      notifyWhatsApp &&
+      sendWhatsAppNotification(
+        orderName,
+        orderPhone,
+        orderAddress,
+        orderNotesText,
+        orderItems,
+        orderTotal,
+      );
 
     setIsConfirming(true);
     try {
@@ -818,15 +966,8 @@ export default function RequestStaffButton() {
       setCart({});
       notifySkyCartUpdated();
 
-      if (isDeliveryOrder) {
-        sendWhatsAppNotification(
-          customerName.trim(),
-          customerPhone.trim(),
-          customerAddress.trim(),
-          orderNotes.trim(),
-          cartItemsForOrder,
-          totalPrice,
-        );
+      if (notifyWhatsApp && !whatsAppOpened) {
+        toast.info(labels.whatsAppPopupBlocked);
       }
 
       setCustomerName("");
@@ -1138,9 +1279,10 @@ export default function RequestStaffButton() {
                                 <div className="min-w-0">
                                   <p className="truncate text-base font-bold text-zinc-900">
                                     {isDistanceDelivery
-                                      ? isArabic
-                                        ? "توصيل حسب المسافة"
-                                        : "Distance delivery"
+                                      ? deliveryAreaLabel ||
+                                        (isArabic
+                                          ? "منطقة التوصيل"
+                                          : "Delivery area")
                                       : isArabic
                                         ? currentGovernorate!.nameAr
                                         : currentGovernorate!.nameEn}

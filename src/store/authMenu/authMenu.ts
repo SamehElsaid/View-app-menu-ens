@@ -9,6 +9,8 @@ export type DistanceDeliveryContext = {
   branchId: number;
   lat: number;
   lng: number;
+  areaNameAr?: string;
+  areaNameEn?: string;
 };
 
 export type DeliveryContextState = {

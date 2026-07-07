@@ -17,6 +17,7 @@ import {
   resolveDeliveryLocation,
   type ResolvedDistanceDelivery,
 } from "@/lib/resolveDeliveryLocation";
+import { resolveDeliveryAreaNames } from "@/lib/deliveryAreaName";
 import {
   SET_DELIVERY_BROWSE_ONLY,
   SET_DELIVERY_DISTANCE,
@@ -46,8 +47,9 @@ export default function DeliveryLocationModal() {
   const [modalState, setModalState] = useState<ModalState>("idle");
   const [foundGovernorate, setFoundGovernorate] =
     useState<DeliveryGovernorate | null>(null);
-  const [foundDistance, setFoundDistance] =
-    useState<ResolvedDistanceDelivery | null>(null);
+  const [foundDistance, setFoundDistance] = useState<
+    (ResolvedDistanceDelivery & { areaNameAr?: string; areaNameEn?: string }) | null
+  >(null);
   const autoLocationRequestedRef = useRef(false);
 
   const deliveryAlreadySet =
@@ -79,12 +81,21 @@ export default function DeliveryLocationModal() {
   );
 
   const confirmDistance = useCallback(
-    (resolved: ResolvedDistanceDelivery) => {
+    (resolved: ResolvedDistanceDelivery & {
+      areaNameAr?: string;
+      areaNameEn?: string;
+    }) => {
       dispatch(
         SET_DELIVERY_DISTANCE({
           branchId: resolved.branchId,
           lat: resolved.lat,
           lng: resolved.lng,
+          ...(resolved.areaNameAr?.trim()
+            ? { areaNameAr: resolved.areaNameAr.trim() }
+            : {}),
+          ...(resolved.areaNameEn?.trim()
+            ? { areaNameEn: resolved.areaNameEn.trim() }
+            : {}),
         }),
       );
     },
@@ -128,7 +139,16 @@ export default function DeliveryLocationModal() {
         if (result.kind === "redirecting") return;
 
         if (result.kind === "distance") {
-          setFoundDistance(result);
+          const areaNames = await resolveDeliveryAreaNames(
+            result.lat,
+            result.lng,
+            delivery?.governorates ?? [],
+          );
+          setFoundDistance({
+            ...result,
+            areaNameAr: areaNames.nameAr,
+            areaNameEn: areaNames.nameEn,
+          });
           setModalState("found");
           return;
         }
@@ -197,7 +217,7 @@ export default function DeliveryLocationModal() {
               fee: number,
               km: number,
             ) =>
-              `الفرع: ${name} — ${fee} ${menuInfo?.currency ?? ""} (≈ ${km.toFixed(1)} كم)`,
+              `المنطقة: ${name} — ${fee} ${menuInfo?.currency ?? ""} (≈ ${km.toFixed(1)} كم)`,
             confirmBtn: "تأكيد التوصيل",
             notFoundTitle: "خارج نطاق التوصيل",
             notFoundSubtitle: "عذرًا، موقعك خارج نطاق التوصيل لهذا الفرع",
@@ -217,7 +237,7 @@ export default function DeliveryLocationModal() {
             foundSubtitleGov: (name: string, price: number) =>
               `We can deliver to ${name} for ${price} ${menuInfo?.currency ?? ""}`,
             foundSubtitleDistance: (name: string, fee: number, km: number) =>
-              `Branch: ${name} — ${fee} ${menuInfo?.currency ?? ""} (≈ ${km.toFixed(1)} km)`,
+              `Area: ${name} — ${fee} ${menuInfo?.currency ?? ""} (≈ ${km.toFixed(1)} km)`,
             confirmBtn: "Confirm delivery",
             notFoundTitle: "Outside delivery range",
             notFoundSubtitle:
@@ -308,7 +328,11 @@ export default function DeliveryLocationModal() {
                 <p className="text-base text-zinc-600">
                   {foundDistance
                     ? labels.foundSubtitleDistance(
-                        foundDistance.branchName,
+                        isArabic
+                          ? foundDistance.areaNameAr?.trim() ||
+                            foundDistance.branchName
+                          : foundDistance.areaNameEn?.trim() ||
+                            foundDistance.branchName,
                         foundDistance.quote.deliveryFee ?? 0,
                         foundDistance.quote.distanceKm,
                       )
