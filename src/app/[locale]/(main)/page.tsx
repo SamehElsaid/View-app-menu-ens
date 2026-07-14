@@ -17,6 +17,7 @@ import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
 import StripLegacyDeliveryParams from "@/components/Global/StripLegacyDeliveryParams";
 import { templates } from "@/shared/theme.config";
+import { hasTableSessionInSearch } from "@/lib/menuTable";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -27,7 +28,7 @@ export default function Page() {
   const tableParam = useMenuTableParam();
   const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
-
+  const hasTableSession = hasTableSessionInSearch(searchParams);
 
   useEffect(() => {
     const slug = menu.menuInfo?.slug;
@@ -66,12 +67,13 @@ export default function Page() {
     void trackMenuView();
   }, [locale, menu.menuInfo?.slug, searchParams]);
 
-
   if (menu.menuInfo?.isActive === false) {
-    return <MaintenanceView
-      name={menu.menuInfo?.name ?? ""}
-      logo={menu.menuInfo?.logo ?? null}
-    />
+    return (
+      <MaintenanceView
+        name={menu.menuInfo?.name ?? ""}
+        logo={menu.menuInfo?.logo ?? null}
+      />
+    );
   }
 
   return (
@@ -89,7 +91,7 @@ export default function Page() {
             <MenuGeoRedirect />
           </Suspense>
         ) : null}
-        {(tableCartAllowed || delivery?.deliveryOn) ? (
+        {tableCartAllowed || delivery?.deliveryOn ? (
           <Suspense fallback={null}>
             <RequestStaffButton />
           </Suspense>
@@ -105,13 +107,8 @@ export default function Page() {
   );
 }
 
-
-
-
 const renderTemplate = (theme: string, showTemplates: boolean) => {
   if (!showTemplates) return <MenuNotFoundView />;
-
-  console.log(theme);
 
   const Template = templates[theme];
 

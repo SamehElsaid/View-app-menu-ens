@@ -51,10 +51,9 @@ async function fetchMenu(slug: string, locale: string, forwardQuery: string) {
     ? `/public/menu/${slug}?${forwardQuery}`
     : `/public/menu/${slug}`;
 
-  const response = await serverGet<MenuBootstrapApiEnvelope | MenuBootstrapResponse>(
-    menuApiPath,
-    locale,
-  );
+  const response = await serverGet<
+    MenuBootstrapApiEnvelope | MenuBootstrapResponse
+  >(menuApiPath, locale);
 
   if (!response.status) return null;
   return parseMenuBootstrapPayload(response.data);
@@ -196,7 +195,7 @@ export default async function MainLayout({
   const cookieSubdomain = cookieStore.get(DEV_SUB_DOMAIN_COOKIE_KEY)?.value;
   const { needsDevSubdomain, devMode } = resolveMenuSlug(host, cookieSubdomain);
   const data = await getMenu(locale);
-  console.log(data);
+
   const bootstrapCatalog = data?.items
     ? resolveBootstrapCatalogMeta(data.items.length, data.totalItems)
     : null;

@@ -3,6 +3,9 @@ import React, { useState } from "react";
 import { MdOutlineRestaurantMenu, MdRestaurant } from "react-icons/md";
 import { FiMenu, FiPhoneCall, FiX } from "react-icons/fi";
 import { LanguageToggle } from "./LanguageToggle";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
+import CallWaiterButton from "@/components/Global/CallWaiterButton";
+import RateMenuButton from "@/components/Global/RateMenuButton";
 import { useLocale, useTranslations } from "next-intl";
 import Drawer from "@/components/Global/Drawer";
 import LoadImage from "@/components/ImageLoad";
@@ -105,6 +108,17 @@ function NavBar({
             </a>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <RateMenuButton
+              buttonClassName="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-(--bg-main)"
+            />
+            <CallWaiterButton
+              buttonClassName="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-(--bg-main)"
+              panelClassName="border-zinc-200 bg-white text-zinc-800"
+            />
+            <MenuWifiDropdown
+              buttonClassName="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-(--bg-main)"
+              panelClassName="border-zinc-200 bg-white text-zinc-800"
+            />
             <div className="bg-(--bg-main) text-white rounded-full font-bold text-base">
               <LanguageToggle />
             </div>

@@ -7,10 +7,12 @@ import { useAppSelector } from "@/store/hooks";
 import { useMenuTableParam } from "@/hooks/useMenuTableParam";
 import { readTableParamFromWindow } from "@/lib/menuTableParam";
 import { tryRedirectToNearestBranch } from "@/lib/nearbyBranchRedirect";
+import { hasTableSessionInSearch } from "@/lib/menuTable";
 
 /**
  * On load, silently redirect to a closer group branch when needed.
  * Delivery location + pricing confirmation is handled by DeliveryLocationModal.
+ * Never runs during a table QR / dine-in session.
  */
 export default function MenuGeoRedirect() {
   const locale = useLocale();

@@ -52,6 +52,7 @@ import {
   SET_DELIVERY_DISTANCE,
   SET_DELIVERY_GOVERNORATE,
 } from "@/store/authMenu/authMenu";
+import { applyMenuOrderCharges } from "@/lib/menuOrderCharges";
 
 const DEFAULT_ACCENT = "hsl(271, 81%, 56%)";
 const DEFAULT_CART_SHAPE = "rounded-full";
@@ -450,6 +451,10 @@ export default function RequestStaffButton() {
             searchArea: "ابحث عن المنطقة...",
             detectLocation: "اسمح لنا بتحديد موقعك",
             deliveryFee: "رسوم التوصيل",
+            tax: "الضريبة",
+            service: "الخدمة",
+            subtotal: "المجموع الفرعي",
+            grandTotal: "المجموع الكلي",
           }
         : {
             cart: "Cart",
@@ -490,6 +495,10 @@ export default function RequestStaffButton() {
             searchArea: "Search area...",
             detectLocation: "Allow us to detect your location",
             deliveryFee: "Delivery fee",
+            tax: "Tax",
+            service: "Service",
+            subtotal: "Subtotal",
+            grandTotal: "Grand total",
           },
     [isArabic],
   );
@@ -550,6 +559,22 @@ export default function RequestStaffButton() {
         0,
       ),
     [cartItemsForOrder],
+  );
+
+  const deliveryFeeAmount = useMemo(() => {
+    if (!isDeliveryOrder) return 0;
+    if (isDistanceDelivery) return distanceDeliveryFee ?? 0;
+    return currentGovernorate?.price ?? 0;
+  }, [
+    currentGovernorate?.price,
+    distanceDeliveryFee,
+    isDeliveryOrder,
+    isDistanceDelivery,
+  ]);
+
+  const orderCharges = useMemo(
+    () => applyMenuOrderCharges(totalPrice, menuInfo, deliveryFeeAmount),
+    [deliveryFeeAmount, menuInfo, totalPrice],
   );
 
   const syncDrawerWithURL = useCallback((shouldOpen: boolean) => {
@@ -706,6 +731,7 @@ export default function RequestStaffButton() {
       const deliveryFee = isDistanceDelivery
         ? (distanceDeliveryFee ?? 0)
         : (currentGovernorate?.price ?? 0);
+      const charges = applyMenuOrderCharges(total, menuInfo, deliveryFee);
       const areaName = deliveryAreaLabel;
 
       const lines: string[] = [];
@@ -733,11 +759,17 @@ export default function RequestStaffButton() {
           );
         }
         lines.push("─────────────────");
-        lines.push(`💵 *الإجمالي:* ${total.toFixed(2)} ${currency}`);
+        lines.push(`💵 *الإجمالي:* ${charges.subtotal.toFixed(2)} ${currency}`);
+        if (charges.taxAmount > 0)
+          lines.push(`🧾 *الضريبة:* ${charges.taxAmount.toFixed(2)} ${currency}`);
+        if (charges.serviceAmount > 0)
+          lines.push(
+            `🛎️ *الخدمة:* ${charges.serviceAmount.toFixed(2)} ${currency}`,
+          );
         if (deliveryFee > 0)
           lines.push(`🚚 *رسوم التوصيل:* ${deliveryFee} ${currency}`);
         lines.push(
-          `💰 *المجموع الكلي:* ${(total + deliveryFee).toFixed(2)} ${currency}`,
+          `💰 *المجموع الكلي:* ${charges.grandTotal.toFixed(2)} ${currency}`,
         );
       } else {
         lines.push("🛵 *New Delivery Order*");
@@ -762,11 +794,17 @@ export default function RequestStaffButton() {
           );
         }
         lines.push("─────────────────");
-        lines.push(`💵 *Subtotal:* ${total.toFixed(2)} ${currency}`);
+        lines.push(`💵 *Subtotal:* ${charges.subtotal.toFixed(2)} ${currency}`);
+        if (charges.taxAmount > 0)
+          lines.push(`🧾 *Tax:* ${charges.taxAmount.toFixed(2)} ${currency}`);
+        if (charges.serviceAmount > 0)
+          lines.push(
+            `🛎️ *Service:* ${charges.serviceAmount.toFixed(2)} ${currency}`,
+          );
         if (deliveryFee > 0)
           lines.push(`🚚 *Delivery fee:* ${deliveryFee} ${currency}`);
         lines.push(
-          `💰 *Grand total:* ${(total + deliveryFee).toFixed(2)} ${currency}`,
+          `💰 *Grand total:* ${charges.grandTotal.toFixed(2)} ${currency}`,
         );
       }
 
@@ -778,7 +816,7 @@ export default function RequestStaffButton() {
       distanceDeliveryFee,
       isArabic,
       isDistanceDelivery,
-      menuInfo?.currency,
+      menuInfo,
     ],
   );
 
@@ -1088,13 +1126,46 @@ export default function RequestStaffButton() {
                     )}
                   </div>
                   <div className="border-t border-(--bg-main)/15 bg-white px-4 py-3">
-                    <div className="mb-3 flex items-center justify-between text-base">
-                      <span className="font-medium text-zinc-600">
-                        {labels.total}
-                      </span>
-                      <strong className="text-base text-(--bg-main)">
-                        {totalPrice.toFixed(2)} {getCurrency()}
-                      </strong>
+                    <div className="mb-3 space-y-1.5 text-base">
+                      {(orderCharges.taxAmount > 0 ||
+                        orderCharges.serviceAmount > 0 ||
+                        deliveryFeeAmount > 0) && (
+                        <div className="flex items-center justify-between text-sm text-zinc-500">
+                          <span>{labels.subtotal}</span>
+                          <span>
+                            {orderCharges.subtotal.toFixed(2)} {getCurrency()}
+                          </span>
+                        </div>
+                      )}
+                      {orderCharges.taxAmount > 0 && (
+                        <div className="flex items-center justify-between text-sm text-zinc-500">
+                          <span>{labels.tax}</span>
+                          <span>
+                            {orderCharges.taxAmount.toFixed(2)} {getCurrency()}
+                          </span>
+                        </div>
+                      )}
+                      {orderCharges.serviceAmount > 0 && (
+                        <div className="flex items-center justify-between text-sm text-zinc-500">
+                          <span>{labels.service}</span>
+                          <span>
+                            {orderCharges.serviceAmount.toFixed(2)}{" "}
+                            {getCurrency()}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-zinc-600">
+                          {orderCharges.taxAmount > 0 ||
+                          orderCharges.serviceAmount > 0 ||
+                          deliveryFeeAmount > 0
+                            ? labels.grandTotal
+                            : labels.total}
+                        </span>
+                        <strong className="text-base text-(--bg-main)">
+                          {orderCharges.grandTotal.toFixed(2)} {getCurrency()}
+                        </strong>
+                      </div>
                     </div>
                     <button
                       type="button"

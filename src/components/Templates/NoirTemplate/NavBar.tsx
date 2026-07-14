@@ -6,6 +6,9 @@ import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import { useNoirTheme, shadowGlow } from "./NoirThemeContext";
 import { LanguageToggle } from "../Default/LanguageToggle";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
+import CallWaiterButton from "@/components/Global/CallWaiterButton";
+import RateMenuButton from "@/components/Global/RateMenuButton";
 import LoadImage from "@/components/ImageLoad";
 
 export default function NavBar() {
@@ -76,7 +79,18 @@ export default function NavBar() {
         </li>
       </ul>
 
-      <div className="flex shrink-0 items-center">
+      <div className="flex shrink-0 items-center gap-2">
+        <RateMenuButton
+          buttonClassName="bg-white/5 text-text-secondary hover:bg-white/10 hover:text-lavender"
+        />
+        <CallWaiterButton
+          buttonClassName="bg-white/5 text-text-secondary hover:bg-white/10 hover:text-lavender"
+          panelClassName="border-white/10 bg-[#121018]/95 text-text-secondary"
+        />
+        <MenuWifiDropdown
+          buttonClassName="bg-white/5 text-text-secondary hover:bg-white/10 hover:text-lavender"
+          panelClassName="border-white/10 bg-[#121018]/95 text-text-secondary"
+        />
         <LanguageToggle />
       </div>
     </header>

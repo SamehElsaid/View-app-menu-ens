@@ -27,6 +27,7 @@ import { useMenuTableParam } from "@/hooks/useMenuTableParam";
 import { readTableParamFromWindow } from "@/lib/menuTableParam";
 import { MdLocationOn, MdLocationOff } from "react-icons/md";
 import { FiX } from "react-icons/fi";
+import { hasTableSessionInSearch } from "@/lib/menuTable";
 
 type ModalState = "idle" | "requesting" | "found" | "not_found" | "denied";
 
@@ -75,7 +76,8 @@ export default function DeliveryLocationModal() {
     !isTableMode &&
     Boolean(delivery?.deliveryOn) &&
     (isDistanceMode || hasGovernorateMode) &&
-    !deliveryAlreadySet;
+    !deliveryAlreadySet &&
+    !hasTableSessionInSearch(searchParams);
 
   const resetModal = useCallback(() => {
     setModalState("idle");

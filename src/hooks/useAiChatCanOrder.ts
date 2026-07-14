@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
+import { hasTableSessionInSearch } from "@/lib/menuTable";
 
 /**
  * AI chat cart / Add / checkout when ordering is enabled the same way as the
@@ -15,5 +16,5 @@ export function useAiChatCanOrder(): boolean {
 
 export function useAiChatHasTable(): boolean {
   const searchParams = useSearchParams();
-  return Boolean(searchParams.get("table")?.trim());
+  return hasTableSessionInSearch(searchParams);
 }

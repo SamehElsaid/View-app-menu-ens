@@ -10,7 +10,6 @@ import LoadImage from "@/components/ImageLoad";
 import { useEnsmenuBrandingTracking } from "@/hooks/useEnsmenuBrandingTracking";
 import { usePharaonicTheme, hexToRgba } from "./PharaonicThemeContext";
 import { HieroglyphBorder } from "./PharaonicDecor";
-
 const DAY_KEYS: (keyof WorkingHours)[] = [
   "sunday",
   "monday",
