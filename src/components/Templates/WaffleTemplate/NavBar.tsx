@@ -3,6 +3,9 @@
 import { useAppSelector } from "@/store/hooks";
 import { useLocale } from "next-intl";
 import { LanguageToggle } from "../Default/LanguageToggle";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
+import CallWaiterButton from "@/components/Global/CallWaiterButton";
+import RateMenuButton from "@/components/Global/RateMenuButton";
 import { useMenuSocialLinks } from "@/hooks/useMenuSocialLinks";
 import { useOneCardTheme } from "../OneCardTemplate/OneCardThemeContext";
 import LoadImage from "@/components/ImageLoad";
@@ -19,11 +22,24 @@ export default function NavBar() {
   return (
     <header dir="ltr" className="relative z-20">
       <div className="flex items-center justify-between px-1 pt-2">
-        <div
-          className="waffle-lang-pill inline-flex shrink-0 items-center rounded-full bg-white px-3 py-1.5 text-sm font-bold shadow-[0_4px_14px_rgba(0,0,0,0.25)]"
-          style={{ color: primary }}
-        >
-          <LanguageToggle />
+        <div className="flex shrink-0 items-center gap-2">
+          <div
+            className="waffle-lang-pill inline-flex items-center rounded-full bg-white px-3 py-1.5 text-sm font-bold shadow-[0_4px_14px_rgba(0,0,0,0.25)]"
+            style={{ color: primary }}
+          >
+            <LanguageToggle />
+          </div>
+          <RateMenuButton
+            buttonClassName="bg-white/90 text-[#3d2314] shadow-[0_4px_14px_rgba(0,0,0,0.25)] hover:bg-white"
+          />
+          <CallWaiterButton
+            buttonClassName="bg-white/90 text-[#3d2314] shadow-[0_4px_14px_rgba(0,0,0,0.25)] hover:bg-white"
+            panelClassName="border-white/20 bg-[#3d2314]/95 text-white"
+          />
+          <MenuWifiDropdown
+            buttonClassName="bg-white/90 text-[#3d2314] shadow-[0_4px_14px_rgba(0,0,0,0.25)] hover:bg-white"
+            panelClassName="border-white/20 bg-[#3d2314]/95 text-white"
+          />
         </div>
 
         {socialLinks.length > 0 ? (

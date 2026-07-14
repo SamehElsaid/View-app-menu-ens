@@ -3,12 +3,13 @@
 import { useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
-import { isValidTableParam } from "@/lib/menuTable";
+import { isValidTableParam, readTableSessionParam } from "@/lib/menuTable";
 import { useTableCartAllowed } from "./useTableCartAllowed";
 
 /**
  * Strip `?table=` only when we know the table is invalid or the plan is free.
  * If table validity is unknown (no tables list yet), keep the URL.
+ * Never strip a valid dine-in session just because delivery context exists in memory.
  */
 export function useStripInvalidTableParam(): void {
   const searchParams = useSearchParams();
@@ -16,35 +17,11 @@ export function useStripInvalidTableParam(): void {
   const pathname = usePathname();
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
   const tableCartAllowed = useTableCartAllowed();
-  const deliveryContext = useAppSelector((state) => state.menu.deliveryContext);
 
   useEffect(() => {
-    const tableParam =
-      searchParams.get("table")?.trim() ||
-      searchParams.get("tableNumber")?.trim() ||
-      "";
+    const tableParam = readTableSessionParam(searchParams);
 
     if (!tableParam || !menuInfo) return;
-
-    const hasDeliveryContext =
-      deliveryContext.governorateId != null || deliveryContext.distance != null;
-    if (hasDeliveryContext) {
-      const params = new URLSearchParams(searchParams.toString());
-      if (
-        params.has("table") ||
-        params.has("tableNumber") ||
-        params.has("tableId")
-      ) {
-        params.delete("table");
-        params.delete("tableNumber");
-        params.delete("tableId");
-        const nextQuery = params.toString();
-        router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
-          scroll: false,
-        });
-      }
-      return;
-    }
 
     function stripTableParams() {
       const params = new URLSearchParams(searchParams.toString());
@@ -67,5 +44,5 @@ export function useStripInvalidTableParam(): void {
     if (validity !== false) return;
 
     stripTableParams();
-  }, [searchParams, menuInfo, tableCartAllowed, router, pathname, deliveryContext]);
+  }, [searchParams, menuInfo, tableCartAllowed, router, pathname]);
 }

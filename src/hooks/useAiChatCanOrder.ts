@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { isFreeMenuPlan, isPaidMenuPlan } from "@/lib/menuPlan";
+import { hasTableSessionInSearch } from "@/lib/menuTable";
 
 /**
  * AI chat ordering (ai-order webhook, cart, suggestion Add, checkout)
@@ -13,13 +14,13 @@ import { isFreeMenuPlan, isPaidMenuPlan } from "@/lib/menuPlan";
 export function useAiChatCanOrder(): boolean {
   const ownerPlanType = useAppSelector((s) => s.menu.menuInfo?.ownerPlanType);
   const searchParams = useSearchParams();
-  const tableNumber = searchParams.get("table")?.trim() ?? "";
+  const hasTable = hasTableSessionInSearch(searchParams);
 
   if (isFreeMenuPlan(ownerPlanType)) return false;
-  return isPaidMenuPlan(ownerPlanType) && tableNumber.length > 0;
+  return isPaidMenuPlan(ownerPlanType) && hasTable;
 }
 
 export function useAiChatHasTable(): boolean {
   const searchParams = useSearchParams();
-  return Boolean(searchParams.get("table")?.trim());
+  return hasTableSessionInSearch(searchParams);
 }

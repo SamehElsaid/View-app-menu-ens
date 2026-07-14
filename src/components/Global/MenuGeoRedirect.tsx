@@ -5,10 +5,12 @@ import { useLocale } from "next-intl";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { tryRedirectToNearestBranch } from "@/lib/nearbyBranchRedirect";
+import { hasTableSessionInSearch } from "@/lib/menuTable";
 
 /**
  * On load, silently redirect to a closer group branch when needed.
  * Delivery location + pricing confirmation is handled by DeliveryLocationModal.
+ * Never runs during a table QR / dine-in session.
  */
 export default function MenuGeoRedirect() {
   const locale = useLocale();
@@ -20,7 +22,7 @@ export default function MenuGeoRedirect() {
 
   useEffect(() => {
     if (!menuSlug) return;
-    if (searchParams.get("table")?.trim()) return;
+    if (hasTableSessionInSearch(searchParams)) return;
     /** Modal runs resolveDeliveryLocation (includes branch redirect + user confirm). */
     if (delivery?.deliveryOn) return;
 

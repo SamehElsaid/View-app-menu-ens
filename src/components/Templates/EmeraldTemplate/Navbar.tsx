@@ -8,6 +8,9 @@ import { useLocale } from "next-intl";
 import { useAppSelector } from "@/store/hooks";
 import { useEmeraldTheme, hexToRgba } from "./EmeraldThemeContext";
 import { LanguageToggle } from "../Default/LanguageToggle";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
+import CallWaiterButton from "@/components/Global/CallWaiterButton";
+import RateMenuButton from "@/components/Global/RateMenuButton";
 import LoadImage from "@/components/ImageLoad";
 
 export default function Navbar() {
@@ -96,7 +99,20 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <LanguageToggle />
+        <div className="flex items-center gap-2">
+          <RateMenuButton
+            buttonClassName="bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+          />
+          <CallWaiterButton
+            buttonClassName="bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+            panelClassName="border-emerald-100 bg-white text-slate-800"
+          />
+          <MenuWifiDropdown
+            buttonClassName="bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+            panelClassName="border-emerald-100 bg-white text-slate-800"
+          />
+          <LanguageToggle />
+        </div>
       </div>
     </header>
   );

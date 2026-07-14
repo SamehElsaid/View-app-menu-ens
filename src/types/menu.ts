@@ -32,6 +32,13 @@ export interface MenuInfo {
   currency: string;
   isActive: boolean;
   chatbotEnabled: boolean;
+  wifiEnabled?: boolean;
+  wifiName?: string | null;
+  wifiPassword?: string | null;
+  taxEnabled?: boolean;
+  taxPercent?: number | null;
+  serviceEnabled?: boolean;
+  servicePercent?: number | null;
   ownerPlanType: string;
   phone: string | null;
   addressAr: string | null;

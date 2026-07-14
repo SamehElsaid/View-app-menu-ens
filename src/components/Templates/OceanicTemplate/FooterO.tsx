@@ -11,7 +11,6 @@ import type { WorkingHours } from "@/types/menu";
 import { resolveMenuItemImageSrc } from "@/lib/menuItemImage";
 import LoadImage from "@/components/ImageLoad";
 import { useEnsmenuBrandingTracking } from "@/hooks/useEnsmenuBrandingTracking";
-
 const DAY_KEYS: (keyof WorkingHours)[] = [
   "sunday",
   "monday",

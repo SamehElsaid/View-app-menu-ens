@@ -3,6 +3,7 @@ import {
   readCurrentMenuSlugFromClient,
   redirectToMenuSlug,
 } from "@/lib/menuBranchRedirect";
+import { hasTableSessionInSearch } from "@/lib/menuTable";
 
 type NearbyBranchResponse = {
   success?: boolean;
@@ -55,6 +56,11 @@ export async function tryRedirectToNearestBranch(options: {
   search: string;
 }): Promise<BranchRedirectOutcome> {
   const { menuSlug, lat, lng, locale, pathname, search } = options;
+
+  /** Never switch menus during a dine-in / table QR session. */
+  if (hasTableSessionInSearch(search)) {
+    return "same_menu";
+  }
 
   try {
     const lookup = await fetchNearbyBranchRedirect(menuSlug, lat, lng, locale);

@@ -3,11 +3,12 @@
 import { useSearchParams } from "next/navigation";
 import { useTableCartAllowed } from "./useTableCartAllowed";
 import { useAppSelector } from "@/store/hooks";
-import { isValidTableParam } from "@/lib/menuTable";
+import { isValidTableParam, readTableSessionParam } from "@/lib/menuTable";
 
 /**
  * Ordering is enabled in table mode (?table=) or delivery mode
  * (in-memory delivery context from geolocation / user selection).
+ * Table sessions always win over delivery context so dine-in is never treated as delivery.
  */
 export function useIsOrderingEnabled(): {
   isOrderingEnabled: boolean;
@@ -25,26 +26,28 @@ export function useIsOrderingEnabled(): {
   const menuInfo = useAppSelector((s) => s.menu.menuInfo);
   const deliveryContext = useAppSelector((s) => s.menu.deliveryContext);
 
-  const tableNumber = searchParams.get("table")?.trim() ?? "";
+  const tableNumber = readTableSessionParam(searchParams);
   const tableValidity = tableNumber
     ? isValidTableParam(menuInfo, tableNumber)
     : null;
+  const hasTableSession =
+    Boolean(tableNumber) && tableCartAllowed && tableValidity !== false;
 
   const { distance, governorateId } = deliveryContext;
 
   const isDistanceDelivery =
-    distance != null && Boolean(delivery?.deliveryOn);
+    !hasTableSession &&
+    distance != null &&
+    Boolean(delivery?.deliveryOn);
 
   const isGovernorateDelivery =
-    governorateId != null && Boolean(delivery?.deliveryOn);
+    !hasTableSession &&
+    governorateId != null &&
+    Boolean(delivery?.deliveryOn);
 
   const isDeliveryOrder = isDistanceDelivery || isGovernorateDelivery;
 
-  const isTableOrder =
-    Boolean(tableNumber) &&
-    !isDeliveryOrder &&
-    tableCartAllowed &&
-    tableValidity !== false;
+  const isTableOrder = hasTableSession;
 
   return {
     isOrderingEnabled: isTableOrder || isDeliveryOrder,

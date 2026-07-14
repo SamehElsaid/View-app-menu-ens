@@ -64,6 +64,31 @@ function isUnresolvedTableStub(table: unknown, param: string): boolean {
  * `false` = confirmed invalid (unknown number or unresolved stub).
  * `null` = cannot tell yet (no tables list on menu) — do not strip URL.
  */
+/** Read table session from URL (`table`, `tableNumber`, or `tableId`). */
+export function readTableSessionParam(
+  searchParams: { get: (key: string) => string | null } | URLSearchParams,
+): string {
+  return (
+    searchParams.get("table")?.trim() ||
+    searchParams.get("tableNumber")?.trim() ||
+    searchParams.get("tableId")?.trim() ||
+    ""
+  );
+}
+
+/** True when the guest opened a table QR / dine-in session URL. */
+export function hasTableSessionInSearch(
+  search: string | { get: (key: string) => string | null } | URLSearchParams,
+): boolean {
+  if (typeof search === "string") {
+    const params = new URLSearchParams(
+      search.startsWith("?") ? search.slice(1) : search,
+    );
+    return Boolean(readTableSessionParam(params));
+  }
+  return Boolean(readTableSessionParam(search));
+}
+
 export function isValidTableParam(
   menuInfo: unknown,
   param: string,

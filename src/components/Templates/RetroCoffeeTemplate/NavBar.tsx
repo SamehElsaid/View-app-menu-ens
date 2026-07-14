@@ -12,6 +12,9 @@ import {
   RETRO_SURFACE_BORDER,
   useCoffeeTheme,
 } from "./CoffeeThemeContext";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
+import CallWaiterButton from "@/components/Global/CallWaiterButton";
+import RateMenuButton from "@/components/Global/RateMenuButton";
 
 export default function Navbar() {
   const locale = useLocale();
@@ -122,6 +125,17 @@ export default function Navbar() {
           </Link>
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <RateMenuButton
+              buttonClassName="border bg-white text-zinc-700 shadow-sm hover:bg-zinc-50"
+            />
+            <CallWaiterButton
+              buttonClassName="border bg-white text-zinc-700 shadow-sm hover:bg-zinc-50"
+              panelClassName="border-zinc-200 bg-white text-zinc-800"
+            />
+            <MenuWifiDropdown
+              buttonClassName="border bg-white text-zinc-700 shadow-sm hover:bg-zinc-50"
+              panelClassName="border-zinc-200 bg-white text-zinc-800"
+            />
             <button
               type="button"
               onClick={toggleLanguage}

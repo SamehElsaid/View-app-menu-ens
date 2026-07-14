@@ -23,6 +23,7 @@ import {
   SET_DELIVERY_DISTANCE,
   SET_DELIVERY_GOVERNORATE,
 } from "@/store/authMenu/authMenu";
+import { hasTableSessionInSearch } from "@/lib/menuTable";
 import { MdLocationOn, MdLocationOff } from "react-icons/md";
 import { FiX } from "react-icons/fi";
 
@@ -65,7 +66,8 @@ export default function DeliveryLocationModal() {
     hasMounted &&
     Boolean(delivery?.deliveryOn) &&
     (isDistanceMode || hasGovernorateMode) &&
-    !deliveryAlreadySet;
+    !deliveryAlreadySet &&
+    !hasTableSessionInSearch(searchParams);
 
   const resetModal = useCallback(() => {
     setModalState("idle");
