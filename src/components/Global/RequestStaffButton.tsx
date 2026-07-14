@@ -53,6 +53,13 @@ import {
   SET_DELIVERY_GOVERNORATE,
 } from "@/store/authMenu/authMenu";
 import { applyMenuOrderCharges } from "@/lib/menuOrderCharges";
+import {
+  getMenuFabSideClass,
+  getMenuMobileTabCartColumnClasses,
+  getMenuMobileTabCartIconClasses,
+  getMenuMobileTabCartLabelClasses,
+  MENU_CART_FAB_BOTTOM_CLASS,
+} from "@/lib/menuFabLayout";
 
 const DEFAULT_ACCENT = "hsl(271, 81%, 56%)";
 const DEFAULT_CART_SHAPE = "rounded-full";
@@ -176,7 +183,14 @@ const useClosePopupWithPopstate = ({
   }, [mainQuery, setOpen]);
 };
 
-export default function RequestStaffButton() {
+type RequestStaffButtonProps = {
+  /** `inline` = render FAB column only (used by MenuCornerFabs flex row). */
+  variant?: "fixed" | "inline";
+};
+
+export default function RequestStaffButton({
+  variant = "fixed",
+}: RequestStaffButtonProps = {}) {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -1027,29 +1041,58 @@ export default function RequestStaffButton() {
   /** After mount: searchParams and locale match the browser; avoids hydration mismatch. */
   if (!hasMounted || !isOrderingEnabled) return null;
 
-  const cartAnchorClass = isArabic
-    ? "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-3"
-    : "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] right-3";
+  const cartAnchorClass = `${MENU_CART_FAB_BOTTOM_CLASS} ${getMenuFabSideClass(isArabic)}`;
+  /** Theme chrome only when seated in the shared phone dock. */
+  const phoneTabTheme = variant === "inline" ? menuInfo.theme : null;
 
-  return createPortal(
+  const fabColumn = (
     <div
-      className={`fixed z-99990 flex flex-col items-center gap-1 ${cartAnchorClass}`}
+      className={[
+        "flex flex-col items-center",
+        // Phone: equal-width tab inside full-width bar
+        "max-md:min-w-0 max-md:flex-1 max-md:justify-center max-md:gap-0.5 max-md:rounded-lg max-md:px-1 max-md:py-1.5 max-md:transition",
+        getMenuMobileTabCartColumnClasses(phoneTabTheme),
+        // Desktop FAB stack
+        "md:gap-1",
+      ].join(" ")}
       style={{ "--bg-main": accentMain } as CSSProperties}
     >
       <button
         type="button"
         onClick={openDrawer}
         title={labels.openCart}
-        className={`flex h-14 w-14 items-center justify-center ${DEFAULT_CART_SHAPE} bg-(--bg-main) text-white shadow-lg transition hover:opacity-90`}
+        className={[
+          "flex items-center justify-center transition",
+          // Phone tab bar item
+          "max-md:h-7 max-md:w-7 max-md:rounded-none max-md:bg-transparent max-md:shadow-none",
+          getMenuMobileTabCartIconClasses(phoneTabTheme),
+          // Desktop FAB
+          `md:h-14 md:w-14 ${DEFAULT_CART_SHAPE} md:bg-(--bg-main) md:text-white md:shadow-lg md:hover:opacity-90`,
+        ].join(" ")}
         aria-label={labels.cart}
       >
-        <CartIcon className="h-6 w-6" />
+        <CartIcon className="h-5 w-5 md:h-6 md:w-6" />
       </button>
-      <span className="max-w-40 truncate rounded-full border border-(--bg-main)/20 bg-white/95 px-3 py-1 text-center text-base font-medium text-(--bg-main) shadow-base">
-        {labels.cart}: {totalQuantity}
+      <span
+        className={[
+          "w-full truncate px-0.5 text-center text-[10px] font-medium leading-tight sm:text-[11px]",
+          getMenuMobileTabCartLabelClasses(phoneTabTheme),
+          "md:max-w-40 md:rounded-full md:border md:border-(--bg-main)/20 md:bg-white/95 md:px-3 md:py-1 md:text-base md:shadow-base",
+        ].join(" ")}
+      >
+        <span className="md:hidden">
+          {labels.cart}
+          {totalQuantity > 0 ? ` (${totalQuantity})` : ""}
+        </span>
+        <span className="hidden md:inline">
+          {labels.cart}: {totalQuantity}
+        </span>
       </span>
+    </div>
+  );
 
-      {isDrawerVisible ? (
+  const drawer =
+    isDrawerVisible ? (
         <>
           <div
             className={`fixed h-dvh inset-0 z-99990 bg-black/40 transition-opacity duration-300 ${
@@ -1546,8 +1589,19 @@ export default function RequestStaffButton() {
             </div>
           </aside>
         </>
-      ) : null}
-    </div>,
+      ) : null;
+
+  if (variant === "inline") {
+    return (
+      <>
+        {fabColumn}
+        {drawer ? createPortal(drawer, document.body) : null}
+      </>
+    );
+  }
+
+  return createPortal(
+    <div className={`fixed z-99990 ${cartAnchorClass}`}>{fabColumn}{drawer}</div>,
     document.body,
   );
 }

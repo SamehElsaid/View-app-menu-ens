@@ -4,11 +4,11 @@ import { Suspense, useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import RequestStaffButton from "@/components/Global/RequestStaffButton";
+import MenuCornerFabs from "@/components/Global/MenuCornerFabs";
+import MenuBottomScrollPad from "@/components/Global/MenuBottomScrollPad";
 import DeliveryLocationModal from "@/components/Global/DeliveryLocationModal";
 import MenuGeoRedirect from "@/components/Global/MenuGeoRedirect";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import { useMenuTableParam } from "@/hooks/useMenuTableParam";
 import MaintenanceView from "@/components/Global/MaintenanceView";
 import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
@@ -17,7 +17,6 @@ import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
 import StripLegacyDeliveryParams from "@/components/Global/StripLegacyDeliveryParams";
 import { templates } from "@/shared/theme.config";
-import { hasTableSessionInSearch } from "@/lib/menuTable";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
 
@@ -26,9 +25,7 @@ export default function Page() {
   const locale = useLocale();
   const searchParams = useSearchParams();
   const tableParam = useMenuTableParam();
-  const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
-  const hasTableSession = hasTableSessionInSearch(searchParams);
 
   useEffect(() => {
     const slug = menu.menuInfo?.slug;
@@ -86,16 +83,16 @@ export default function Page() {
 
         {renderTemplate(menu.theme ?? "", Boolean(menu?.menu))}
 
+        <MenuBottomScrollPad />
+
         {!tableParam ? (
           <Suspense fallback={null}>
             <MenuGeoRedirect />
           </Suspense>
         ) : null}
-        {tableCartAllowed || delivery?.deliveryOn ? (
-          <Suspense fallback={null}>
-            <RequestStaffButton />
-          </Suspense>
-        ) : null}
+        <Suspense fallback={null}>
+          <MenuCornerFabs />
+        </Suspense>
         {delivery?.deliveryOn && !tableParam ? (
           <Suspense fallback={null}>
             <DeliveryLocationModal />

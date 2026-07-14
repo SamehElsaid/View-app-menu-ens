@@ -7,8 +7,6 @@ import { useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import LoadImage from "@/components/ImageLoad";
 import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
-import CallWaiterButton from "@/components/Global/CallWaiterButton";
-import RateMenuButton from "@/components/Global/RateMenuButton";
 
 function LangToggle() {
   const locale = useLocale();
@@ -75,15 +73,6 @@ export default function Navbar() {
           </span>
         </div>
         <div className="music-nav__actions">
-          <RateMenuButton
-            buttonClassName="music-lang-btn"
-            iconClassName="text-base"
-          />
-          <CallWaiterButton
-            buttonClassName="music-lang-btn"
-            panelClassName="border-white/10 bg-[#141414]/95 text-white"
-            iconClassName="text-base"
-          />
           <MenuWifiDropdown
             buttonClassName="music-lang-btn"
             panelClassName="border-white/10 bg-[#141414]/95 text-white"

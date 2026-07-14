@@ -93,6 +93,8 @@ import { isFreeMenuPlan } from "@/lib/menuPlan";
 import { useAiChatCanOrder } from "@/hooks/useAiChatCanOrder";
 import { useAiChatCatalogBrowse } from "@/hooks/useAiChatCatalogBrowse";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
+import { useIsMenuCornerDockSession } from "@/hooks/useIsMenuCornerDockSession";
+import { MENU_MOBILE_TAB_BAR_CLEARANCE_CLASS } from "@/lib/menuFabLayout";
 import {
   sendAiDiscoveryMessage,
   sendAiOrderMessage,
@@ -248,6 +250,7 @@ export default function OrderChatbot({
     deliveryLat,
     deliveryLng,
   } = useIsOrderingEnabled();
+  const isMenuCornerDockSession = useIsMenuCornerDockSession();
   const deliveryAreaReady = useDeliveryAreaReady();
   const catalogBrowse = useAiChatCatalogBrowse();
 
@@ -1697,7 +1700,9 @@ export default function OrderChatbot({
 
   const fabWrapperClass = resolvedPos
     ? `fixed z-99992`
-    : `fixed bottom-6 start-4 z-99992`;
+    : isMenuCornerDockSession
+      ? `fixed ${MENU_MOBILE_TAB_BAR_CLEARANCE_CLASS} start-4 z-99992 md:bottom-6`
+      : `fixed bottom-[calc(1.75rem+env(safe-area-inset-bottom,0px))] start-4 z-99992 md:bottom-6`;
 
   const fabWrapperStyle: CSSProperties = resolvedPos
     ? {

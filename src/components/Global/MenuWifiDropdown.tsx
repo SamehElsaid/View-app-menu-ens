@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { Suspense, useEffect, useId, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { IoWifiOutline } from "react-icons/io5";
 import { useAppSelector } from "@/store/hooks";
+import { useIsTableServicesSession } from "@/hooks/useIsTableServicesSession";
 
 type MenuWifiDropdownProps = {
   className?: string;
@@ -12,7 +13,7 @@ type MenuWifiDropdownProps = {
   iconClassName?: string;
 };
 
-export default function MenuWifiDropdown({
+function MenuWifiDropdownInner({
   className = "",
   buttonClassName = "",
   panelClassName = "",
@@ -22,6 +23,7 @@ export default function MenuWifiDropdown({
   const isAr = locale === "ar";
   const t = useTranslations("footer");
   const menuInfo = useAppSelector((state) => state.menu.menuInfo);
+  const { isTableServicesSession } = useIsTableServicesSession();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
@@ -29,7 +31,9 @@ export default function MenuWifiDropdown({
   const wifiName = menuInfo?.wifiName?.trim() || "";
   const wifiPassword = menuInfo?.wifiPassword?.trim() || "";
   const visible =
-    menuInfo?.wifiEnabled === true && Boolean(wifiName || wifiPassword);
+    menuInfo?.wifiEnabled === true &&
+    Boolean(wifiName || wifiPassword) &&
+    !isTableServicesSession;
 
   useEffect(() => {
     if (!open) return;
@@ -102,5 +106,13 @@ export default function MenuWifiDropdown({
         </div>
       ) : null}
     </div>
+  );
+}
+
+export default function MenuWifiDropdown(props: MenuWifiDropdownProps) {
+  return (
+    <Suspense fallback={null}>
+      <MenuWifiDropdownInner {...props} />
+    </Suspense>
   );
 }

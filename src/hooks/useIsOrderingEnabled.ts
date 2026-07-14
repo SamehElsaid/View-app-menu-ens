@@ -3,7 +3,7 @@
 import { useTableCartAllowed } from "./useTableCartAllowed";
 import { useMenuTableParam } from "./useMenuTableParam";
 import { useAppSelector } from "@/store/hooks";
-import { isValidTableParam, readTableSessionParam } from "@/lib/menuTable";
+import { isValidTableParam } from "@/lib/menuTable";
 
 /**
  * Ordering is enabled in table mode (?table=) or delivery mode
@@ -31,8 +31,6 @@ export function useIsOrderingEnabled(): {
   const tableValidity = tableNumber
     ? isValidTableParam(menuInfo, tableNumber)
     : null;
-  const hasTableSession =
-    Boolean(tableNumber) && tableCartAllowed && tableValidity !== false;
 
   const isTableOrder =
     Boolean(tableNumber) &&

@@ -3,8 +3,6 @@
 import { LanguageToggle } from "../Default/LanguageToggle";
 import { useMenuSocialLinks } from "@/hooks/useMenuSocialLinks";
 import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
-import CallWaiterButton from "@/components/Global/CallWaiterButton";
-import RateMenuButton from "@/components/Global/RateMenuButton";
 import { useOneCardTheme } from "./OneCardThemeContext";
 
 export default function NavBar() {
@@ -25,15 +23,6 @@ export default function NavBar() {
             >
               <LanguageToggle />
             </div>
-            <RateMenuButton
-              buttonClassName="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
-              iconClassName="text-[18px]"
-            />
-            <CallWaiterButton
-              buttonClassName="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
-              panelClassName="border-zinc-200 bg-white text-zinc-800"
-              iconClassName="text-[18px]"
-            />
             <MenuWifiDropdown
               buttonClassName="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
               panelClassName="border-zinc-200 bg-white text-zinc-800"

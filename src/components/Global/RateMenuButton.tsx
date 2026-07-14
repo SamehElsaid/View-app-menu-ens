@@ -1,46 +1,79 @@
 "use client";
 
-import {
-  useEffect,
-  useId,
-  useState,
-  useSyncExternalStore,
-  type CSSProperties,
-  type FormEvent,
-} from "react";
+import { Suspense, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { useLocale, useTranslations } from "next-intl";
-import { toast } from "react-toastify";
-import { FiX } from "react-icons/fi";
-import { IoStar, IoStarOutline } from "react-icons/io5";
+import { IoStarOutline } from "react-icons/io5";
 import { useAppSelector } from "@/store/hooks";
-import { axiosPost } from "@/shared/axiosCall";
+import { useIsMenuCornerDockSession } from "@/hooks/useIsMenuCornerDockSession";
+import RateMenuModal from "@/components/Global/RateMenuModal";
+import {
+  getMenuFabSideClass,
+  getMenuMobileTabItemClasses,
+  MENU_CART_FAB_BOTTOM_CLASS,
+} from "@/lib/menuFabLayout";
 
 type RateMenuButtonProps = {
   className?: string;
   buttonClassName?: string;
   iconClassName?: string;
+  /**
+   * `navbar` = header control (hidden when dock hosts rate).
+   * `inline` = tab / FAB inside MenuCornerFabs ordering dock.
+   * `fab` = lone floating control in the cart corner when there is
+   *        no delivery / table / cart session.
+   */
+  variant?: "navbar" | "inline" | "fab";
 };
 
-type RatePayload = {
-  stars: number;
-  comment?: string;
-  customerName?: string;
-  customerPhone?: string;
-  customerEmail?: string;
-};
-
-type RateApiError = {
-  success?: boolean;
-  message?: string;
-  errorAr?: string;
-  errorEn?: string;
-};
+function RateFabColumn({
+  accentColor,
+  open,
+  onOpen,
+  label,
+  title,
+}: {
+  accentColor: string;
+  open: boolean;
+  onOpen: () => void;
+  label: string;
+  title: string;
+}) {
+  return (
+    <div
+      className="relative flex w-14 flex-col items-center gap-1"
+      style={{ "--bg-main": accentColor } as CSSProperties}
+    >
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={title}
+        title={title}
+        onClick={onOpen}
+        className="relative z-10 flex h-14 w-14 items-center justify-center rounded-full text-white shadow-lg transition hover:opacity-90"
+      >
+        <span
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `linear-gradient(145deg, #0f172a 0%, #1e293b 55%, ${accentColor} 160%)`,
+          }}
+          aria-hidden
+        />
+        <IoStarOutline className="relative z-10 h-6 w-6" aria-hidden />
+      </button>
+      <span className="w-14 truncate rounded-full border border-(--bg-main)/20 bg-white/95 px-1 py-1 text-center text-[10px] font-medium leading-tight text-(--bg-main) shadow-base">
+        {label}
+      </span>
+    </div>
+  );
+}
 
 function RateMenuButtonInner({
   className = "",
   buttonClassName = "",
   iconClassName = "text-lg",
+  variant = "navbar",
 }: RateMenuButtonProps) {
   const locale = useLocale();
   const isArabic = locale === "ar";
@@ -48,103 +81,88 @@ function RateMenuButtonInner({
   const menuInfo = useAppSelector((s) => s.menu.menuInfo);
   const customizations = useAppSelector((s) => s.menu.menuCustomizations);
   const accentColor = customizations?.primaryColor?.trim() || "#7000B5";
-
-  const hasMounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false,
-  );
-
+  const isMenuCornerDockSession = useIsMenuCornerDockSession();
   const [open, setOpen] = useState(false);
-  const [stars, setStars] = useState(0);
-  const [hoveredStar, setHoveredStar] = useState(0);
-  const [comment, setComment] = useState("");
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [customerEmail, setCustomerEmail] = useState("");
-  const [sending, setSending] = useState(false);
-  const dialogId = useId();
-  const titleId = useId();
-
-  useEffect(() => {
-    if (!open) return;
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [open]);
 
   if (!menuInfo?.id || !menuInfo.slug || menuInfo.isActive === false) {
     return null;
   }
 
-  const resetForm = () => {
-    setStars(0);
-    setHoveredStar(0);
-    setComment("");
-    setCustomerName("");
-    setCustomerPhone("");
-    setCustomerEmail("");
-  };
+  // Moved into the bottom tab bar / corner stack during table or delivery.
+  if (variant === "navbar" && isMenuCornerDockSession) {
+    return null;
+  }
 
-  const closeModal = () => {
-    if (sending) return;
-    setOpen(false);
-  };
+  // Lone FAB only when ordering dock is NOT hosting rate + cart.
+  if (variant === "fab" && isMenuCornerDockSession) {
+    return null;
+  }
 
-  const submitRating = async (event: FormEvent) => {
-    event.preventDefault();
-    if (sending || stars < 1) return;
+  const modal = <RateMenuModal open={open} onClose={() => setOpen(false)} />;
 
-    setSending(true);
-    try {
-      const payload: RatePayload = { stars };
-      const trimmedComment = comment.trim();
-      const trimmedName = customerName.trim();
-      const trimmedPhone = customerPhone.trim();
-      const trimmedEmail = customerEmail.trim();
+  if (variant === "fab") {
+    const tree = (
+      <>
+        <div
+          className={`fixed z-99990 ${MENU_CART_FAB_BOTTOM_CLASS} ${getMenuFabSideClass(isArabic)}`}
+          data-menu-rate-fab=""
+          dir={isArabic ? "rtl" : "ltr"}
+        >
+          <RateFabColumn
+            accentColor={accentColor}
+            open={open}
+            onOpen={() => setOpen(true)}
+            label={t("tab")}
+            title={t("button")}
+          />
+        </div>
+        {modal}
+      </>
+    );
 
-      if (trimmedComment) payload.comment = trimmedComment;
-      if (trimmedName) payload.customerName = trimmedName;
-      if (trimmedPhone) payload.customerPhone = trimmedPhone;
-      if (trimmedEmail) payload.customerEmail = trimmedEmail;
+    if (typeof document === "undefined") return null;
+    return createPortal(tree, document.body);
+  }
 
-      const response = await axiosPost<RatePayload, RateApiError>(
-        `/public/menu/${menuInfo.slug}/rate`,
-        locale,
-        payload,
-        false,
-        true,
-      );
+  if (variant === "inline") {
+    const phoneTabItemClasses = getMenuMobileTabItemClasses(menuInfo.theme);
 
-      if (!response.status) {
-        const errBody = response.data;
-        const msg = isArabic
-          ? (errBody?.errorAr || errBody?.message)
-          : (errBody?.errorEn || errBody?.message);
-        toast.error(msg || t("error"));
-        return;
-      }
+    return (
+      <>
+        {/* Phone: equal-width tab */}
+        <div className="relative min-w-0 flex-1 md:hidden">
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            aria-label={t("button")}
+            onClick={() => setOpen(true)}
+            className={`flex w-full flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1.5 transition ${phoneTabItemClasses}`}
+          >
+            <span className="inline-flex h-7 w-7 items-center justify-center">
+              <IoStarOutline className="h-5 w-5" aria-hidden />
+            </span>
+            <span className="w-full truncate px-0.5 text-center text-[10px] font-medium leading-tight sm:text-[11px]">
+              {t("tab")}
+            </span>
+          </button>
+        </div>
 
-      setOpen(false);
-      resetForm();
-      toast.success(t("success"));
-    } catch {
-      toast.error(t("error"));
-    } finally {
-      setSending(false);
-    }
-  };
+        {/* Desktop: stacked FAB matching cart / services */}
+        <div className="relative hidden md:block">
+          <RateFabColumn
+            accentColor={accentColor}
+            open={open}
+            onOpen={() => setOpen(true)}
+            label={t("tab")}
+            title={t("button")}
+          />
+        </div>
 
-  const activeStars = hoveredStar || stars;
+        {modal}
+      </>
+    );
+  }
 
   return (
     <>
@@ -153,7 +171,6 @@ function RateMenuButtonInner({
           type="button"
           aria-haspopup="dialog"
           aria-expanded={open}
-          aria-controls={dialogId}
           aria-label={t("button")}
           title={t("button")}
           onClick={() => setOpen(true)}
@@ -163,189 +180,19 @@ function RateMenuButtonInner({
         </button>
       </div>
 
-      {hasMounted && open
-        ? createPortal(
-            <div
-              className="fixed inset-0 z-999999 flex items-end justify-center bg-black/50 p-0 backdrop-blur-sm sm:items-center sm:p-4"
-              dir={isArabic ? "rtl" : "ltr"}
-              onClick={closeModal}
-            >
-              <div
-                id={dialogId}
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby={titleId}
-                className="flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-2xl"
-                style={{ "--accent": accentColor } as CSSProperties}
-                onClick={(event) => event.stopPropagation()}
-              >
-                <div
-                  className="flex items-center justify-between px-5 py-4"
-                  style={{ background: accentColor }}
-                >
-                  <h2 id={titleId} className="text-lg font-bold text-white">
-                    {t("title")}
-                  </h2>
-                  <button
-                    type="button"
-                    onClick={closeModal}
-                    disabled={sending}
-                    className="rounded-full p-1.5 text-white/80 transition hover:bg-white/20 disabled:opacity-60"
-                    aria-label={t("close")}
-                  >
-                    <FiX className="h-5 w-5" />
-                  </button>
-                </div>
-
-                <form
-                  onSubmit={(event) => void submitRating(event)}
-                  className="flex min-h-0 flex-1 flex-col"
-                >
-                  <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5">
-                    <p className="text-center text-sm text-zinc-600">
-                      {t("subtitle")}
-                    </p>
-
-                    <div className="flex flex-col items-center gap-2">
-                      <div
-                        className="flex items-center gap-1"
-                        role="radiogroup"
-                        aria-label={t("starsLabel")}
-                        onMouseLeave={() => setHoveredStar(0)}
-                      >
-                        {[1, 2, 3, 4, 5].map((value) => {
-                          const filled = value <= activeStars;
-                          return (
-                            <button
-                              key={value}
-                              type="button"
-                              role="radio"
-                              aria-checked={stars === value}
-                              aria-label={t("starValue", { count: value })}
-                              disabled={sending}
-                              onMouseEnter={() => setHoveredStar(value)}
-                              onFocus={() => setHoveredStar(value)}
-                              onClick={() => setStars(value)}
-                              className="rounded-full p-1 transition hover:scale-110 disabled:opacity-60"
-                            >
-                              {filled ? (
-                                <IoStar
-                                  className="h-8 w-8 text-amber-400"
-                                  aria-hidden
-                                />
-                              ) : (
-                                <IoStarOutline
-                                  className="h-8 w-8 text-zinc-300"
-                                  aria-hidden
-                                />
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      {stars < 1 ? (
-                        <p className="text-xs text-zinc-500">{t("starsHint")}</p>
-                      ) : null}
-                    </div>
-
-                    <label className="block space-y-1.5">
-                      <span className="text-sm font-medium text-zinc-700">
-                        {t("comment")}
-                      </span>
-                      <textarea
-                        value={comment}
-                        onChange={(event) => setComment(event.target.value)}
-                        rows={3}
-                        maxLength={1000}
-                        disabled={sending}
-                        placeholder={t("commentPlaceholder")}
-                        className="w-full resize-none rounded-xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-800 outline-none transition focus:border-(--accent) focus:ring-2 focus:ring-(--accent)/20 disabled:opacity-60"
-                      />
-                    </label>
-
-                    <div className="space-y-3">
-                      <p className="text-xs font-medium text-zinc-500">
-                        {t("optionalSection")}
-                      </p>
-
-                      <label className="block space-y-1.5">
-                        <span className="text-sm font-medium text-zinc-700">
-                          {t("name")}
-                        </span>
-                        <input
-                          type="text"
-                          value={customerName}
-                          onChange={(event) =>
-                            setCustomerName(event.target.value)
-                          }
-                          maxLength={255}
-                          disabled={sending}
-                          placeholder={t("namePlaceholder")}
-                          className="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-800 outline-none transition focus:border-(--accent) focus:ring-2 focus:ring-(--accent)/20 disabled:opacity-60"
-                        />
-                      </label>
-
-                      <label className="block space-y-1.5">
-                        <span className="text-sm font-medium text-zinc-700">
-                          {t("phone")}
-                        </span>
-                        <input
-                          type="tel"
-                          value={customerPhone}
-                          onChange={(event) =>
-                            setCustomerPhone(event.target.value)
-                          }
-                          maxLength={50}
-                          disabled={sending}
-                          dir="ltr"
-                          placeholder={t("phonePlaceholder")}
-                          className="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-800 outline-none transition focus:border-(--accent) focus:ring-2 focus:ring-(--accent)/20 disabled:opacity-60"
-                        />
-                      </label>
-
-                      <label className="block space-y-1.5">
-                        <span className="text-sm font-medium text-zinc-700">
-                          {t("email")}
-                        </span>
-                        <input
-                          type="email"
-                          value={customerEmail}
-                          onChange={(event) =>
-                            setCustomerEmail(event.target.value)
-                          }
-                          maxLength={255}
-                          disabled={sending}
-                          dir="ltr"
-                          placeholder={t("emailPlaceholder")}
-                          className="w-full rounded-xl border border-zinc-200 px-3 py-2.5 text-sm text-zinc-800 outline-none transition focus:border-(--accent) focus:ring-2 focus:ring-(--accent)/20 disabled:opacity-60"
-                        />
-                      </label>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-zinc-100 px-5 py-4">
-                    <button
-                      type="submit"
-                      disabled={sending || stars < 1}
-                      className="flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
-                      style={{ background: accentColor }}
-                    >
-                      {sending ? (
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      ) : null}
-                      {sending ? t("submitting") : t("submit")}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </div>,
-            document.body,
-          )
-        : null}
+      {modal}
     </>
   );
 }
 
+/**
+ * Rate this place — lone cart-corner FAB while browsing without ordering;
+ * moves into MenuCornerFabs for table QR and confirmed delivery orders.
+ */
 export default function RateMenuButton(props: RateMenuButtonProps) {
-  return <RateMenuButtonInner {...props} />;
+  return (
+    <Suspense fallback={null}>
+      <RateMenuButtonInner {...props} />
+    </Suspense>
+  );
 }

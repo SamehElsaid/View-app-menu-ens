@@ -6,18 +6,13 @@ import { toast } from "react-toastify";
 import { IoNotificationsOutline, IoReceiptOutline } from "react-icons/io5";
 import { MdOutlineRoomService } from "react-icons/md";
 import { useAppSelector } from "@/store/hooks";
-import { axiosPost } from "@/shared/axiosCall";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
+import { useIsTableServicesSession } from "@/hooks/useIsTableServicesSession";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
-
-type StaffRequestKind = "waiter" | "bill";
-
-type ServiceCallPayload = {
-  menuId: number;
-  type: "table";
-  tableNumber: string;
-  requestKind: StaffRequestKind;
-};
+import {
+  sendStaffServiceRequest,
+  type StaffRequestKind,
+} from "@/lib/sendStaffServiceRequest";
 
 type CallWaiterButtonProps = {
   className?: string;
@@ -39,14 +34,22 @@ function CallWaiterButtonInner({
   const tableCartAllowed = useTableCartAllowed();
   const { isOrderingEnabled, isDeliveryOrder, tableNumber } =
     useIsOrderingEnabled();
+  const { isTableServicesSession } = useIsTableServicesSession();
 
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState<StaffRequestKind | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
 
-  const isTableSession =
+  /** Pro + active menu: show in navbar before a table QR (FAB takes over at table). */
+  const canShow =
+    Boolean(menuInfo?.id) &&
+    menuInfo?.isActive !== false &&
     tableCartAllowed &&
+    !isTableServicesSession;
+
+  const isTableSession =
+    canShow &&
     isOrderingEnabled &&
     !isDeliveryOrder &&
     Boolean(tableNumber);
@@ -74,36 +77,23 @@ function CallWaiterButtonInner({
     };
   }, [open]);
 
-  if (!menuInfo?.id || menuInfo.isActive === false || !isTableSession) {
+  if (!canShow || !menuInfo?.id) {
     return null;
   }
 
   const sendRequest = async (requestKind: StaffRequestKind) => {
-    if (sending) return;
+    if (sending || !isTableSession) return;
     setSending(requestKind);
     try {
-      const payload: ServiceCallPayload = {
+      const response = await sendStaffServiceRequest(locale, {
         menuId: menuInfo.id,
         type: "table",
         tableNumber,
         requestKind,
-      };
-
-      const response = await axiosPost<ServiceCallPayload, unknown>(
-        "/public/staff-call",
-        locale,
-        payload,
-        false,
-        true,
-      );
+      });
 
       if (!response.status) {
-        const errBody = response.data as {
-          error?: string;
-          message?: string;
-          errorAr?: string;
-          errorEn?: string;
-        };
+        const errBody = response.data;
         if (errBody?.error === "INVALID_TABLE") {
           toast.error(t("invalidTable"));
         } else if (errBody?.error === "FEATURE_REQUIRES_PRO") {
@@ -158,54 +148,64 @@ function CallWaiterButtonInner({
         >
           <div className="mb-2 px-1">
             <p className="font-semibold">{t("title")}</p>
-            <p className="mt-0.5 text-xs opacity-65">
-              {t("tableLabel", { table: tableNumber })}
+            {isTableSession ? (
+              <p className="mt-0.5 text-xs opacity-65">
+                {t("tableLabel", { table: tableNumber })}
+              </p>
+            ) : (
+              <p className="mt-0.5 text-xs opacity-65">{t("noTableHint")}</p>
+            )}
+          </div>
+
+          {isTableSession ? (
+            <div className="grid gap-1.5">
+              <button
+                type="button"
+                role="menuitem"
+                disabled={Boolean(sending)}
+                onClick={() => void sendRequest("waiter")}
+                className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-start transition hover:bg-black/5 disabled:opacity-60"
+              >
+                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-current/10">
+                  {sending === "waiter" ? (
+                    <span className="h-4 w-4 rounded-full border-2 border-current/30 border-t-current animate-spin" />
+                  ) : (
+                    <MdOutlineRoomService className="h-4 w-4" aria-hidden />
+                  )}
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-semibold leading-tight">
+                    {t("callWaiter")}
+                  </span>
+                </span>
+              </button>
+
+              <button
+                type="button"
+                role="menuitem"
+                disabled={Boolean(sending)}
+                onClick={() => void sendRequest("bill")}
+                className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-start transition hover:bg-black/5 disabled:opacity-60"
+              >
+                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-current/10">
+                  {sending === "bill" ? (
+                    <span className="h-4 w-4 rounded-full border-2 border-current/30 border-t-current animate-spin" />
+                  ) : (
+                    <IoReceiptOutline className="h-4 w-4" aria-hidden />
+                  )}
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-semibold leading-tight">
+                    {t("requestBill")}
+                  </span>
+                </span>
+              </button>
+            </div>
+          ) : (
+            <p className="rounded-xl bg-black/5 px-2.5 py-2 text-xs opacity-80">
+              {t("noTable")}
             </p>
-          </div>
-
-          <div className="grid gap-1.5">
-            <button
-              type="button"
-              role="menuitem"
-              disabled={Boolean(sending)}
-              onClick={() => void sendRequest("waiter")}
-              className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-start transition hover:bg-black/5 disabled:opacity-60"
-            >
-              <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-current/10">
-                {sending === "waiter" ? (
-                  <span className="h-4 w-4 rounded-full border-2 border-current/30 border-t-current animate-spin" />
-                ) : (
-                  <MdOutlineRoomService className="h-4 w-4" aria-hidden />
-                )}
-              </span>
-              <span className="min-w-0">
-                <span className="block font-semibold leading-tight">
-                  {t("callWaiter")}
-                </span>
-              </span>
-            </button>
-
-            <button
-              type="button"
-              role="menuitem"
-              disabled={Boolean(sending)}
-              onClick={() => void sendRequest("bill")}
-              className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-start transition hover:bg-black/5 disabled:opacity-60"
-            >
-              <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-current/10">
-                {sending === "bill" ? (
-                  <span className="h-4 w-4 rounded-full border-2 border-current/30 border-t-current animate-spin" />
-                ) : (
-                  <IoReceiptOutline className="h-4 w-4" aria-hidden />
-                )}
-              </span>
-              <span className="min-w-0">
-                <span className="block font-semibold leading-tight">
-                  {t("requestBill")}
-                </span>
-              </span>
-            </button>
-          </div>
+          )}
         </div>
       ) : null}
     </div>

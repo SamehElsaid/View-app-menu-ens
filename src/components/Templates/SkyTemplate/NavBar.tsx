@@ -4,8 +4,6 @@ import { useTranslations } from "next-intl";
 
 import { LanguageToggle } from "../Default/LanguageToggle";
 import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
-import CallWaiterButton from "@/components/Global/CallWaiterButton";
-import RateMenuButton from "@/components/Global/RateMenuButton";
 import Link from "next/link";
 import LoadImage from "@/components/ImageLoad";
 
@@ -68,13 +66,6 @@ const Navbar = ({ menuName, menuLogo, whatsapp }: NavbarProps) => {
           )}
         </div>
         <div className="flex items-center gap-2">
-          <RateMenuButton
-            buttonClassName="bg-sky-50 text-sky-700 hover:bg-sky-100"
-          />
-          <CallWaiterButton
-            buttonClassName="bg-sky-50 text-sky-700 hover:bg-sky-100"
-            panelClassName="border-sky-100 bg-white text-slate-800"
-          />
           <MenuWifiDropdown
             buttonClassName="bg-sky-50 text-sky-700 hover:bg-sky-100"
             panelClassName="border-sky-100 bg-white text-slate-800"

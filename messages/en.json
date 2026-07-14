@@ -22,6 +22,14 @@
     "registerCta": "Register here",
     "visitSite": "Visit ENSMenu"
   },
+  "tableServices": {
+    "button": "Table services",
+    "label": "Table services",
+    "labelShort": "Services",
+    "waiter": "Waiter",
+    "bill": "Bill",
+    "wifi": "Wi‑Fi"
+  },
   "staffCall": {
     "button": "Call waiter",
     "close": "Close",
@@ -44,6 +52,7 @@
   },
   "rateMenu": {
     "button": "Rate this place",
+    "tab": "Rate",
     "close": "Close",
     "title": "Rate your experience",
     "subtitle": "Your feedback matters — pick a star rating and leave a note if you like",

@@ -8,8 +8,6 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { FaGlobe } from "react-icons/fa";
 import LoadImage from "@/components/ImageLoad";
 import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
-import CallWaiterButton from "@/components/Global/CallWaiterButton";
-import RateMenuButton from "@/components/Global/RateMenuButton";
 
 export default function HeaderO() {
   const locale = useLocale();
@@ -75,15 +73,6 @@ export default function HeaderO() {
         </motion.div>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          <RateMenuButton
-            buttonClassName="border border-white/30 bg-white/15 text-white backdrop-blur-md hover:bg-white/25 shadow-md"
-            iconClassName="text-lg"
-          />
-          <CallWaiterButton
-            buttonClassName="border border-white/30 bg-white/15 text-white backdrop-blur-md hover:bg-white/25 shadow-md"
-            panelClassName="border-white/15 bg-[#004861]/95 text-white"
-            iconClassName="text-lg"
-          />
           <MenuWifiDropdown
             buttonClassName="border border-white/30 bg-white/15 text-white backdrop-blur-md hover:bg-white/25 shadow-md"
             panelClassName="border-white/15 bg-[#004861]/95 text-white"

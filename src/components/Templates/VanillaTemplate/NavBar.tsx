@@ -4,8 +4,6 @@ import { useAppSelector } from "@/store/hooks";
 import { useLocale } from "next-intl";
 import { LanguageToggle } from "../Default/LanguageToggle";
 import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
-import CallWaiterButton from "@/components/Global/CallWaiterButton";
-import RateMenuButton from "@/components/Global/RateMenuButton";
 import { useMenuSocialLinks } from "@/hooks/useMenuSocialLinks";
 import { useOneCardTheme } from "../OneCardTemplate/OneCardThemeContext";
 import LoadImage from "@/components/ImageLoad";
@@ -30,15 +28,6 @@ export default function NavBar() {
         >
           <LanguageToggle />
         </div>
-        <RateMenuButton
-          buttonClassName="border border-(--vanilla-gold,#b8893a)/35 bg-white/80 text-[15px] hover:bg-white"
-          iconClassName="text-[16px]"
-        />
-        <CallWaiterButton
-          buttonClassName="border border-(--vanilla-gold,#b8893a)/35 bg-white/80 text-[15px] hover:bg-white"
-          panelClassName="border-(--vanilla-gold,#b8893a)/25 bg-white text-zinc-800"
-          iconClassName="text-[16px]"
-        />
         <MenuWifiDropdown
           buttonClassName="border border-(--vanilla-gold,#b8893a)/35 bg-white/80 text-[15px] hover:bg-white"
           panelClassName="border-(--vanilla-gold,#b8893a)/25 bg-white text-zinc-800"

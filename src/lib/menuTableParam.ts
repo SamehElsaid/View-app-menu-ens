@@ -1,6 +1,6 @@
 /**
- * Read `?table=` / `?tableNumber=` from a query-string source.
- * Shared so table QR mode can reliably disable delivery flows.
+ * Read dine-in table session from a query-string source
+ * (`table`, `tableNumber`, or `tableId`) — same keys as `readTableSessionParam`.
  */
 export function readTableParam(searchParams: {
   get: (key: string) => string | null;
@@ -8,6 +8,7 @@ export function readTableParam(searchParams: {
   return (
     searchParams.get("table")?.trim() ||
     searchParams.get("tableNumber")?.trim() ||
+    searchParams.get("tableId")?.trim() ||
     ""
   );
 }
