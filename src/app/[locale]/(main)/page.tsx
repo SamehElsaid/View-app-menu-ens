@@ -9,6 +9,7 @@ import DeliveryLocationModal from "@/components/Global/DeliveryLocationModal";
 import MenuGeoRedirect from "@/components/Global/MenuGeoRedirect";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import { useMenuTableParam } from "@/hooks/useMenuTableParam";
 import MaintenanceView from "@/components/Global/MaintenanceView";
 import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
@@ -23,6 +24,7 @@ export default function Page() {
   const menu = useAppSelector((state) => state.menu);
   const locale = useLocale();
   const searchParams = useSearchParams();
+  const tableParam = useMenuTableParam();
   const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
 
@@ -82,7 +84,7 @@ export default function Page() {
 
         {renderTemplate(menu.theme ?? "", Boolean(menu?.menu))}
 
-        {!searchParams.get("table")?.trim() ? (
+        {!tableParam ? (
           <Suspense fallback={null}>
             <MenuGeoRedirect />
           </Suspense>
@@ -92,7 +94,7 @@ export default function Page() {
             <RequestStaffButton />
           </Suspense>
         ) : null}
-        {delivery?.deliveryOn && !searchParams.get("table")?.trim() ? (
+        {delivery?.deliveryOn && !tableParam ? (
           <Suspense fallback={null}>
             <DeliveryLocationModal />
           </Suspense>

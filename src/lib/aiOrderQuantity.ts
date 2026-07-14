@@ -2,6 +2,7 @@ import { normalizeArabicInput } from "@/lib/aiOrderConversation";
 import type { MenuItem } from "@/types/menu";
 
 export const LAST_CART_ITEM_STORAGE_KEY = "ensmenu_ai_order_last_cart_item_id";
+export const LAST_CART_LINE_STORAGE_KEY = "ensmenu_ai_order_last_cart_line_key";
 
 const ARABIC_QUANTITY_WORDS: Record<string, number> = {
   واحد: 1,
@@ -74,6 +75,24 @@ export function writeLastCartItemId(itemId: number): void {
 export function clearLastCartItemId(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(LAST_CART_ITEM_STORAGE_KEY);
+}
+
+export function readLastCartLineKey(): string | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem(LAST_CART_LINE_STORAGE_KEY);
+  return raw?.trim() ? raw.trim() : null;
+}
+
+export function writeLastCartLineKey(lineKey: string): void {
+  if (typeof window === "undefined") return;
+  const trimmed = lineKey.trim();
+  if (!trimmed) return;
+  localStorage.setItem(LAST_CART_LINE_STORAGE_KEY, trimmed);
+}
+
+export function clearLastCartLineKey(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(LAST_CART_LINE_STORAGE_KEY);
 }
 
 export function parseQuantityFromMessage(message: string): number | null {

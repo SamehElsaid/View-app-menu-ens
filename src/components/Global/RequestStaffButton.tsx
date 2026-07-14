@@ -27,6 +27,7 @@ import {
 import { MdLocationOn, MdMyLocation } from "react-icons/md";
 import type { DeliveryGovernorate } from "@/types/menu";
 import LoadImage from "@/components/ImageLoad";
+import SkyCartLineItem from "@/components/Global/SkyCartLineItem";
 import {
   notifySkyCartUpdated,
   readSkyCartFromCookie,
@@ -1063,89 +1064,21 @@ export default function RequestStaffButton() {
                     {cartItemsForOrder.length ? (
                       <ul className="space-y-2">
                         {cartItemsForOrder.map((item) => (
-                          <li
+                          <SkyCartLineItem
                             key={item.lineKey}
-                            className="rounded-xl border border-(--bg-main)/15 bg-(--bg-main)/2 p-3"
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex items-start gap-3">
-                                <LoadImage
-                                  src={item.image}
-                                  alt={
-                                    isArabic
-                                      ? item.nameAr || item.name
-                                      : item.nameEn || item.name
-                                  }
-                                  className="h-12 w-12 rounded-lg object-cover border border-(--bg-main)/15 bg-white"
-                                  width={48}
-                                  height={48}
-                                />
-                                <div>
-                                  <p className="line-clamp-1 text-base font-semibold text-zinc-900">
-                                    {isArabic
-                                      ? item.nameAr || item.name
-                                      : item.nameEn || item.name}
-                                  </p>
-                                  {item.size || item.variant ? (
-                                    <p className="mt-0.5 text-sm text-zinc-500">
-                                      {[
-                                        item.size
-                                          ? isArabic
-                                            ? item.size.nameAr ||
-                                              item.size.nameEn
-                                            : item.size.nameEn ||
-                                              item.size.nameAr
-                                          : null,
-                                        item.variant
-                                          ? isArabic
-                                            ? item.variant.labelAr ||
-                                              item.variant.labelEn
-                                            : item.variant.labelEn ||
-                                              item.variant.labelAr
-                                          : null,
-                                      ]
-                                        .filter(Boolean)
-                                        .join(" · ")}
-                                    </p>
-                                  ) : null}
-                                  <p className="mt-1 text-base text-zinc-600">
-                                    {item.price.toFixed(2)} {getCurrency()}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="rounded-lg bg-white p-1 shadow-base">
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      updateItemQuantity(item.lineKey, -1)
-                                    }
-                                    className="h-7 w-7 rounded-md border border-(--bg-main)/20 text-(--bg-main) transition hover:bg-(--bg-main)/10"
-                                    aria-label={labels.decrease}
-                                  >
-                                    -
-                                  </button>
-                                  <span className="min-w-6 text-center text-base font-semibold text-(--bg-main)">
-                                    {item.quantity}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      updateItemQuantity(item.lineKey, 1)
-                                    }
-                                    className="h-7 w-7 rounded-md border border-(--bg-main)/20 text-(--bg-main) transition hover:bg-(--bg-main)/10"
-                                    aria-label={labels.increase}
-                                  >
-                                    +
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                            <p className="mt-2 text-base font-medium text-zinc-700">
-                              {(item.quantity * item.price).toFixed(2)}{" "}
-                              {getCurrency()}
-                            </p>
-                          </li>
+                            item={item}
+                            isArabic={isArabic}
+                            currencyLabel={getCurrency()}
+                            editable
+                            onDecrease={(lineKey) =>
+                              updateItemQuantity(lineKey, -1)
+                            }
+                            onIncrease={(lineKey) =>
+                              updateItemQuantity(lineKey, 1)
+                            }
+                            decreaseLabel={labels.decrease}
+                            increaseLabel={labels.increase}
+                          />
                         ))}
                       </ul>
                     ) : (

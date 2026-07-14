@@ -1,10 +1,15 @@
-import type { MenuItem } from "@/types/menu";
+import type { Category, MenuItem } from "@/types/menu";
 
 export type QuickChip = {
   id: string;
   label: string;
-  /** Sent verbatim to n8n as the user message. */
+  /** Sent verbatim to n8n as the user message (fallback chips only). */
   message: string;
+  /**
+   * When set, chip browses catalog via API instead of calling n8n.
+   * `0` = all products; `> 0` = category id.
+   */
+  categoryId?: number;
 };
 
 type MenuCategoryRow = {
@@ -13,8 +18,6 @@ type MenuCategoryRow = {
   nameEn: string;
   sortOrder: number;
 };
-
-const MAX_CATEGORY_CHIPS = 4;
 
 const FALLBACK_CHIPS_AR: QuickChip[] = [
   { id: "fallback-recommend", label: "🔥 رشحلي", message: "رشحلي" },
@@ -82,13 +85,14 @@ function categoryNamesFromItem(item: MenuItem): {
   return { nameAr, nameEn };
 }
 
-function collectCategories(menuItems: MenuItem[]): MenuCategoryRow[] {
+function collectCategoriesFromItems(menuItems: MenuItem[]): MenuCategoryRow[] {
   const byId = new Map<number, MenuCategoryRow>();
 
   for (const item of menuItems) {
     if (item.available === false) continue;
     const { nameAr, nameEn } = categoryNamesFromItem(item);
     if (!nameAr && !nameEn) continue;
+    if (!Number.isInteger(item.categoryId) || item.categoryId <= 0) continue;
 
     const sortOrder = item.sortOrder ?? 0;
     const existing = byId.get(item.categoryId);
@@ -105,6 +109,31 @@ function collectCategories(menuItems: MenuItem[]): MenuCategoryRow[] {
   }
 
   return [...byId.values()].sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+function collectCategoriesFromStore(
+  categories: Category[] | null | undefined,
+): MenuCategoryRow[] {
+  if (!categories?.length) return [];
+
+  return categories
+    .filter((category) => Number.isInteger(category.id) && category.id > 0)
+    .map((category) => ({
+      id: category.id,
+      nameAr:
+        category.nameAr?.trim() ||
+        category.name?.trim() ||
+        category.nameEn?.trim() ||
+        "",
+      nameEn:
+        category.nameEn?.trim() ||
+        category.name?.trim() ||
+        category.nameAr?.trim() ||
+        "",
+      sortOrder: category.sortOrder ?? 0,
+    }))
+    .filter((row) => row.nameAr || row.nameEn)
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 export function categoryDisplayName(
@@ -124,18 +153,53 @@ function categoryToChip(category: MenuCategoryRow, isArabic: boolean): QuickChip
     id: `category-${category.id}`,
     label: emoji ? `${emoji} ${name}` : name,
     message: name,
+    categoryId: category.id,
   };
 }
 
+function allProductsChip(isArabic: boolean): QuickChip {
+  return isArabic
+    ? {
+        id: "category-all",
+        label: "🍽️ كل المنتجات",
+        message: "كل المنتجات",
+        categoryId: 0,
+      }
+    : {
+        id: "category-all",
+        label: "🍽️ All products",
+        message: "All products",
+        categoryId: 0,
+      };
+}
+
+/**
+ * All category chips (plus «all products»), for in-chat catalog browse.
+ * Falls back to generic suggestion chips when no categories exist.
+ */
+export function buildAllCategoryQuickChips(
+  menuItems: MenuItem[],
+  isArabic: boolean,
+  storeCategories?: Category[] | null,
+): QuickChip[] {
+  const fromStore = collectCategoriesFromStore(storeCategories);
+  const categories = fromStore.length
+    ? fromStore
+    : collectCategoriesFromItems(menuItems);
+
+  if (!categories.length) {
+    return isArabic ? [...FALLBACK_CHIPS_AR] : [...FALLBACK_CHIPS_EN];
+  }
+
+  return [allProductsChip(isArabic), ...categories.map((cat) => categoryToChip(cat, isArabic))];
+}
+
+/** @deprecated Prefer buildAllCategoryQuickChips for chat browse UX. */
 export function buildCategoryQuickChips(
   menuItems: MenuItem[],
   isArabic: boolean,
 ): QuickChip[] {
-  const categories = collectCategories(menuItems);
-  if (!categories.length) {
-    return isArabic ? [...FALLBACK_CHIPS_AR] : [...FALLBACK_CHIPS_EN];
-  }
-  return categories.map((cat) => categoryToChip(cat, isArabic));
+  return buildAllCategoryQuickChips(menuItems, isArabic);
 }
 
 function shufflePick<T>(items: T[], count: number, rng: () => number): T[] {
@@ -147,17 +211,21 @@ function shufflePick<T>(items: T[], count: number, rng: () => number): T[] {
   return copy.slice(0, Math.min(count, copy.length));
 }
 
-/** Up to 4 random category chips; fallback generics when menu has no categories. */
+/**
+ * Up to 4 random category chips; kept for any non-browse callers.
+ * Chat UI should use buildAllCategoryQuickChips.
+ */
 export function pickRandomQuickChips(
   menuItems: MenuItem[],
   isArabic: boolean,
-  count = MAX_CATEGORY_CHIPS,
+  count = 4,
   rng: () => number = Math.random,
 ): QuickChip[] {
-  const pool = buildCategoryQuickChips(menuItems, isArabic);
-  const categories = collectCategories(menuItems);
-  const limit = categories.length
-    ? Math.min(count, MAX_CATEGORY_CHIPS, pool.length)
-    : Math.min(pool.length, MAX_CATEGORY_CHIPS);
-  return shufflePick(pool, limit, rng);
+  const pool = buildAllCategoryQuickChips(menuItems, isArabic).filter(
+    (chip) => chip.categoryId == null || chip.categoryId > 0,
+  );
+  if (!pool.length) {
+    return isArabic ? [...FALLBACK_CHIPS_AR] : [...FALLBACK_CHIPS_EN];
+  }
+  return shufflePick(pool, Math.min(count, pool.length), rng);
 }

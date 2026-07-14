@@ -119,6 +119,10 @@ const menuSlice = createSlice({
         governorateId: null,
       };
     },
+    /** Reset delivery session (e.g. table QR mode takes over). */
+    CLEAR_DELIVERY_CONTEXT: (state) => {
+      state.deliveryContext = initialDeliveryContext;
+    },
     REMOVE_MENU: (state) => {
       state.menu = null;
       state.menuInfo = null;
@@ -152,6 +156,7 @@ export const {
   SET_DELIVERY_DISTANCE,
   SET_DELIVERY_GOVERNORATE,
   SET_DELIVERY_BROWSE_ONLY,
+  CLEAR_DELIVERY_CONTEXT,
   REMOVE_MENU,
   SET_MENU_LOADED,
 } = menuSlice.actions;

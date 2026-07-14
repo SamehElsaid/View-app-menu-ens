@@ -23,6 +23,8 @@ import {
   SET_DELIVERY_DISTANCE,
   SET_DELIVERY_GOVERNORATE,
 } from "@/store/authMenu/authMenu";
+import { useMenuTableParam } from "@/hooks/useMenuTableParam";
+import { readTableParamFromWindow } from "@/lib/menuTableParam";
 import { MdLocationOn, MdLocationOff } from "react-icons/md";
 import { FiX } from "react-icons/fi";
 
@@ -33,6 +35,7 @@ export default function DeliveryLocationModal() {
   const isArabic = locale === "ar";
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const tableParam = useMenuTableParam();
   const dispatch = useAppDispatch();
   const delivery = useAppSelector((s) => s.menu.delivery);
   const branches = useAppSelector((s) => s.menu.branches);
@@ -51,11 +54,17 @@ export default function DeliveryLocationModal() {
     (ResolvedDistanceDelivery & { areaNameAr?: string; areaNameEn?: string }) | null
   >(null);
   const autoLocationRequestedRef = useRef(false);
+  const locationRequestIdRef = useRef(0);
 
   const deliveryAlreadySet =
     deliveryContext.browseOnly ||
     deliveryContext.governorateId != null ||
     deliveryContext.distance != null;
+
+  /** Table QR mode wins — never start the delivery location cycle. */
+  const isTableMode =
+    Boolean(tableParam) ||
+    (hasMounted && Boolean(readTableParamFromWindow()));
 
   const isDistanceMode =
     delivery?.deliveryMode === "distance" && branches.length > 0;
@@ -63,6 +72,7 @@ export default function DeliveryLocationModal() {
 
   const shouldShow =
     hasMounted &&
+    !isTableMode &&
     Boolean(delivery?.deliveryOn) &&
     (isDistanceMode || hasGovernorateMode) &&
     !deliveryAlreadySet;
@@ -108,18 +118,27 @@ export default function DeliveryLocationModal() {
   }, [dispatch, resetModal]);
 
   const requestLocation = useCallback(() => {
+    // Hard guard: never geolocate in table QR mode (window is source of truth).
+    if (readTableParamFromWindow()) return;
     if (!navigator.geolocation) {
       setModalState("denied");
       return;
     }
     if (!menuInfo?.slug) return;
 
+    const requestId = ++locationRequestIdRef.current;
     setModalState("requesting");
     setFoundGovernorate(null);
     setFoundDistance(null);
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
+        if (requestId !== locationRequestIdRef.current) return;
+        if (readTableParamFromWindow()) {
+          setModalState("idle");
+          return;
+        }
+
         const { latitude, longitude } = position.coords;
         const nextParams = new URLSearchParams(searchParams.toString());
 
@@ -136,6 +155,11 @@ export default function DeliveryLocationModal() {
           branchDisplayName: (branch) => branch.name?.trim() || menuInfo.name,
         });
 
+        if (requestId !== locationRequestIdRef.current) return;
+        if (readTableParamFromWindow()) {
+          setModalState("idle");
+          return;
+        }
         if (result.kind === "redirecting") return;
 
         if (result.kind === "distance") {
@@ -144,6 +168,11 @@ export default function DeliveryLocationModal() {
             result.lng,
             delivery?.governorates ?? [],
           );
+          if (requestId !== locationRequestIdRef.current) return;
+          if (readTableParamFromWindow()) {
+            setModalState("idle");
+            return;
+          }
           setFoundDistance({
             ...result,
             areaNameAr: areaNames.nameAr,
@@ -162,6 +191,11 @@ export default function DeliveryLocationModal() {
         setModalState("not_found");
       },
       () => {
+        if (requestId !== locationRequestIdRef.current) return;
+        if (readTableParamFromWindow()) {
+          setModalState("idle");
+          return;
+        }
         setModalState("denied");
       },
       { enableHighAccuracy: true, timeout: 15_000, maximumAge: 60_000 },
@@ -178,14 +212,20 @@ export default function DeliveryLocationModal() {
   ]);
 
   useEffect(() => {
-    if (!shouldShow) {
+    if (!shouldShow || isTableMode || readTableParamFromWindow()) {
       autoLocationRequestedRef.current = false;
+      locationRequestIdRef.current += 1;
+      if (isTableMode || readTableParamFromWindow()) {
+        setModalState("idle");
+        setFoundGovernorate(null);
+        setFoundDistance(null);
+      }
       return;
     }
     if (autoLocationRequestedRef.current || !menuInfo?.slug) return;
     autoLocationRequestedRef.current = true;
     requestLocation();
-  }, [shouldShow, menuInfo?.slug, requestLocation]);
+  }, [shouldShow, isTableMode, menuInfo?.slug, requestLocation]);
 
   const handleConfirm = useCallback(() => {
     if (foundDistance) {

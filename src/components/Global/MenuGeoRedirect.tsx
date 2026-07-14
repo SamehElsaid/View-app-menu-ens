@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 import { useLocale } from "next-intl";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
+import { useMenuTableParam } from "@/hooks/useMenuTableParam";
+import { readTableParamFromWindow } from "@/lib/menuTableParam";
 import { tryRedirectToNearestBranch } from "@/lib/nearbyBranchRedirect";
 
 /**
@@ -14,13 +16,14 @@ export default function MenuGeoRedirect() {
   const locale = useLocale();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const tableParam = useMenuTableParam();
   const menuSlug = useAppSelector((s) => s.menu.menuInfo?.slug);
   const delivery = useAppSelector((s) => s.menu.delivery);
   const startedForSlugRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!menuSlug) return;
-    if (searchParams.get("table")?.trim()) return;
+    if (tableParam || readTableParamFromWindow()) return;
     /** Modal runs resolveDeliveryLocation (includes branch redirect + user confirm). */
     if (delivery?.deliveryOn) return;
 
@@ -49,7 +52,14 @@ export default function MenuGeoRedirect() {
       },
       { enableHighAccuracy: true, timeout: 15_000, maximumAge: 60_000 },
     );
-  }, [delivery?.deliveryOn, locale, menuSlug, pathname, searchParams]);
+  }, [
+    delivery?.deliveryOn,
+    locale,
+    menuSlug,
+    pathname,
+    searchParams,
+    tableParam,
+  ]);
 
   return null;
 }
