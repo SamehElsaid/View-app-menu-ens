@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { IoWifiOutline } from "react-icons/io5";
 import { useAppSelector } from "@/store/hooks";
 import { useIsTableServicesSession } from "@/hooks/useIsTableServicesSession";
+import MenuWifiCredentials from "@/components/Global/MenuWifiCredentials";
 
 type MenuWifiDropdownProps = {
   className?: string;
@@ -79,30 +80,16 @@ function MenuWifiDropdownInner({
           id={panelId}
           role="menu"
           dir={isAr ? "rtl" : "ltr"}
-          className={`absolute end-0 top-[calc(100%+0.5rem)] z-50 min-w-46 rounded-2xl border px-3.5 py-3 text-sm shadow-xl backdrop-blur-md ${panelClassName}`}
+          className={`absolute end-0 top-[calc(100%+0.5rem)] z-50 w-56 min-w-56 rounded-2xl border px-3 py-3 text-sm shadow-xl backdrop-blur-md ${panelClassName}`}
         >
-          <div className="mb-2 flex items-center gap-2 font-semibold">
+          <div className="mb-2.5 flex items-center gap-2 font-semibold">
             <IoWifiOutline className="text-base opacity-80" aria-hidden />
             <span>{t("wifiDetails")}</span>
           </div>
-          <div className="space-y-1.5">
-            {wifiName ? (
-              <p className="leading-snug">
-                <span className="opacity-65">{t("wifiName")}: </span>
-                <span dir="ltr" className="font-medium">
-                  {wifiName}
-                </span>
-              </p>
-            ) : null}
-            {wifiPassword ? (
-              <p className="leading-snug">
-                <span className="opacity-65">{t("wifiPassword")}: </span>
-                <span dir="ltr" className="font-medium tracking-wide">
-                  {wifiPassword}
-                </span>
-              </p>
-            ) : null}
-          </div>
+          <MenuWifiCredentials
+            wifiName={wifiName}
+            wifiPassword={wifiPassword}
+          />
         </div>
       ) : null}
     </div>

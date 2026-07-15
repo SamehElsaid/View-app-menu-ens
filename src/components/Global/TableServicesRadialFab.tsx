@@ -30,6 +30,7 @@ import {
   getMenuMobileTabItemActiveClasses,
   getMenuMobileTabItemClasses,
 } from "@/lib/menuFabLayout";
+import MenuWifiCredentials from "@/components/Global/MenuWifiCredentials";
 
 type ServiceActionId = "waiter" | "bill" | "wifi";
 
@@ -180,30 +181,17 @@ function TableServicesRadialFabInner({
     <div
       role="dialog"
       dir={isArabic ? "rtl" : "ltr"}
-      className="absolute bottom-[calc(100%+0.5rem)] left-1/2 z-30 w-52 -translate-x-1/2 rounded-2xl border border-zinc-200 bg-white px-3 py-2.5 text-sm text-zinc-800 shadow-xl md:left-0 md:translate-x-0"
+      className="absolute bottom-[calc(100%+0.5rem)] left-1/2 z-30 w-56 -translate-x-1/2 rounded-2xl border border-zinc-200 bg-white px-2.5 py-2.5 text-sm text-zinc-800 shadow-xl md:left-0 md:translate-x-0"
     >
-      <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold">
+      <div className="mb-2 flex items-center gap-2 px-0.5 text-xs font-semibold">
         <IoWifiOutline className="text-base opacity-80" aria-hidden />
         <span>{tFooter("wifiDetails")}</span>
       </div>
-      <div className="space-y-1 text-[11px]">
-        {wifiName ? (
-          <p>
-            <span className="opacity-65">{tFooter("wifiName")}: </span>
-            <span dir="ltr" className="font-medium">
-              {wifiName}
-            </span>
-          </p>
-        ) : null}
-        {wifiPassword ? (
-          <p>
-            <span className="opacity-65">{tFooter("wifiPassword")}: </span>
-            <span dir="ltr" className="font-medium tracking-wide">
-              {wifiPassword}
-            </span>
-          </p>
-        ) : null}
-      </div>
+      <MenuWifiCredentials
+        wifiName={wifiName}
+        wifiPassword={wifiPassword}
+        className="space-y-1.5"
+      />
     </div>
   ) : null;
 
@@ -280,33 +268,15 @@ function TableServicesRadialFabInner({
                   key={action.id}
                   className="border-t border-zinc-100 px-3 py-2.5"
                 >
-                  <div className="mb-1.5 flex items-center gap-2 text-xs font-semibold text-zinc-800">
+                  <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-zinc-800">
                     <IoWifiOutline className="h-4 w-4" aria-hidden />
                     <span>{action.label}</span>
                   </div>
-                  <div className="space-y-1 text-[11px] text-zinc-600">
-                    {wifiName ? (
-                      <p>
-                        <span className="opacity-65">{tFooter("wifiName")}: </span>
-                        <span dir="ltr" className="font-medium text-zinc-800">
-                          {wifiName}
-                        </span>
-                      </p>
-                    ) : null}
-                    {wifiPassword ? (
-                      <p>
-                        <span className="opacity-65">
-                          {tFooter("wifiPassword")}:{" "}
-                        </span>
-                        <span
-                          dir="ltr"
-                          className="font-medium tracking-wide text-zinc-800"
-                        >
-                          {wifiPassword}
-                        </span>
-                      </p>
-                    ) : null}
-                  </div>
+                  <MenuWifiCredentials
+                    wifiName={wifiName}
+                    wifiPassword={wifiPassword}
+                    className="space-y-1.5 text-zinc-800"
+                  />
                 </div>
               );
             }

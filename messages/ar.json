@@ -111,6 +111,9 @@
     "wifiDetails": "بيانات الواي فاي",
     "wifiName": "واي فاي",
     "wifiPassword": "كلمة المرور",
+    "copy": "نسخ",
+    "copied": "تم النسخ",
+    "copyFailed": "تعذر النسخ",
     "days": {
       "sunday": "الأحد",
       "monday": "الإثنين",

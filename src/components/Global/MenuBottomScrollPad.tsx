@@ -16,7 +16,7 @@ import { useIsMenuCornerDockSession } from "@/hooks/useIsMenuCornerDockSession";
  */
 function MenuBottomScrollPadInner() {
   const hasMounted = useSyncExternalStore(
-    () => () => {},
+    () => () => { },
     () => true,
     () => false,
   );

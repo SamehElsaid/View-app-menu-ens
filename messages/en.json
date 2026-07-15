@@ -111,6 +111,9 @@
     "wifiDetails": "Wi‑Fi details",
     "wifiName": "Wi‑Fi",
     "wifiPassword": "Password",
+    "copy": "Copy",
+    "copied": "Copied",
+    "copyFailed": "Could not copy",
     "days": {
       "sunday": "Sunday",
       "monday": "Monday",
