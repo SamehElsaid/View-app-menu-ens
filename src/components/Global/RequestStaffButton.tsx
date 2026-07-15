@@ -773,7 +773,9 @@ export default function RequestStaffButton({
           );
         }
         lines.push("─────────────────");
-        lines.push(`💵 *الإجمالي:* ${charges.subtotal.toFixed(2)} ${currency}`);
+        lines.push(
+          `💵 *المجموع الفرعي:* ${charges.subtotal.toFixed(2)} ${currency}`,
+        );
         if (charges.taxAmount > 0)
           lines.push(`🧾 *الضريبة:* ${charges.taxAmount.toFixed(2)} ${currency}`);
         if (charges.serviceAmount > 0)
@@ -781,7 +783,9 @@ export default function RequestStaffButton({
             `🛎️ *الخدمة:* ${charges.serviceAmount.toFixed(2)} ${currency}`,
           );
         if (deliveryFee > 0)
-          lines.push(`🚚 *رسوم التوصيل:* ${deliveryFee} ${currency}`);
+          lines.push(
+            `🚚 *رسوم التوصيل:* ${Number(deliveryFee).toFixed(2)} ${currency}`,
+          );
         lines.push(
           `💰 *المجموع الكلي:* ${charges.grandTotal.toFixed(2)} ${currency}`,
         );
@@ -816,7 +820,9 @@ export default function RequestStaffButton({
             `🛎️ *Service:* ${charges.serviceAmount.toFixed(2)} ${currency}`,
           );
         if (deliveryFee > 0)
-          lines.push(`🚚 *Delivery fee:* ${deliveryFee} ${currency}`);
+          lines.push(
+            `🚚 *Delivery fee:* ${Number(deliveryFee).toFixed(2)} ${currency}`,
+          );
         lines.push(
           `💰 *Grand total:* ${charges.grandTotal.toFixed(2)} ${currency}`,
         );
@@ -1197,6 +1203,14 @@ export default function RequestStaffButton({
                           </span>
                         </div>
                       )}
+                      {deliveryFeeAmount > 0 && (
+                        <div className="flex items-center justify-between text-sm text-zinc-500">
+                          <span>{labels.deliveryFee}</span>
+                          <span>
+                            {deliveryFeeAmount.toFixed(2)} {getCurrency()}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-zinc-600">
                           {orderCharges.taxAmount > 0 ||
@@ -1561,6 +1575,52 @@ export default function RequestStaffButton({
                     </div>
                   </div>
                   <div className="shrink-0 space-y-2 border-t border-(--bg-main)/15 px-4 pt-3 pb-3 bg-white">
+                    {(orderCharges.taxAmount > 0 ||
+                      orderCharges.serviceAmount > 0 ||
+                      deliveryFeeAmount > 0) && (
+                      <div className="mb-1 space-y-1.5 text-sm text-zinc-500">
+                        <div className="flex items-center justify-between">
+                          <span>{labels.subtotal}</span>
+                          <span>
+                            {orderCharges.subtotal.toFixed(2)} {getCurrency()}
+                          </span>
+                        </div>
+                        {orderCharges.taxAmount > 0 && (
+                          <div className="flex items-center justify-between">
+                            <span>{labels.tax}</span>
+                            <span>
+                              {orderCharges.taxAmount.toFixed(2)}{" "}
+                              {getCurrency()}
+                            </span>
+                          </div>
+                        )}
+                        {orderCharges.serviceAmount > 0 && (
+                          <div className="flex items-center justify-between">
+                            <span>{labels.service}</span>
+                            <span>
+                              {orderCharges.serviceAmount.toFixed(2)}{" "}
+                              {getCurrency()}
+                            </span>
+                          </div>
+                        )}
+                        {deliveryFeeAmount > 0 && (
+                          <div className="flex items-center justify-between">
+                            <span>{labels.deliveryFee}</span>
+                            <span>
+                              {deliveryFeeAmount.toFixed(2)} {getCurrency()}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between text-base text-zinc-700">
+                          <span className="font-medium">
+                            {labels.grandTotal}
+                          </span>
+                          <strong className="text-(--bg-main)">
+                            {orderCharges.grandTotal.toFixed(2)} {getCurrency()}
+                          </strong>
+                        </div>
+                      </div>
+                    )}
                     <button
                       type="button"
                       onClick={confirmOrder}

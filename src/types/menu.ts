@@ -54,10 +54,12 @@ export interface MenuInfo {
   table?: {
     id?: number;
     tableNumber?: string | null;
+    isActive?: boolean;
   } | null;
   tables?: Array<{
     id?: number;
     tableNumber?: string | null;
+    isActive?: boolean;
   }>;
 }
 
