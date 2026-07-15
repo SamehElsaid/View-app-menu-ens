@@ -9,7 +9,8 @@ import { useTableCartAllowed } from "./useTableCartAllowed";
 import { useMenuTableParam } from "./useMenuTableParam";
 
 /**
- * Strip `?table=` only when we know the table is invalid or the plan is free.
+ * Strip `?table=` when the table is invalid, inactive, or the plan is free.
+ * Guest then sees the regular menu (no dine-in / table services session).
  * If table validity is unknown (no tables list yet), keep the URL.
  *
  * Valid table QR mode wins over delivery: clear any in-memory delivery session
