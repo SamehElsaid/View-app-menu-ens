@@ -36,7 +36,14 @@ import {
   type SkyCart,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
+import {
+  buildOpenTableOrderLineKey,
+  isGuestEditableOpenOrderStatus,
+  notifyOpenTableOrderRefresh,
+  type OpenTableOrderItem,
+} from "@/lib/openTableOrder";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
+import { useOpenTableOrder } from "@/hooks/useOpenTableOrder";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import arLabels from "react-phone-number-input/locale/ar";
@@ -64,6 +71,8 @@ import {
 const DEFAULT_ACCENT = "hsl(271, 81%, 56%)";
 const DEFAULT_CART_SHAPE = "rounded-full";
 const DEFAULT_CART_ICON: CartIconKey = "cart";
+/** Shared with OrderChatbot so table guests are not asked for name twice. */
+const TABLE_ORDER_NAME_STORAGE_KEY = "ensmenu_ai_order_customer_name";
 
 type CartIconKey = "cart" | "bag" | "basket" | "cafe";
 
@@ -73,6 +82,29 @@ const CART_ICON_MAP: Record<CartIconKey, ElementType> = {
   basket: IoBasketOutline,
   cafe: IoCafeOutline,
 };
+
+function openOrderItemToSkyCartItem(
+  item: OpenTableOrderItem,
+  index: number,
+): SkyCartItem {
+  const unit =
+    item.price ??
+    (item.total != null && item.quantity > 0
+      ? item.total / item.quantity
+      : 0);
+  return {
+    lineKey: buildOpenTableOrderLineKey(item, index),
+    id: item.menuItemId ?? 0,
+    quantity: item.quantity,
+    name: item.name,
+    nameAr: item.name,
+    nameEn: item.name,
+    price: unit,
+    image: "",
+    size: item.size ?? null,
+    variant: item.variant ?? null,
+  };
+}
 
 type StaffCallPayload = {
   menuId: number;
@@ -469,6 +501,16 @@ export default function RequestStaffButton({
             service: "الخدمة",
             subtotal: "المجموع الفرعي",
             grandTotal: "المجموع الكلي",
+            tableOrder: "طلب الترابيزة",
+            tableOrderPending: "بانتظار تأكيد الويتر — يمكنك التعديل",
+            tableOrderConfirmed: "تم التأكيد — يمكنك طلب أصناف جديدة فقط",
+            tableOrderNewItems: "أصناف جديدة",
+            tableOrderAddHint: "أضف من القائمة ثم أرسل",
+            tableEnded: "تم إنهاء طلب الترابيزة",
+            updateFailed: "تعذر تحديث الطلب",
+            tableOrderConfirmChanges: "تأكيد التعديل",
+            tableOrderDiscardChanges: "تراجع",
+            tableOrderChangesSaved: "تم حفظ تعديلات الطلب",
           }
         : {
             cart: "Cart",
@@ -513,9 +555,129 @@ export default function RequestStaffButton({
             service: "Service",
             subtotal: "Subtotal",
             grandTotal: "Grand total",
+            tableOrder: "Table order",
+            tableOrderPending: "Awaiting waiter confirmation — you can edit",
+            tableOrderConfirmed: "Confirmed — you can only add new items",
+            tableOrderNewItems: "New items",
+            tableOrderAddHint: "Add from the menu, then send",
+            tableEnded: "Table order has been closed",
+            updateFailed: "Could not update the order",
+            tableOrderConfirmChanges: "Confirm changes",
+            tableOrderDiscardChanges: "Discard",
+            tableOrderChangesSaved: "Order changes saved",
           },
     [isArabic],
   );
+
+  const tableOrderEnabled =
+    Boolean(menuInfo?.id) &&
+    isOrderingEnabled &&
+    !isDeliveryOrder &&
+    Boolean(tableNumber);
+  const {
+    openOrder,
+    saving: openOrderSaving,
+    refresh: refreshOpenOrder,
+    patchItems: patchOpenOrderItems,
+  } = useOpenTableOrder({
+    menuId: menuInfo?.id,
+    tableNumber,
+    enabled: tableOrderEnabled,
+    tableEndedMessage: labels.tableEnded,
+  });
+  const openOrderEditable = isGuestEditableOpenOrderStatus(openOrder?.status);
+  /** Local draft of pending table-order lines; null = mirror server. */
+  const [openOrderDraft, setOpenOrderDraft] = useState<
+    OpenTableOrderItem[] | null
+  >(null);
+
+  useEffect(() => {
+    if (!openOrder || !openOrderEditable) {
+      setOpenOrderDraft(null);
+      return;
+    }
+    setOpenOrderDraft((prev) => {
+      const serverItems = openOrder.items;
+      if (prev == null) {
+        return serverItems.map((item) => ({ ...item }));
+      }
+      const dirty =
+        prev.length !== serverItems.length ||
+        prev.some((item, index) => {
+          const s = serverItems[index];
+          if (!s) return true;
+          return (
+            item.quantity !== s.quantity ||
+            item.menuItemId !== s.menuItemId ||
+            (item.price ?? null) !== (s.price ?? null)
+          );
+        });
+      if (!dirty) {
+        return serverItems.map((item) => ({ ...item }));
+      }
+      // Keep local qty edits, but always pick up newly appended server lines.
+      if (serverItems.length > prev.length) {
+        return [
+          ...prev,
+          ...serverItems.slice(prev.length).map((item) => ({ ...item })),
+        ];
+      }
+      return prev;
+    });
+  }, [openOrder, openOrderEditable]);
+
+  // Prefill guest name from open order / localStorage (skip re-asking).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = localStorage.getItem(TABLE_ORDER_NAME_STORAGE_KEY)?.trim();
+    if (stored) {
+      setCustomerName((prev) => prev.trim() || stored);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fromOrder = openOrder?.customerName?.trim();
+    if (!fromOrder) return;
+    setCustomerName((prev) => {
+      if (prev.trim()) return prev;
+      localStorage.setItem(TABLE_ORDER_NAME_STORAGE_KEY, fromOrder);
+      return fromOrder;
+    });
+  }, [openOrder?.customerName]);
+
+  const displayOpenOrderItems = useMemo(() => {
+    if (!openOrder) return [];
+    if (openOrderEditable && openOrderDraft) return openOrderDraft;
+    return openOrder.items;
+  }, [openOrder, openOrderEditable, openOrderDraft]);
+
+  const openOrderDraftDirty = useMemo(() => {
+    if (!openOrder || !openOrderEditable || !openOrderDraft) return false;
+    const server = openOrder.items;
+    if (server.length !== openOrderDraft.length) return true;
+    return openOrderDraft.some((item, index) => {
+      const s = server[index];
+      if (!s) return true;
+      return (
+        item.quantity !== s.quantity ||
+        item.menuItemId !== s.menuItemId ||
+        (item.price ?? null) !== (s.price ?? null)
+      );
+    });
+  }, [openOrder, openOrderEditable, openOrderDraft]);
+
+  const displayOpenOrderTotal = useMemo(() => {
+    if (!openOrder) return 0;
+    if (!openOrderDraftDirty) return Number(openOrder.orderTotal) || 0;
+    return displayOpenOrderItems.reduce((sum, item) => {
+      const unit =
+        item.price ??
+        (item.total != null && item.quantity > 0
+          ? item.total / item.quantity
+          : 0);
+      return sum + unit * item.quantity;
+    }, 0);
+  }, [displayOpenOrderItems, openOrder, openOrderDraftDirty]);
 
   const getCurrency = () => {
     const currencyCode = menuInfo?.currency || "AED";
@@ -565,6 +727,83 @@ export default function RequestStaffButton({
     () => cartItemsForOrder.reduce((sum, item) => sum + item.quantity, 0),
     [cartItemsForOrder],
   );
+  const openOrderQuantity = useMemo(
+    () =>
+      displayOpenOrderItems.reduce(
+        (sum, item) => sum + (item.quantity || 0),
+        0,
+      ),
+    [displayOpenOrderItems],
+  );
+  const fabBadgeQuantity =
+    totalQuantity > 0 ? totalQuantity : openOrderQuantity;
+
+  const handleOpenOrderQty = useCallback(
+    (lineKey: string, delta: number) => {
+      if (!openOrder || !openOrderEditable || openOrderSaving) return;
+      const index = Number(lineKey.split(":").pop());
+      if (
+        !Number.isFinite(index) ||
+        index < 0 ||
+        index >= displayOpenOrderItems.length
+      ) {
+        return;
+      }
+      setOpenOrderDraft((prev) => {
+        const base =
+          prev ?? openOrder.items.map((item) => ({ ...item }));
+        return base
+          .map((item, i) =>
+            i === index
+              ? {
+                  ...item,
+                  quantity: Math.max(0, Math.floor(item.quantity + delta)),
+                }
+              : item,
+          )
+          .filter((item) => item.quantity > 0);
+      });
+    },
+    [
+      displayOpenOrderItems.length,
+      openOrder,
+      openOrderEditable,
+      openOrderSaving,
+    ],
+  );
+
+  const discardOpenOrderDraft = useCallback(() => {
+    if (!openOrder) {
+      setOpenOrderDraft(null);
+      return;
+    }
+    setOpenOrderDraft(openOrder.items.map((item) => ({ ...item })));
+  }, [openOrder]);
+
+  const confirmOpenOrderDraft = useCallback(async () => {
+    if (!openOrder || !openOrderEditable || !openOrderDraftDirty) return;
+    const items = openOrderDraft ?? [];
+    const result = await patchOpenOrderItems(items);
+    if (!result.ok) {
+      toast.error(result.message || labels.updateFailed);
+      return;
+    }
+    if (result.cancelled || !result.call) {
+      setOpenOrderDraft(null);
+      toast.success(labels.tableOrderChangesSaved);
+      return;
+    }
+    setOpenOrderDraft(result.call.items.map((item) => ({ ...item })));
+    toast.success(labels.tableOrderChangesSaved);
+  }, [
+    labels.tableOrderChangesSaved,
+    labels.updateFailed,
+    openOrder,
+    openOrderDraft,
+    openOrderDraftDirty,
+    openOrderEditable,
+    patchOpenOrderItems,
+  ]);
 
   const totalPrice = useMemo(
     () =>
@@ -641,11 +880,6 @@ export default function RequestStaffButton({
       syncDrawerWithURL(true);
     }
   }, [syncDrawerWithURL]);
-
-  const goToStep2 = () => {
-    if (!cartItemsForOrder.length) return;
-    setStep(2);
-  };
 
   const updateItemQuantity = (lineKey: string, delta: number) => {
     updateSkyCartLineQuantity(lineKey, delta);
@@ -866,10 +1100,16 @@ export default function RequestStaffButton({
     [buildWhatsAppMessage, delivery],
   );
 
-  const confirmOrder = async () => {
+  const confirmOrder = async (nameOverride?: string) => {
     const errors: Record<string, string> = {};
+    const resolvedName =
+      (nameOverride ?? customerName).trim() ||
+      openOrder?.customerName?.trim() ||
+      (typeof window !== "undefined"
+        ? localStorage.getItem(TABLE_ORDER_NAME_STORAGE_KEY)?.trim() || ""
+        : "");
 
-    if (!customerName.trim()) {
+    if (!resolvedName) {
       errors.name = labels.enterName;
     }
     if (isDeliveryOrder) {
@@ -891,6 +1131,10 @@ export default function RequestStaffButton({
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      if (errors.name && tableOrderEnabled && openOrder) {
+        setStep(2);
+        openDrawer();
+      }
       return;
     }
 
@@ -908,7 +1152,7 @@ export default function RequestStaffButton({
 
     const orderItems = cartItemsForOrder;
     const orderTotal = totalPrice;
-    const orderName = customerName.trim();
+    const orderName = resolvedName;
     const orderPhone = customerPhone.trim();
     const orderAddress = customerAddress.trim();
     const orderNotesText = orderNotes.trim();
@@ -934,7 +1178,7 @@ export default function RequestStaffButton({
         menuId: menuInfo.id,
         type: isDeliveryOrder ? "delivery" : "table",
         tableNumber: isDeliveryOrder ? "" : tableNumber,
-        customerName: customerName.trim(),
+        customerName: orderName,
         ...(isDeliveryOrder
           ? {
               customerPhone: customerPhone.trim(),
@@ -1024,22 +1268,56 @@ export default function RequestStaffButton({
       writeSkyCartToCookie({});
       setCart({});
       notifySkyCartUpdated();
+      if (tableOrderEnabled) {
+        localStorage.setItem(TABLE_ORDER_NAME_STORAGE_KEY, orderName);
+        setCustomerName(orderName);
+        setOpenOrderDraft(null);
+        await refreshOpenOrder();
+        notifyOpenTableOrderRefresh();
+      }
 
       if (notifyWhatsApp && !whatsAppOpened) {
         toast.info(labels.whatsAppPopupBlocked);
       }
 
-      setCustomerName("");
+      if (!tableOrderEnabled) {
+        setCustomerName("");
+      }
       setCustomerPhone("");
       setCustomerAddress("");
       setOrderNotes("");
-      closeDrawer();
+      if (tableOrderEnabled) {
+        setStep(1);
+      } else {
+        closeDrawer();
+      }
       toast.success(labels.success);
     } catch {
       toast.error(labels.orderFailed);
     } finally {
       setIsConfirming(false);
     }
+  };
+
+  const goToStep2 = () => {
+    if (!cartItemsForOrder.length) return;
+    // Existing table order: send new lines immediately (no name form again).
+    if (tableOrderEnabled && openOrder) {
+      const resolvedName =
+        customerName.trim() ||
+        openOrder.customerName?.trim() ||
+        (typeof window !== "undefined"
+          ? localStorage.getItem(TABLE_ORDER_NAME_STORAGE_KEY)?.trim() || ""
+          : "");
+      if (resolvedName) {
+        if (!customerName.trim()) setCustomerName(resolvedName);
+        void confirmOrder(resolvedName);
+        return;
+      }
+      setStep(2);
+      return;
+    }
+    setStep(2);
   };
 
   if (!isMenuActive || !menuInfo?.id) return null;
@@ -1088,10 +1366,10 @@ export default function RequestStaffButton({
       >
         <span className="md:hidden">
           {labels.cart}
-          {totalQuantity > 0 ? ` (${totalQuantity})` : ""}
+          {fabBadgeQuantity > 0 ? ` (${fabBadgeQuantity})` : ""}
         </span>
         <span className="hidden md:inline">
-          {labels.cart}: {totalQuantity}
+          {labels.cart}: {fabBadgeQuantity}
         </span>
       </span>
     </div>
@@ -1145,34 +1423,112 @@ export default function RequestStaffButton({
               {step === 1 ? (
                 <div className="flex flex-1 flex-col overflow-hidden">
                   <div className="flex-1 overflow-y-auto px-4 py-3">
-                    <h3 className="mb-2 text-base font-semibold text-(--bg-main)">
-                      {labels.products}
-                    </h3>
-                    {cartItemsForOrder.length ? (
-                      <ul className="space-y-2">
-                        {cartItemsForOrder.map((item) => (
-                          <SkyCartLineItem
-                            key={item.lineKey}
-                            item={item}
-                            isArabic={isArabic}
-                            currencyLabel={getCurrency()}
-                            editable
-                            onDecrease={(lineKey) =>
-                              updateItemQuantity(lineKey, -1)
-                            }
-                            onIncrease={(lineKey) =>
-                              updateItemQuantity(lineKey, 1)
-                            }
-                            decreaseLabel={labels.decrease}
-                            increaseLabel={labels.increase}
-                          />
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="rounded-lg border border-dashed border-zinc-300 p-4 text-center text-base text-zinc-500">
-                        {labels.empty}
-                      </p>
-                    )}
+                    <section>
+                      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+                        <h3 className="text-base font-semibold text-(--bg-main)">
+                          {openOrder ? labels.tableOrder : labels.products}
+                        </h3>
+                        {openOrder ? (
+                          <span className="text-xs font-medium text-zinc-500">
+                            {openOrderEditable
+                              ? labels.tableOrderPending
+                              : labels.tableOrderConfirmed}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      {displayOpenOrderItems.length ||
+                      cartItemsForOrder.length ? (
+                        <ul className="space-y-2">
+                          {displayOpenOrderItems.map((item, index) => {
+                            const skyItem = openOrderItemToSkyCartItem(
+                              item,
+                              index,
+                            );
+                            return (
+                              <SkyCartLineItem
+                                key={`open-${skyItem.lineKey}`}
+                                item={skyItem}
+                                isArabic={isArabic}
+                                currencyLabel={getCurrency()}
+                                editable={
+                                  openOrderEditable && !openOrderSaving
+                                }
+                                onDecrease={(lineKey) =>
+                                  handleOpenOrderQty(lineKey, -1)
+                                }
+                                onIncrease={(lineKey) =>
+                                  handleOpenOrderQty(lineKey, 1)
+                                }
+                                decreaseLabel={labels.decrease}
+                                increaseLabel={labels.increase}
+                              />
+                            );
+                          })}
+                          {cartItemsForOrder.map((item) => (
+                            <SkyCartLineItem
+                              key={`cart-${item.lineKey}`}
+                              item={item}
+                              isArabic={isArabic}
+                              currencyLabel={getCurrency()}
+                              editable={!isConfirming}
+                              onDecrease={(lineKey) =>
+                                updateItemQuantity(lineKey, -1)
+                              }
+                              onIncrease={(lineKey) =>
+                                updateItemQuantity(lineKey, 1)
+                              }
+                              decreaseLabel={labels.decrease}
+                              increaseLabel={labels.increase}
+                            />
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="rounded-lg border border-dashed border-zinc-300 p-4 text-center text-base text-zinc-500">
+                          {labels.empty}
+                        </p>
+                      )}
+
+                      {(displayOpenOrderItems.length > 0 ||
+                        cartItemsForOrder.length > 0) && (
+                        <p className="mt-2 text-end text-sm font-semibold text-(--bg-main)">
+                          {labels.total}:{" "}
+                          {(displayOpenOrderTotal + totalPrice).toFixed(2)}{" "}
+                          {getCurrency()}
+                        </p>
+                      )}
+
+                      {openOrderEditable && openOrderDraftDirty ? (
+                        <div className="mt-3 flex gap-2">
+                          <button
+                            type="button"
+                            disabled={openOrderSaving}
+                            onClick={() => void confirmOpenOrderDraft()}
+                            className="flex-1 rounded-lg bg-(--bg-main) px-3 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
+                          >
+                            {openOrderSaving
+                              ? "..."
+                              : labels.tableOrderConfirmChanges}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={openOrderSaving}
+                            onClick={discardOpenOrderDraft}
+                            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-60"
+                          >
+                            {labels.tableOrderDiscardChanges}
+                          </button>
+                        </div>
+                      ) : null}
+
+                      {openOrder && isConfirming && cartItemsForOrder.length > 0 ? (
+                        <p className="mt-2 text-center text-xs text-zinc-500">
+                          {isArabic
+                            ? "جاري إرسال الأصناف للويتر..."
+                            : "Sending items to the waiter..."}
+                        </p>
+                      ) : null}
+                    </section>
                   </div>
                   <div className="border-t border-(--bg-main)/15 bg-white px-4 py-3">
                     <div className="mb-3 space-y-1.5 text-base">
@@ -1220,17 +1576,25 @@ export default function RequestStaffButton({
                             : labels.total}
                         </span>
                         <strong className="text-base text-(--bg-main)">
-                          {orderCharges.grandTotal.toFixed(2)} {getCurrency()}
+                          {(
+                            (openOrder ? displayOpenOrderTotal : 0) +
+                            orderCharges.grandTotal
+                          ).toFixed(2)}{" "}
+                          {getCurrency()}
                         </strong>
                       </div>
                     </div>
                     <button
                       type="button"
                       onClick={goToStep2}
-                      disabled={!cartItemsForOrder.length}
+                      disabled={!cartItemsForOrder.length || isConfirming}
                       className="w-full rounded-lg bg-(--bg-main) px-4 py-2.5 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-400"
                     >
-                      {labels.next}
+                      {isConfirming
+                        ? "..."
+                        : openOrder
+                          ? labels.confirm
+                          : labels.next}
                     </button>
                   </div>
                 </div>
@@ -1623,7 +1987,7 @@ export default function RequestStaffButton({
                     )}
                     <button
                       type="button"
-                      onClick={confirmOrder}
+                      onClick={() => void confirmOrder()}
                       disabled={isConfirming}
                       className="flex w-full items-center justify-center gap-2 rounded-lg bg-(--bg-main) px-4 py-2.5 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
                     >

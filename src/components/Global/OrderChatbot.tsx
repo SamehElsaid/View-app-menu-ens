@@ -94,6 +94,7 @@ import { useAiChatCanOrder } from "@/hooks/useAiChatCanOrder";
 import { useAiChatCatalogBrowse } from "@/hooks/useAiChatCatalogBrowse";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { useIsMenuCornerDockSession } from "@/hooks/useIsMenuCornerDockSession";
+import { notifyOpenTableOrderRefresh } from "@/lib/openTableOrder";
 import { MENU_MOBILE_TAB_BAR_CLEARANCE_CLASS } from "@/lib/menuFabLayout";
 import {
   sendAiDiscoveryMessage,
@@ -969,6 +970,9 @@ export default function OrderChatbot({
       setConversationState("order_completed");
       setPendingOrderSubmit(false);
       setOrderSummarySheetOpen(false);
+      if (!isDeliveryOrder) {
+        notifyOpenTableOrderRefresh();
+      }
       appendMessage("bot", labels.success);
       return true;
     } catch {

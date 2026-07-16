@@ -48,7 +48,17 @@
     "configError": "تعذر الاتصال بالخادم",
     "rateLimit": "انتظر قليلاً ثم أعد المحاولة",
     "invalidTable": "رقم الطاولة غير مسجل في هذا المطعم",
-    "error": "تعذر إرسال الطلب"
+    "error": "تعذر إرسال الطلب",
+    "tableOrder": "طلب الترابيزة",
+    "tableOrderPending": "بانتظار تأكيد الويتر — يمكنك التعديل",
+    "tableOrderConfirmed": "تم التأكيد — يمكنك طلب أصناف جديدة فقط",
+    "tableOrderNewItems": "أصناف جديدة",
+    "tableOrderAddHint": "أضف من القائمة ثم أرسل",
+    "tableEnded": "تم إنهاء طلب الترابيزة",
+    "updateFailed": "تعذر تحديث الطلب",
+    "tableOrderConfirmChanges": "تأكيد التعديل",
+    "tableOrderDiscardChanges": "تراجع",
+    "tableOrderChangesSaved": "تم حفظ تعديلات الطلب"
   },
   "rateMenu": {
     "button": "قيّم المكان",

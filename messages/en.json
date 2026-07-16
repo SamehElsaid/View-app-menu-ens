@@ -48,7 +48,17 @@
     "configError": "Could not reach the server",
     "rateLimit": "Please wait a moment and try again",
     "invalidTable": "This table is not registered for this restaurant",
-    "error": "Could not send the request"
+    "error": "Could not send the request",
+    "tableOrder": "Table order",
+    "tableOrderPending": "Awaiting waiter confirmation — you can edit",
+    "tableOrderConfirmed": "Confirmed — you can only add new items",
+    "tableOrderNewItems": "New items",
+    "tableOrderAddHint": "Add from the menu, then send",
+    "tableEnded": "Table order has been closed",
+    "updateFailed": "Could not update the order",
+    "tableOrderConfirmChanges": "Confirm changes",
+    "tableOrderDiscardChanges": "Discard",
+    "tableOrderChangesSaved": "Order changes saved"
   },
   "rateMenu": {
     "button": "Rate this place",
