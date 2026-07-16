@@ -306,7 +306,7 @@ function MenuItemDetailModalInner({
         </button>
 
         {/* Image */}
-        <div className="relative aspect-4/3 w-full shrink-0 bg-zinc-100">
+        <div className="relative aspect-4/2 w-full shrink-0 bg-zinc-100">
           <LoadImage
             src={productImageSrc}
             alt={name}
