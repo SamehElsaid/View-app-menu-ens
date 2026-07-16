@@ -136,16 +136,12 @@ type StaffCallPayload = {
 };
 
 function resolveDeliveryWhatsAppPhone(
-  delivery: { deliveryPhone?: string | null; phoneNumber?: string | null } | null,
+  delivery: { deliveryPhone?: string | null } | null,
 ): string {
   if (!delivery) return "";
-  for (const raw of [delivery.deliveryPhone, delivery.phoneNumber]) {
-    const clean = String(raw ?? "")
-      .trim()
-      .replace(/[^0-9]/g, "");
-    if (clean) return clean;
-  }
-  return "";
+  return String(delivery.deliveryPhone ?? "")
+    .trim()
+    .replace(/[^0-9]/g, "");
 }
 
 function shouldSendDeliveryWhatsApp(
