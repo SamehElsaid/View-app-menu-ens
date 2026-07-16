@@ -111,17 +111,17 @@ const getMenu = async (locale: string) => {
 };
 
 const defaultMetadata: Record<string, { title: string; description: string }> =
-  {
-    en: {
-      title: "ENSmenu",
-      description:
-        "ENSmenu is a platform for creating digital menus for restaurants and cafes",
-    },
-    ar: {
-      title: "ENSmenu",
-      description: "ENSmenu منصة لإنشاء القوائم الرقمية للمطاعم والمقاهي",
-    },
-  };
+{
+  en: {
+    title: "ENSmenu",
+    description:
+      "ENSmenu is a platform for creating digital menus for restaurants and cafes",
+  },
+  ar: {
+    title: "ENSmenu",
+    description: "ENSmenu منصة لإنشاء القوائم الرقمية للمطاعم والمقاهي",
+  },
+};
 
 const DEFAULT_ICON_URL = "/favicon.svg";
 
@@ -199,6 +199,8 @@ export default async function MainLayout({
   const bootstrapCatalog = data?.items
     ? resolveBootstrapCatalogMeta(data.items.length, data.totalItems)
     : null;
+
+  console.log(data);
 
   return (
     <>
