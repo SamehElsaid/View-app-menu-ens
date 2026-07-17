@@ -16,23 +16,19 @@ import { toast } from "react-toastify";
 import {
   IoClose,
   IoNotificationsOutline,
-  IoReceiptOutline,
   IoWifiOutline,
 } from "react-icons/io5";
 import { MdOutlineRoomService } from "react-icons/md";
 import { useAppSelector } from "@/store/hooks";
 import { useIsTableServicesSession } from "@/hooks/useIsTableServicesSession";
-import {
-  sendStaffServiceRequest,
-  type StaffRequestKind,
-} from "@/lib/sendStaffServiceRequest";
+import { sendStaffServiceRequest } from "@/lib/sendStaffServiceRequest";
 import {
   getMenuMobileTabItemActiveClasses,
   getMenuMobileTabItemClasses,
 } from "@/lib/menuFabLayout";
 import MenuWifiCredentials from "@/components/Global/MenuWifiCredentials";
 
-type ServiceActionId = "waiter" | "bill" | "wifi";
+type ServiceActionId = "waiter" | "wifi";
 
 type ServiceAction = {
   id: ServiceActionId;
@@ -67,7 +63,7 @@ function TableServicesRadialFabInner({
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [wifiOpen, setWifiOpen] = useState(false);
-  const [sending, setSending] = useState<StaffRequestKind | null>(null);
+  const [sending, setSending] = useState(false);
   const menuId = useId();
 
   const wifiName = menuInfo?.wifiName?.trim() || "";
@@ -81,11 +77,6 @@ function TableServicesRadialFabInner({
         id: "waiter",
         label: tServices("waiter"),
         icon: <IoNotificationsOutline className="h-5 w-5" aria-hidden />,
-      },
-      {
-        id: "bill",
-        label: tServices("bill"),
-        icon: <IoReceiptOutline className="h-5 w-5" aria-hidden />,
       },
     ];
 
@@ -134,15 +125,15 @@ function TableServicesRadialFabInner({
     return null;
   }
 
-  const sendRequest = async (requestKind: StaffRequestKind) => {
+  const sendWaiterRequest = async () => {
     if (sending) return;
-    setSending(requestKind);
+    setSending(true);
     try {
       const response = await sendStaffServiceRequest(locale, {
         menuId: menuInfo.id,
         type: "table",
         tableNumber,
-        requestKind,
+        requestKind: "waiter",
       });
 
       if (!response.status) {
@@ -165,15 +156,11 @@ function TableServicesRadialFabInner({
       }
 
       setMenuOpen(false);
-      toast.success(
-        requestKind === "bill"
-          ? tStaff("successBill", { table: tableNumber })
-          : tStaff("successWaiter", { table: tableNumber }),
-      );
+      toast.success(tStaff("successWaiter", { table: tableNumber }));
     } catch {
       toast.error(tStaff("error"));
     } finally {
-      setSending(null);
+      setSending(false);
     }
   };
 
@@ -197,10 +184,8 @@ function TableServicesRadialFabInner({
 
   /** Phone: each service is its own tab (icon + label). */
   const mobileTabs = actions.map((action) => {
-    const busy =
-      (action.id === "waiter" && sending === "waiter") ||
-      (action.id === "bill" && sending === "bill");
     const isWifi = action.id === "wifi";
+    const busy = !isWifi && sending;
 
     return (
       <div key={action.id} className="relative min-w-0 flex-1 md:hidden">
@@ -215,7 +200,7 @@ function TableServicesRadialFabInner({
               return;
             }
             setWifiOpen(false);
-            void sendRequest(action.id === "bill" ? "bill" : "waiter");
+            void sendWaiterRequest();
           }}
           className={[
             "flex w-full flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1.5 transition",
@@ -258,10 +243,6 @@ function TableServicesRadialFabInner({
           }`}
         >
           {actions.map((action) => {
-            const busy =
-              (action.id === "waiter" && sending === "waiter") ||
-              (action.id === "bill" && sending === "bill");
-
             if (action.id === "wifi") {
               return (
                 <div
@@ -286,14 +267,12 @@ function TableServicesRadialFabInner({
                 key={action.id}
                 type="button"
                 role="menuitem"
-                disabled={Boolean(sending)}
-                onClick={() =>
-                  void sendRequest(action.id === "bill" ? "bill" : "waiter")
-                }
+                disabled={sending}
+                onClick={() => void sendWaiterRequest()}
                 className="flex w-full items-center gap-2.5 px-3 py-2.5 text-start text-sm font-semibold text-zinc-800 transition hover:bg-zinc-50 disabled:opacity-60"
               >
                 <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-zinc-700">
-                  {busy ? (
+                  {sending ? (
                     <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current/30 border-t-current" />
                   ) : (
                     action.icon

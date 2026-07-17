@@ -23,6 +23,7 @@ import {
   IoBagOutline,
   IoBasketOutline,
   IoCafeOutline,
+  IoReceiptOutline,
 } from "react-icons/io5";
 import { MdLocationOn, MdMyLocation } from "react-icons/md";
 import type { DeliveryGovernorate } from "@/types/menu";
@@ -42,6 +43,7 @@ import {
   notifyOpenTableOrderRefresh,
   type OpenTableOrderItem,
 } from "@/lib/openTableOrder";
+import { sendStaffServiceRequest } from "@/lib/sendStaffServiceRequest";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
 import { useOpenTableOrder } from "@/hooks/useOpenTableOrder";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
@@ -243,6 +245,7 @@ export default function RequestStaffButton({
   /** Empty initial state avoids SSR/client mismatch (cookies only exist on client). */
   const [cart, setCart] = useState<SkyCart>({});
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isRequestingBill, setIsRequestingBill] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -507,6 +510,14 @@ export default function RequestStaffButton({
             tableOrderConfirmChanges: "تأكيد التعديل",
             tableOrderDiscardChanges: "تراجع",
             tableOrderChangesSaved: "تم حفظ تعديلات الطلب",
+            requestBill: "طلب الفاتورة",
+            requestBillPending:
+              "انتظر تأكيد الطلب من الويتر قبل طلب الفاتورة",
+            requestBillUnsentCart:
+              "أكد الأصناف الجديدة في السلة قبل طلب الفاتورة",
+            requestBillSuccess: "تم طلب الحساب — طاولة {table}",
+            requestBillError: "تعذر طلب الفاتورة",
+            requestBillInvalidTable: "رقم الطاولة غير مسجل في هذا المطعم",
           }
         : {
             cart: "Cart",
@@ -561,6 +572,15 @@ export default function RequestStaffButton({
             tableOrderConfirmChanges: "Confirm changes",
             tableOrderDiscardChanges: "Discard",
             tableOrderChangesSaved: "Order changes saved",
+            requestBill: "Request the bill",
+            requestBillPending:
+              "Wait for the waiter to confirm the order before requesting the bill",
+            requestBillUnsentCart:
+              "Confirm the new cart items before requesting the bill",
+            requestBillSuccess: "Bill requested — table {table}",
+            requestBillError: "Could not request the bill",
+            requestBillInvalidTable:
+              "This table is not registered for this restaurant",
           },
     [isArabic],
   );
@@ -1316,6 +1336,46 @@ export default function RequestStaffButton({
     setStep(2);
   };
 
+  const canRequestBill =
+    tableOrderEnabled && Boolean(openOrder) && displayOpenOrderItems.length > 0;
+  /** Bill only after staff confirmed the order, and no unsent cart lines. */
+  const billRequestEnabled =
+    canRequestBill && !openOrderEditable && cartItemsForOrder.length === 0;
+
+  const requestBill = async () => {
+    if (!billRequestEnabled || !menuInfo?.id || isRequestingBill) return;
+    setIsRequestingBill(true);
+    try {
+      const response = await sendStaffServiceRequest(locale, {
+        menuId: menuInfo.id,
+        type: "table",
+        tableNumber,
+        requestKind: "bill",
+      });
+
+      if (!response.status) {
+        const errBody = response.data;
+        if (errBody?.error === "INVALID_TABLE") {
+          toast.error(labels.requestBillInvalidTable);
+        } else {
+          const apiMsg = isArabic
+            ? errBody?.errorAr || errBody?.message
+            : errBody?.errorEn || errBody?.message;
+          toast.error(apiMsg || labels.requestBillError);
+        }
+        return;
+      }
+
+      toast.success(
+        labels.requestBillSuccess.replace("{table}", tableNumber),
+      );
+    } catch {
+      toast.error(labels.requestBillError);
+    } finally {
+      setIsRequestingBill(false);
+    }
+  };
+
   if (!isMenuActive || !menuInfo?.id) return null;
   if (!tableCartAllowed && !isDeliveryOrder) return null;
   /** After mount: searchParams and locale match the browser; avoids hydration mismatch. */
@@ -1580,18 +1640,55 @@ export default function RequestStaffButton({
                         </strong>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={goToStep2}
-                      disabled={!cartItemsForOrder.length || isConfirming}
-                      className="w-full rounded-lg bg-(--bg-main) px-4 py-2.5 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-400"
-                    >
-                      {isConfirming
-                        ? "..."
-                        : openOrder
-                          ? labels.confirm
-                          : labels.next}
-                    </button>
+                    <div className="space-y-2">
+                      {cartItemsForOrder.length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={goToStep2}
+                          disabled={isConfirming}
+                          className="w-full rounded-lg bg-(--bg-main) px-4 py-2.5 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                          {isConfirming
+                            ? "..."
+                            : openOrder
+                              ? labels.confirm
+                              : labels.next}
+                        </button>
+                      ) : null}
+                      {canRequestBill ? (
+                        <button
+                          type="button"
+                          onClick={() => void requestBill()}
+                          disabled={
+                            !billRequestEnabled ||
+                            isRequestingBill ||
+                            isConfirming
+                          }
+                          title={
+                            billRequestEnabled
+                              ? undefined
+                              : openOrderEditable
+                                ? labels.requestBillPending
+                                : cartItemsForOrder.length > 0
+                                  ? labels.requestBillUnsentCart
+                                  : labels.requestBillPending
+                          }
+                          className={[
+                            "flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-base font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
+                            billRequestEnabled
+                              ? "bg-(--bg-main) text-white hover:opacity-90"
+                              : "border border-zinc-200 bg-zinc-100 text-zinc-400",
+                          ].join(" ")}
+                        >
+                          {isRequestingBill ? (
+                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                          ) : (
+                            <IoReceiptOutline className="h-5 w-5" aria-hidden />
+                          )}
+                          {labels.requestBill}
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               ) : (
