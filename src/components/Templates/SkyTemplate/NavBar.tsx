@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { LanguageToggle } from "../Default/LanguageToggle";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
 import Link from "next/link";
 import LoadImage from "@/components/ImageLoad";
 
@@ -64,7 +65,11 @@ const Navbar = ({ menuName, menuLogo, whatsapp }: NavbarProps) => {
             </a>
           )}
         </div>
-        <div className="flex  gap-2">
+        <div className="flex items-center gap-2">
+          <MenuWifiDropdown
+            buttonClassName="bg-sky-50 text-sky-700 hover:bg-sky-100"
+            panelClassName="border-sky-100 bg-white text-slate-800"
+          />
           <div className="bg-(--bg-main) text-white  rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-(--bg-main)/80 transition-all shadow-lg shadow-(--bg-main)/10">
             <LanguageToggle />
           </div>

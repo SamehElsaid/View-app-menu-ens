@@ -12,6 +12,7 @@ import {
   RETRO_SURFACE_BORDER,
   useCoffeeTheme,
 } from "./CoffeeThemeContext";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
 
 export default function Navbar() {
   const locale = useLocale();
@@ -122,6 +123,10 @@ export default function Navbar() {
           </Link>
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <MenuWifiDropdown
+              buttonClassName="border bg-white text-zinc-700 shadow-sm hover:bg-zinc-50"
+              panelClassName="border-zinc-200 bg-white text-zinc-800"
+            />
             <button
               type="button"
               onClick={toggleLanguage}

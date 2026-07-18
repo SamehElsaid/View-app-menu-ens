@@ -4,15 +4,18 @@ import { Suspense, useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import RequestStaffButton from "@/components/Global/RequestStaffButton";
+import MenuCornerFabs from "@/components/Global/MenuCornerFabs";
+import MenuBottomScrollPad from "@/components/Global/MenuBottomScrollPad";
 import DeliveryLocationModal from "@/components/Global/DeliveryLocationModal";
+import MenuGeoRedirect from "@/components/Global/MenuGeoRedirect";
 import OrderChatbotGate from "@/components/Global/OrderChatbotGate";
-import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
+import { useMenuTableParam } from "@/hooks/useMenuTableParam";
 import MaintenanceView from "@/components/Global/MaintenanceView";
 import MenuNotFoundView from "@/components/Global/MenuNotFoundView";
 import { MenuLogoFallbackProvider } from "@/context/menuLogoFallbackContext";
 import { axiosGet } from "@/shared/axiosCall";
 import StripInvalidTableParam from "@/components/Global/StripInvalidTableParam";
+import StripLegacyDeliveryParams from "@/components/Global/StripLegacyDeliveryParams";
 import { templates } from "@/shared/theme.config";
 
 const menuViewRequests = new Map<string, Promise<boolean>>();
@@ -21,9 +24,8 @@ export default function Page() {
   const menu = useAppSelector((state) => state.menu);
   const locale = useLocale();
   const searchParams = useSearchParams();
-  const tableCartAllowed = useTableCartAllowed();
+  const tableParam = useMenuTableParam();
   const delivery = useAppSelector((s) => s.menu.delivery);
-
 
   useEffect(() => {
     const slug = menu.menuInfo?.slug;
@@ -62,29 +64,36 @@ export default function Page() {
     void trackMenuView();
   }, [locale, menu.menuInfo?.slug, searchParams]);
 
-
   if (menu.menuInfo?.isActive === false) {
-    return <MaintenanceView
-      name={menu.menuInfo?.name ?? ""}
-      logo={menu.menuInfo?.logo ?? null}
-    />
+    return (
+      <MaintenanceView
+        name={menu.menuInfo?.name ?? ""}
+        logo={menu.menuInfo?.logo ?? null}
+      />
+    );
   }
 
   return (
     <main className="menu-template font-body">
       <MenuLogoFallbackProvider logo={menu.menuInfo?.logo ?? null}>
         <Suspense fallback={null}>
+          <StripLegacyDeliveryParams />
           <StripInvalidTableParam />
         </Suspense>
 
         {renderTemplate(menu.theme ?? "", Boolean(menu?.menu))}
 
-        {(tableCartAllowed || delivery?.deliveryOn) ? (
+        <MenuBottomScrollPad />
+
+        {!tableParam ? (
           <Suspense fallback={null}>
-            <RequestStaffButton />
+            <MenuGeoRedirect />
           </Suspense>
         ) : null}
-        {delivery?.deliveryOn && !searchParams.get("table")?.trim() ? (
+        <Suspense fallback={null}>
+          <MenuCornerFabs />
+        </Suspense>
+        {delivery?.deliveryOn && !tableParam ? (
           <Suspense fallback={null}>
             <DeliveryLocationModal />
           </Suspense>
@@ -95,13 +104,8 @@ export default function Page() {
   );
 }
 
-
-
-
 const renderTemplate = (theme: string, showTemplates: boolean) => {
   if (!showTemplates) return <MenuNotFoundView />;
-
-  console.log(theme);
 
   const Template = templates[theme];
 

@@ -1,51 +1,64 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useTableCartAllowed } from "./useTableCartAllowed";
+import { useMenuTableParam } from "./useMenuTableParam";
 import { useAppSelector } from "@/store/hooks";
 import { isValidTableParam } from "@/lib/menuTable";
 
-export const DELIVERY_ZONE_PARAM = "deliveryZone";
-
 /**
- * Returns whether ordering (add-to-cart + cart button) is currently active.
- * Ordering is enabled in two modes:
- *  - Table mode:    URL has `?table=<number>` and the plan is paid.
- *  - Delivery mode: URL has `?deliveryZone=<id>` (set after location confirmed)
- *                   and delivery is turned on in the menu config.
- *                   Delivery is available on all plan types.
+ * Ordering is enabled in table mode (?table=) or delivery mode
+ * (in-memory delivery context from geolocation / user selection).
+ *
+ * Table QR mode takes precedence: a valid table disables delivery ordering
+ * even if a delivery session is still in memory.
  */
 export function useIsOrderingEnabled(): {
   isOrderingEnabled: boolean;
   isDeliveryOrder: boolean;
+  isDistanceDelivery: boolean;
   tableNumber: string;
   governorateId: number | null;
+  deliveryBranchId: number | null;
+  deliveryLat: number | null;
+  deliveryLng: number | null;
 } {
-  const searchParams = useSearchParams();
   const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
   const menuInfo = useAppSelector((s) => s.menu.menuInfo);
+  const deliveryContext = useAppSelector((s) => s.menu.deliveryContext);
 
-  const deliveryZoneParam = searchParams.get(DELIVERY_ZONE_PARAM)?.trim() ?? "";
-  const tableNumber = searchParams.get("table")?.trim() ?? "";
+  const tableNumber = useMenuTableParam();
   const tableValidity = tableNumber
     ? isValidTableParam(menuInfo, tableNumber)
     : null;
 
-  const isDeliveryOrder =
-    Boolean(deliveryZoneParam) &&
-    Boolean(delivery?.deliveryOn);
-
   const isTableOrder =
     Boolean(tableNumber) &&
-    !isDeliveryOrder &&
     tableCartAllowed &&
     tableValidity !== false;
+
+  const { distance, governorateId } = deliveryContext;
+
+  const isDistanceDelivery =
+    !isTableOrder &&
+    distance != null &&
+    Boolean(delivery?.deliveryOn);
+
+  const isGovernorateDelivery =
+    !isTableOrder &&
+    governorateId != null &&
+    Boolean(delivery?.deliveryOn);
+
+  const isDeliveryOrder = isDistanceDelivery || isGovernorateDelivery;
 
   return {
     isOrderingEnabled: isTableOrder || isDeliveryOrder,
     isDeliveryOrder,
+    isDistanceDelivery,
     tableNumber,
-    governorateId: deliveryZoneParam ? parseInt(deliveryZoneParam, 10) : null,
+    governorateId: isGovernorateDelivery ? governorateId : null,
+    deliveryBranchId: isDistanceDelivery ? distance?.branchId ?? null : null,
+    deliveryLat: isDistanceDelivery ? distance?.lat ?? null : null,
+    deliveryLng: isDistanceDelivery ? distance?.lng ?? null : null,
   };
 }

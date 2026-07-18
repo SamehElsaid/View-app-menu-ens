@@ -7,6 +7,7 @@ import { useAppSelector } from "@/store/hooks";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { FaGlobe } from "react-icons/fa";
 import LoadImage from "@/components/ImageLoad";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
 
 export default function HeaderO() {
   const locale = useLocale();
@@ -71,7 +72,12 @@ export default function HeaderO() {
           </h2>
         </motion.div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <MenuWifiDropdown
+            buttonClassName="border border-white/30 bg-white/15 text-white backdrop-blur-md hover:bg-white/25 shadow-md"
+            panelClassName="border-white/15 bg-[#004861]/95 text-white"
+            iconClassName="text-lg"
+          />
           <button
             onClick={toggleLanguage}
             className="flex items-center gap-2 px-4 py-2 rounded-full border border-white/30

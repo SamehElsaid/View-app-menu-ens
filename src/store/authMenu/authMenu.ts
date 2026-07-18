@@ -1,9 +1,30 @@
-import { MenuItem, MenuInfo, MenuCustomizations, Category, Delivery } from "@/types/menu";
+import { MenuItem, MenuInfo, MenuCustomizations, Category, Delivery, MenuBranch } from "@/types/menu";
 import { Ad } from "@/types/Ad";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import type { MenuCatalogMeta } from "@/types/menuCatalog";
 import { mergeMenuItemsById } from "@/lib/menuItemNormalize";
 import { sortMenuItemsForDisplay } from "@/lib/menuCategoryOrder";
+
+export type DistanceDeliveryContext = {
+  branchId: number;
+  lat: number;
+  lng: number;
+  areaNameAr?: string;
+  areaNameEn?: string;
+};
+
+export type DeliveryContextState = {
+  /** User dismissed delivery modal (browse-only mode) */
+  browseOnly: boolean;
+  distance: DistanceDeliveryContext | null;
+  governorateId: number | null;
+};
+
+const initialDeliveryContext: DeliveryContextState = {
+  browseOnly: false,
+  distance: null,
+  governorateId: null,
+};
 
 type MenuState = {
   menu: MenuItem[] | null;
@@ -13,7 +34,10 @@ type MenuState = {
   menuCustomizations: MenuCustomizations | null;
   categories: Category[] | null;
   delivery: Delivery | null;
+  branches: MenuBranch[];
   catalog: MenuCatalogMeta | null;
+  /** In-memory delivery location; resets on page refresh */
+  deliveryContext: DeliveryContextState;
   /** true once UseDispatchMenu has finished its first dispatch cycle */
   menuLoaded: boolean;
 };
@@ -25,7 +49,9 @@ const initialState: MenuState = {
   menuCustomizations: null,
   categories: null,
   delivery: null,
+  branches: [],
   catalog: null,
+  deliveryContext: initialDeliveryContext,
   menuLoaded: false,
 };
 
@@ -66,6 +92,37 @@ const menuSlice = createSlice({
     SET_DELIVERY: (state, action: PayloadAction<Delivery | null>) => {
       state.delivery = action.payload;
     },
+    SET_BRANCHES: (state, action: PayloadAction<MenuBranch[]>) => {
+      state.branches = action.payload;
+    },
+    SET_DELIVERY_DISTANCE: (
+      state,
+      action: PayloadAction<DistanceDeliveryContext>,
+    ) => {
+      state.deliveryContext = {
+        browseOnly: false,
+        distance: action.payload,
+        governorateId: null,
+      };
+    },
+    SET_DELIVERY_GOVERNORATE: (state, action: PayloadAction<number>) => {
+      state.deliveryContext = {
+        browseOnly: false,
+        distance: null,
+        governorateId: action.payload,
+      };
+    },
+    SET_DELIVERY_BROWSE_ONLY: (state) => {
+      state.deliveryContext = {
+        browseOnly: true,
+        distance: null,
+        governorateId: null,
+      };
+    },
+    /** Reset delivery session (e.g. table QR mode takes over). */
+    CLEAR_DELIVERY_CONTEXT: (state) => {
+      state.deliveryContext = initialDeliveryContext;
+    },
     REMOVE_MENU: (state) => {
       state.menu = null;
       state.menuInfo = null;
@@ -74,7 +131,9 @@ const menuSlice = createSlice({
       state.menuCustomizations = null;
       state.categories = null;
       state.delivery = null;
+      state.branches = [];
       state.catalog = null;
+      state.deliveryContext = initialDeliveryContext;
       state.menuLoaded = false;
     },
     SET_MENU_LOADED: (state, action: PayloadAction<boolean>) => {
@@ -93,6 +152,11 @@ export const {
   SET_CATALOG_META,
   APPEND_MENU_ITEMS,
   SET_DELIVERY,
+  SET_BRANCHES,
+  SET_DELIVERY_DISTANCE,
+  SET_DELIVERY_GOVERNORATE,
+  SET_DELIVERY_BROWSE_ONLY,
+  CLEAR_DELIVERY_CONTEXT,
   REMOVE_MENU,
   SET_MENU_LOADED,
 } = menuSlice.actions;

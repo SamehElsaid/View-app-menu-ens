@@ -1,6 +1,6 @@
 "use client";
 
-import { MenuItem, MenuInfo, MenuCustomizations, Category, Delivery } from "@/types/menu";
+import { MenuItem, MenuInfo, MenuCustomizations, Category, Delivery, MenuBranch } from "@/types/menu";
 import { Ad } from "@/types/Ad";
 import { useEffect, useState } from "react";
 import {
@@ -10,6 +10,7 @@ import {
   SET_MENU_CUSTOMIZATIONS,
   SET_CATEGORIES,
   SET_DELIVERY,
+  SET_BRANCHES,
   SET_CATALOG_META,
   SET_MENU_LOADED,
 } from "@/store/authMenu/authMenu";
@@ -34,6 +35,7 @@ type Props = {
   categories: Category[] | null;
   delivery: Delivery | null;
   catalog: MenuCatalogMeta | null;
+  branches?: MenuBranch[] | null;
 };
 
 export default function UseDispatchMenu({
@@ -44,6 +46,7 @@ export default function UseDispatchMenu({
   categories,
   delivery,
   catalog,
+  branches,
 }: Props) {
   const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(true);
@@ -73,6 +76,7 @@ export default function UseDispatchMenu({
       dispatch(SET_MENU_CUSTOMIZATIONS(menuCustomizations));
     }
     dispatch(SET_DELIVERY(delivery ?? null));
+    dispatch(SET_BRANCHES(branches ?? []));
     dispatch(
       SET_CATALOG_META(
         catalog ?? (menu ? resolveBootstrapCatalogMeta(menu.length) : null),
@@ -88,6 +92,7 @@ export default function UseDispatchMenu({
     categories,
     delivery,
     catalog,
+    branches,
     dispatch,
   ]);
   return (

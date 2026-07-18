@@ -1,25 +1,20 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useAppSelector } from "@/store/hooks";
-import { isFreeMenuPlan, isPaidMenuPlan } from "@/lib/menuPlan";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
+import { hasTableSessionInSearch } from "@/lib/menuTable";
 
 /**
- * AI chat ordering (ai-order webhook, cart, suggestion Add, checkout)
- * only when the menu is paid AND the URL has ?table=.
- * Free menus and paid menus without table are browse-only in the UI (cards read-only; no Add/checkout).
- * Paid menus always use the ai-order webhook; only free menus use the discovery webhook.
+ * AI chat cart / Add / checkout when ordering is enabled the same way as the
+ * floating cart: valid paid table (?table=) **or** an active delivery session.
+ * Free discovery UI stays browse-only until delivery/table unlocks ordering.
  */
 export function useAiChatCanOrder(): boolean {
-  const ownerPlanType = useAppSelector((s) => s.menu.menuInfo?.ownerPlanType);
-  const searchParams = useSearchParams();
-  const tableNumber = searchParams.get("table")?.trim() ?? "";
-
-  if (isFreeMenuPlan(ownerPlanType)) return false;
-  return isPaidMenuPlan(ownerPlanType) && tableNumber.length > 0;
+  const { isOrderingEnabled } = useIsOrderingEnabled();
+  return isOrderingEnabled;
 }
 
 export function useAiChatHasTable(): boolean {
   const searchParams = useSearchParams();
-  return Boolean(searchParams.get("table")?.trim());
+  return hasTableSessionInSearch(searchParams);
 }

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import LoadImage from "@/components/ImageLoad";
 import Link from "next/link";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
 
 interface NavbarProps {
   menuName?: string;
@@ -83,6 +84,10 @@ const Navbar = ({ menuName, menuLogo }: NavbarProps) => {
               );
             })}
 
+            <MenuWifiDropdown
+              buttonClassName="bg-[#3B332E] text-[#B6AA99] hover:bg-[#F2B705]/20 hover:text-[#F2B705]"
+              panelClassName="border-[#3B332E] bg-[#2a241f]/95 text-[#F5EDE0]"
+            />
             <button
               type="button"
               onClick={toggleLanguage}

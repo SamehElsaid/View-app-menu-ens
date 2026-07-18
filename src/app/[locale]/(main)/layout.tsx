@@ -12,6 +12,7 @@ import {
   MenuCustomizations,
   Category,
   Delivery,
+  MenuBranch,
 } from "@/types/menu";
 import { Ad } from "@/types/Ad";
 import { cookies, headers } from "next/headers";
@@ -50,10 +51,9 @@ async function fetchMenu(slug: string, locale: string, forwardQuery: string) {
     ? `/public/menu/${slug}?${forwardQuery}`
     : `/public/menu/${slug}`;
 
-  const response = await serverGet<MenuBootstrapApiEnvelope | MenuBootstrapResponse>(
-    menuApiPath,
-    locale,
-  );
+  const response = await serverGet<
+    MenuBootstrapApiEnvelope | MenuBootstrapResponse
+  >(menuApiPath, locale);
 
   if (!response.status) return null;
   return parseMenuBootstrapPayload(response.data);
@@ -111,17 +111,17 @@ const getMenu = async (locale: string) => {
 };
 
 const defaultMetadata: Record<string, { title: string; description: string }> =
-  {
-    en: {
-      title: "ENSmenu",
-      description:
-        "ENSmenu is a platform for creating digital menus for restaurants and cafes",
-    },
-    ar: {
-      title: "ENSmenu",
-      description: "ENSmenu منصة لإنشاء القوائم الرقمية للمطاعم والمقاهي",
-    },
-  };
+{
+  en: {
+    title: "ENSmenu",
+    description:
+      "ENSmenu is a platform for creating digital menus for restaurants and cafes",
+  },
+  ar: {
+    title: "ENSmenu",
+    description: "ENSmenu منصة لإنشاء القوائم الرقمية للمطاعم والمقاهي",
+  },
+};
 
 const DEFAULT_ICON_URL = "/favicon.svg";
 
@@ -195,10 +195,12 @@ export default async function MainLayout({
   const cookieSubdomain = cookieStore.get(DEV_SUB_DOMAIN_COOKIE_KEY)?.value;
   const { needsDevSubdomain, devMode } = resolveMenuSlug(host, cookieSubdomain);
   const data = await getMenu(locale);
-  console.log(data);
+
   const bootstrapCatalog = data?.items
     ? resolveBootstrapCatalogMeta(data.items.length, data.totalItems)
     : null;
+
+  console.log(data);
 
   return (
     <>
@@ -215,6 +217,7 @@ export default async function MainLayout({
         }
         categories={(data?.categories as Category[]) ?? null}
         delivery={(data?.delivery as Delivery) ?? null}
+        branches={(data?.branches as MenuBranch[]) ?? []}
         catalog={bootstrapCatalog}
       />
       <Header />

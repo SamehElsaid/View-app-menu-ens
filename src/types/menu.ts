@@ -32,6 +32,13 @@ export interface MenuInfo {
   currency: string;
   isActive: boolean;
   chatbotEnabled: boolean;
+  wifiEnabled?: boolean;
+  wifiName?: string | null;
+  wifiPassword?: string | null;
+  taxEnabled?: boolean;
+  taxPercent?: number | null;
+  serviceEnabled?: boolean;
+  servicePercent?: number | null;
   ownerPlanType: string;
   phone: string | null;
   addressAr: string | null;
@@ -47,10 +54,12 @@ export interface MenuInfo {
   table?: {
     id?: number;
     tableNumber?: string | null;
+    isActive?: boolean;
   } | null;
   tables?: Array<{
     id?: number;
     tableNumber?: string | null;
+    isActive?: boolean;
   }>;
 }
 
@@ -127,8 +136,23 @@ export interface DeliveryGovernorate {
   updatedAt: string;
 }
 
+export type DeliveryMode = "governorates" | "distance";
+
+export interface MenuBranch {
+  id: number;
+  phone?: string | null;
+  latitude: number | string | null;
+  longitude: number | string | null;
+  deliveryBasePrice?: number | null;
+  deliveryPricePerKm?: number | null;
+  maxDeliveryRadiusKm?: number | null;
+  name?: string | null;
+  address?: string | null;
+}
+
 export interface Delivery {
   deliveryOn: boolean;
+  deliveryMode?: DeliveryMode;
   deliveryWhatsAppOn?: boolean;
   deliveryPhone: string;
   phoneNumber: string;

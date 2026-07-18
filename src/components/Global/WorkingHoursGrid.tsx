@@ -78,8 +78,8 @@ export default function WorkingHoursGrid({
   };
 
   return (
-    <section className={`px-2 md:px-3 ${className}`}>
-      <div className="mb-5 flex items-center gap-3 md:mb-6">
+    <section className={`px-3 sm:px-2 md:px-3 ${className}`}>
+      <div className="mb-4 flex items-center gap-2.5 sm:mb-5 sm:gap-3 md:mb-6">
         <span
           className="h-px flex-1"
           style={{ backgroundColor: `${primaryColor}33` }}
@@ -99,14 +99,15 @@ export default function WorkingHoursGrid({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
+      {/* Mobile: single column for readable day + hours. sm+: 2-col grid */}
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 md:gap-4 lg:gap-5">
         {days.map((day, index) => {
           if (!day) return null;
           const isToday = day.key === todayKey;
           const isLastOdd = index === days.length - 1 && days.length % 2 !== 0;
 
           const baseCardClass =
-            "flex items-center justify-between gap-3 rounded-2xl border px-4 py-3.5 text-sm font-semibold shadow-[0_4px_16px_-8px_rgba(0,0,0,0.1)] transition sm:rounded-3xl sm:px-5 sm:py-4 sm:text-base";
+            "flex min-h-[3.25rem] items-center justify-between gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold shadow-[0_4px_16px_-8px_rgba(0,0,0,0.1)] transition sm:min-h-0 sm:gap-3 sm:rounded-3xl sm:px-5 sm:py-4 sm:text-base";
 
           const variantCardClass = isToday
             ? "border-transparent text-white"
@@ -117,27 +118,33 @@ export default function WorkingHoursGrid({
           return (
             <div
               key={day.key}
-              className={`${baseCardClass} ${variantCardClass} ${isLastOdd ? "col-span-2 mx-auto w-[calc(50%-6px)] sm:w-[calc(50%-8px)] lg:w-[calc(50%-10px)]" : ""}`}
+              className={`${baseCardClass} ${variantCardClass} ${
+                isLastOdd
+                  ? "sm:col-span-2 sm:mx-auto sm:w-[calc(50%-6px)] md:w-[calc(50%-8px)] lg:w-[calc(50%-10px)]"
+                  : ""
+              }`}
               style={isToday ? { backgroundColor: primaryColor } : undefined}
             >
-              <span className={isToday ? "font-bold" : "font-semibold"}>
+              <span
+                className={`min-w-0 truncate ${isToday ? "font-bold" : "font-semibold"}`}
+              >
                 {t(`days.${day.key}`)}
               </span>
 
               {day.closed ? (
                 <span
-                  className={`text-xs font-bold uppercase tracking-wide ${isToday ? "text-white/80" : "text-red-400"}`}
+                  className={`shrink-0 text-xs font-bold uppercase tracking-wide sm:text-sm ${isToday ? "text-white/80" : "text-red-400"}`}
                 >
                   {t("closed")}
                 </span>
               ) : (
                 <span
                   dir="ltr"
-                  className={`flex items-center gap-1.5 tabular-nums text-xs sm:text-sm ${isToday ? "text-white/90" : isDark ? "text-[#B6AA99]" : "text-zinc-500"}`}
+                  className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap tabular-nums text-xs sm:gap-2 sm:text-sm ${isToday ? "text-white/90" : isDark ? "text-[#B6AA99]" : "text-zinc-500"}`}
                 >
                   <span>{formatTime(day.open)}</span>
                   <span
-                    className={`text-[10px] ${isToday ? "text-white/50" : isDark ? "text-[#5A5047]" : "text-zinc-300"}`}
+                    className={`text-[10px] leading-none ${isToday ? "text-white/50" : isDark ? "text-[#5A5047]" : "text-zinc-300"}`}
                     aria-hidden
                   >
                     ●

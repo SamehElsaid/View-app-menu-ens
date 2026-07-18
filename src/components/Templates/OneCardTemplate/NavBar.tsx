@@ -2,6 +2,7 @@
 
 import { LanguageToggle } from "../Default/LanguageToggle";
 import { useMenuSocialLinks } from "@/hooks/useMenuSocialLinks";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
 import { useOneCardTheme } from "./OneCardThemeContext";
 
 export default function NavBar() {
@@ -15,11 +16,18 @@ export default function NavBar() {
           dir="ltr"
           className="pointer-events-auto flex items-center justify-between gap-3 px-5 py-4 one-card-header bg-[rgba(255,255,255,0.97)] shadow-[0_4px_16px_rgba(0,0,0,0.12)] max-[380px]:px-4"
         >
-          <div
-            className="onecard-lang-pill inline-flex items-center gap-1.5 px-4 py-2 rounded-[50px] text-sm font-bold text-white leading-none"
-            style={{ backgroundColor: primary }}
-          >
-            <LanguageToggle />
+          <div className="flex items-center gap-2">
+            <div
+              className="onecard-lang-pill inline-flex items-center gap-1.5 px-4 py-2 rounded-[50px] text-sm font-bold text-white leading-none"
+              style={{ backgroundColor: primary }}
+            >
+              <LanguageToggle />
+            </div>
+            <MenuWifiDropdown
+              buttonClassName="bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900"
+              panelClassName="border-zinc-200 bg-white text-zinc-800"
+              iconClassName="text-[18px]"
+            />
           </div>
 
           {socialLinks.length > 0 ? (

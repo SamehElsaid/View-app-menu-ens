@@ -7,7 +7,6 @@ import Bubbles from "./Bubbles";
 import { useLocale } from "next-intl";
 import { menuTemplateFontFamily } from "@/lib/menuTemplateFont";
 import { ENSFixedBanner } from "../components/ENSFixedBanner";
-import { SET_MENU_INFO } from "@/store/authMenu/authMenu";
 import { useAppSelector } from "@/store/hooks";
 
 export default function OceanicTemplate() {

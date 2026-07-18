@@ -8,6 +8,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 import LoadImage from "@/components/ImageLoad";
 import { FiGlobe, FiMoon, FiSun } from "react-icons/fi";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
 
 interface NavbarProps {
   menuName?: string;
@@ -150,6 +151,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           <div className="hidden lg:flex items-center gap-4">
+            <MenuWifiDropdown
+              buttonClassName="rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 !h-10 !w-10"
+              panelClassName="border-slate-200 bg-white text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
             <button
               onClick={toggleLanguage}
               aria-label="Toggle language"
@@ -184,6 +189,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div className="lg:hidden flex items-center gap-2">
+            <MenuWifiDropdown
+              buttonClassName="rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 !h-10 !w-10"
+              panelClassName="border-slate-200 bg-white text-slate-800 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            />
             <button
               type="button"
               onClick={toggleLanguage}

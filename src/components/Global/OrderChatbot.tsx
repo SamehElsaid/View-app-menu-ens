@@ -12,24 +12,32 @@ import React, {
   useState,
 } from "react";
 import { useLocale } from "next-intl";
-import { useSearchParams } from "next/navigation";
+import "react-phone-number-input/style.css";
 import { FiCheck, FiChevronDown, FiSend, FiX } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import arPhoneLabels from "react-phone-number-input/locale/ar";
+import enPhoneLabels from "react-phone-number-input/locale/en";
 import { useAppSelector } from "@/store/hooks";
 import { axiosPost } from "@/shared/axiosCall";
 import {
+  buildSkyCartLineKey,
+  getCartQuantityForMenuItem,
   notifySkyCartUpdated,
   readSkyCartFromCookie,
   subscribeSkyCartUpdated,
-  type SkyCartItem,
+  type SkyCart,
+  updateSkyCartLineQuantity,
+  upsertSkyCartFromMenuItemWithOptions,
   writeSkyCartToCookie,
 } from "@/lib/skyTemplateCart";
 import {
   applyCartActions,
   enrichAiSuggestions,
-  increaseCartItemQuantity,
+  increaseCartLineQuantity,
   removeCartItem,
-  setCartItemQuantity,
+  setCartLineQuantity,
+  toRequestCartLines,
   toRequestCartQuantities,
 } from "@/lib/aiOrderCartApply";
 import {
@@ -42,9 +50,12 @@ import { clearPendingSuggestions } from "@/lib/aiOrderPendingSuggestions";
 import {
   isIncreaseQuantityIntent,
   clearLastCartItemId,
+  clearLastCartLineKey,
   parseIncreaseDeltaFromMessage,
   readLastCartItemId,
+  readLastCartLineKey,
   writeLastCartItemId,
+  writeLastCartLineKey,
 } from "@/lib/aiOrderQuantity";
 import {
   compactReplyWhenSuggestionsExist,
@@ -61,11 +72,30 @@ import {
   syncStateWithCart,
 } from "@/lib/aiOrderConversation";
 import LoadImage from "@/components/ImageLoad";
+import MenuItemDetailModal from "@/components/Global/MenuItemDetailModal";
+import SkyCartLineItem from "@/components/Global/SkyCartLineItem";
+import DeliveryOrderAreaSection, {
+  useDeliveryAreaReady,
+} from "@/components/Global/DeliveryOrderAreaSection";
+import type { MenuItemCartOptions } from "@/components/Global/MenuItemDetailModal";
 import { capSuggestionList } from "@/lib/aiOrderSuggestions";
+import { buildAiMenuCatalog } from "@/lib/aiOrderMenuCatalog";
+import {
+  getMenuItemMinPrice,
+  hasMenuItemOptions,
+} from "@/lib/menuItemOptions";
 import { useCurrencyLabel } from "@/lib/useCurrencyLabel";
-import { pickRandomQuickChips, type QuickChip } from "@/lib/aiOrderQuickChips";
+import {
+  buildAllCategoryQuickChips,
+  type QuickChip,
+} from "@/lib/aiOrderQuickChips";
 import { isFreeMenuPlan } from "@/lib/menuPlan";
 import { useAiChatCanOrder } from "@/hooks/useAiChatCanOrder";
+import { useAiChatCatalogBrowse } from "@/hooks/useAiChatCatalogBrowse";
+import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
+import { useIsMenuCornerDockSession } from "@/hooks/useIsMenuCornerDockSession";
+import { notifyOpenTableOrderRefresh } from "@/lib/openTableOrder";
+import { MENU_MOBILE_TAB_BAR_CLEARANCE_CLASS } from "@/lib/menuFabLayout";
 import {
   sendAiDiscoveryMessage,
   sendAiOrderMessage,
@@ -73,7 +103,6 @@ import {
 import {
   DEFAULT_AI_ORDER_CURRENCY,
   resolveAiOrderMenuIdentity,
-  type AiMenuCatalogItem,
   type AiOrderCart,
   type AiOrderRequest,
   type AiOrderSuggestion,
@@ -102,8 +131,16 @@ export type OrderChatbotMode = "ordering" | "discovery";
 
 type StaffCallPayload = {
   menuId: number;
+  type: "table" | "delivery";
   tableNumber: string;
   customerName: string;
+  customerPhone?: string;
+  customerAddress?: string;
+  orderNotes?: string;
+  governorateId?: number | null;
+  branchId?: number;
+  customerLat?: number;
+  customerLng?: number;
   items: Array<{
     menuItemId: number;
     quantity: number;
@@ -122,6 +159,9 @@ type StaffCallPayload = {
 };
 
 const NAME_STORAGE_KEY = "ensmenu_ai_order_customer_name";
+const NOTES_STORAGE_KEY = "ensmenu_ai_order_customer_notes";
+const PHONE_STORAGE_KEY = "ensmenu_ai_order_customer_phone";
+const ADDRESS_STORAGE_KEY = "ensmenu_ai_order_customer_address";
 const BETA_NOTICE_SESSION_KEY = "ensmenu_ai_order_beta_notice_v4";
 const AI_AVATAR_SRC = "/images/AiAvatar.png";
 
@@ -191,43 +231,36 @@ function readOrCreateSessionId(storageKey: string): string {
   return next;
 }
 
-function asAiOrderCart(
-  raw: Record<
-    number,
-    { id: number; quantity: number; name: string; price: number; image: string }
-  >,
-): AiOrderCart {
-  const out: AiOrderCart = {};
-  for (const [k, v] of Object.entries(raw)) {
-    out[k] = {
-      id: v.id,
-      quantity: v.quantity,
-      name: v.name,
-      price: v.price,
-      image: v.image,
-    };
-  }
-  return out;
-}
-
 export default function OrderChatbot({
   mode = "ordering",
 }: {
   mode?: OrderChatbotMode;
 }) {
   const localeFromIntl = useLocale();
-  const searchParams = useSearchParams();
   const menuInfo = useAppSelector((s) => s.menu.menuInfo);
   const menuItems = useAppSelector((s) => s.menu.menu) ?? [];
+  const storeCategories = useAppSelector((s) => s.menu.categories);
   const currencyLabel = useCurrencyLabel();
   const canOrderViaChat = useAiChatCanOrder();
+  const {
+    isDeliveryOrder,
+    isDistanceDelivery,
+    tableNumber: orderingTableNumber,
+    governorateId,
+    deliveryBranchId,
+    deliveryLat,
+    deliveryLng,
+  } = useIsOrderingEnabled();
+  const isMenuCornerDockSession = useIsMenuCornerDockSession();
+  const deliveryAreaReady = useDeliveryAreaReady();
+  const catalogBrowse = useAiChatCatalogBrowse();
 
   const isFreePlan = isFreeMenuPlan(menuInfo?.ownerPlanType);
 
-  /** Free → LINAENSMENUFREE; paid (with or without ?table=) → ai-order webhook. */
+  /** Free → LINAENSMENUFREE; paid → ai-order webhook. */
   const useDiscoveryWebhook = isFreePlan;
 
-  /** No Add/checkout: free menus and paid opened without ?table=. */
+  /** No Add/checkout until table or delivery session unlocks ordering. */
   const isBrowseOnly = !canOrderViaChat;
 
   const chatSessionStorageKey = useMemo(
@@ -266,12 +299,27 @@ export default function OrderChatbot({
           add: "إضافة",
           inlineCartTitle: "تعديل الطلب",
           removeFromCart: "حذف",
-          quickConfirm: "تأكيد الطلب",
-          customerNameLabel: "اسم حضرتك",
-          customerNamePlaceholder: "مثال: أحمد محمد",
-          sendOrder: "إرسال الطلب",
-          customerNameRequired: "من فضلك اكتب اسمك قبل الإرسال",
-          quickChipsAria: "اقتراحات سريعة",
+          customerNameLabel: "اسم العميل",
+          customerNamePlaceholder: "اكتب اسمك",
+          phoneLabel: "رقم الهاتف",
+          phoneRequired: "ادخل رقم الهاتف",
+          phoneInvalid: "رقم الهاتف غير صحيح",
+          addressLabel: "تفاصيل العنوان",
+          addressPlaceholder: "الشارع، المبنى، الدور، علامة مميزة…",
+          addressRequired: "ادخل العنوان",
+          deliveryAreaRequired: "يرجى اختيار منطقة التوصيل",
+          notesLabel: "ملاحظات",
+          notesPlaceholder: "ملاحظات إضافية",
+          step2Title: "الخطوة 2: بيانات الطلب",
+          sendOrder: "تأكيد الطلب",
+          customerNameRequired: "ادخل الاسم",
+          backToSummary: "رجوع",
+          askDelivery: "فعّل التوصيل من المنيو أولاً عشان تقدر تطلب.",
+          quickChipsAria: "فئات المنيو",
+          showMore: "عرض المزيد",
+          loadingProducts: "جاري تحميل المنتجات...",
+          emptyCategory: "مفيش منتجات في الفئة دي حالياً.",
+          completeOrder: "إكمال الطلب",
           contactWhatsApp: "تواصل عبر واتساب",
         }
         : {
@@ -293,12 +341,27 @@ export default function OrderChatbot({
           add: "Add",
           inlineCartTitle: "Edit order",
           removeFromCart: "Remove",
-          quickConfirm: "Confirm order",
-          customerNameLabel: "Your name",
-          customerNamePlaceholder: "e.g. John Smith",
-          sendOrder: "Send order",
-          customerNameRequired: "Please enter your name before sending",
-          quickChipsAria: "Quick suggestions",
+          customerNameLabel: "Customer name",
+          customerNamePlaceholder: "Enter your name",
+          phoneLabel: "Phone number",
+          phoneRequired: "Enter your phone number",
+          phoneInvalid: "Invalid phone number",
+          addressLabel: "Address details",
+          addressPlaceholder: "Street, building, floor, landmark…",
+          addressRequired: "Enter your address",
+          deliveryAreaRequired: "Please select a delivery area",
+          notesLabel: "Notes",
+          notesPlaceholder: "Additional notes",
+          step2Title: "Step 2: Order details",
+          sendOrder: "Confirm order",
+          customerNameRequired: "Enter your name",
+          backToSummary: "Back",
+          askDelivery: "Enable delivery from the menu first to place an order.",
+          quickChipsAria: "Menu categories",
+          showMore: "Show more",
+          loadingProducts: "Loading products...",
+          emptyCategory: "No products in this category right now.",
+          completeOrder: "Complete order",
           contactWhatsApp: "Contact on WhatsApp",
         };
     }
@@ -322,12 +385,27 @@ export default function OrderChatbot({
         add: "إضافة",
         inlineCartTitle: "تعديل الطلب",
         removeFromCart: "حذف",
-        quickConfirm: "تأكيد الطلب",
-        customerNameLabel: "اسم حضرتك",
-        customerNamePlaceholder: "مثال: أحمد محمد",
-        sendOrder: "إرسال الطلب",
-        customerNameRequired: "من فضلك اكتب اسمك قبل الإرسال",
-        quickChipsAria: "اقتراحات سريعة",
+        customerNameLabel: "اسم العميل",
+        customerNamePlaceholder: "اكتب اسمك",
+        phoneLabel: "رقم الهاتف",
+        phoneRequired: "ادخل رقم الهاتف",
+        phoneInvalid: "رقم الهاتف غير صحيح",
+        addressLabel: "تفاصيل العنوان",
+        addressPlaceholder: "الشارع، المبنى، الدور، علامة مميزة…",
+        addressRequired: "ادخل العنوان",
+        deliveryAreaRequired: "يرجى اختيار منطقة التوصيل",
+        notesLabel: "ملاحظات",
+        notesPlaceholder: "ملاحظات إضافية",
+        step2Title: "الخطوة 2: بيانات الطلب",
+        sendOrder: "تأكيد الطلب",
+        customerNameRequired: "ادخل الاسم",
+        backToSummary: "رجوع",
+        askDelivery: "فعّل التوصيل من المنيو أولاً عشان تقدر تطلب.",
+        quickChipsAria: "فئات المنيو",
+        showMore: "عرض المزيد",
+        loadingProducts: "جاري تحميل المنتجات...",
+        emptyCategory: "مفيش منتجات في الفئة دي حالياً.",
+        completeOrder: "إكمال الطلب",
         contactWhatsApp: "تواصل عبر واتساب",
       }
       : {
@@ -349,12 +427,27 @@ export default function OrderChatbot({
         add: "Add",
         inlineCartTitle: "Edit order",
         removeFromCart: "Remove",
-        quickConfirm: "Confirm order",
-        customerNameLabel: "Your name",
-        customerNamePlaceholder: "e.g. John Smith",
-        sendOrder: "Send order",
-        customerNameRequired: "Please enter your name before sending",
-        quickChipsAria: "Quick suggestions",
+        customerNameLabel: "Customer name",
+        customerNamePlaceholder: "Enter your name",
+        phoneLabel: "Phone number",
+        phoneRequired: "Enter your phone number",
+        phoneInvalid: "Invalid phone number",
+        addressLabel: "Address details",
+        addressPlaceholder: "Street, building, floor, landmark…",
+        addressRequired: "Enter your address",
+        deliveryAreaRequired: "Please select a delivery area",
+        notesLabel: "Notes",
+        notesPlaceholder: "Additional notes",
+        step2Title: "Step 2: Order details",
+        sendOrder: "Confirm order",
+        customerNameRequired: "Enter your name",
+        backToSummary: "Back",
+        askDelivery: "Enable delivery from the menu first to place an order.",
+        quickChipsAria: "Menu categories",
+        showMore: "Show more",
+        loadingProducts: "Loading products...",
+        emptyCategory: "No products in this category right now.",
+        completeOrder: "Complete order",
         contactWhatsApp: "Contact on WhatsApp",
       };
   }, [isArabic, isBrowseOnly]);
@@ -372,13 +465,26 @@ export default function OrderChatbot({
   const [sessionId, setSessionId] = useState("unknown");
   const [customerName, setCustomerName] = useState("");
   const [checkoutNameInput, setCheckoutNameInput] = useState("");
+  const [checkoutPhone, setCheckoutPhone] = useState("");
+  const [checkoutAddress, setCheckoutAddress] = useState("");
+  const [checkoutOrderNotes, setCheckoutOrderNotes] = useState("");
+  const [checkoutFieldErrors, setCheckoutFieldErrors] = useState<{
+    name?: string;
+    phone?: string;
+    address?: string;
+    govArea?: string;
+  }>({});
   const [conversationState, setConversationState] =
     useState<ConversationState>("browsing");
   const [messages, setMessages] = useState<UiMessage[]>([]);
-  const [cartSnapshot, setCartSnapshot] = useState<AiOrderCart>(() =>
-    asAiOrderCart(readSkyCartFromCookie()),
+  const [cartSnapshot, setCartSnapshot] = useState<SkyCart>(() =>
+    readSkyCartFromCookie(),
   );
   const [lastCartItemId, setLastCartItemId] = useState<number | null>(null);
+  const [lastCartLineKey, setLastCartLineKey] = useState<string | null>(null);
+  const [optionsPickerItem, setOptionsPickerItem] = useState<MenuItem | null>(
+    null,
+  );
   const [pendingRemovePick, setPendingRemovePick] = useState(false);
   const [showBetaCard, setShowBetaCard] = useState(false);
   const [pendingOrderSubmit, setPendingOrderSubmit] = useState(false);
@@ -397,6 +503,7 @@ export default function OrderChatbot({
   const [fabPhraseIndex, setFabPhraseIndex] = useState(0);
   const [fabPhraseVisible, setFabPhraseVisible] = useState(true);
   const betaShownThisOpenRef = useRef(false);
+  const lastQtyMessageIdRef = useRef("catalog_browse");
   const messagesScrollRef = useRef<HTMLDivElement>(null);
   const orderSummaryPanelRef = useRef<HTMLDivElement>(null);
   const checkoutNameInputRef = useRef<HTMLInputElement>(null);
@@ -464,6 +571,9 @@ export default function OrderChatbot({
     showBetaCard,
     showInlineCartEditor,
     conversationState,
+    catalogBrowse.items.length,
+    catalogBrowse.loading,
+    catalogBrowse.loadingMore,
     scrollMessagesToBottom,
   ]);
 
@@ -477,6 +587,8 @@ export default function OrderChatbot({
       setOrderSummarySheetOpen(false);
       setPendingOrderSubmit(false);
       setShowInlineCartEditor(false);
+      setOptionsPickerItem(null);
+      catalogBrowse.clearBrowse();
       if (betaShownThisOpenRef.current) {
         markBetaNoticeSeen();
         setShowBetaCard(false);
@@ -487,22 +599,32 @@ export default function OrderChatbot({
     if (showBetaCard && open) {
       betaShownThisOpenRef.current = true;
     }
-  }, [open, showBetaCard]);
+  }, [open, showBetaCard, catalogBrowse.clearBrowse]);
 
   useEffect(() => {
     const sid = readOrCreateSessionId(chatSessionStorageKey);
     setSessionId(sid);
     const storedName = localStorage.getItem(NAME_STORAGE_KEY) || "";
+    const storedNotes = localStorage.getItem(NOTES_STORAGE_KEY) || "";
+    const storedPhone = localStorage.getItem(PHONE_STORAGE_KEY) || "";
+    const storedAddress = localStorage.getItem(ADDRESS_STORAGE_KEY) || "";
     setCustomerName(storedName);
+    setCheckoutNameInput(storedName);
+    setCheckoutPhone(storedPhone);
+    setCheckoutAddress(storedAddress);
+    setCheckoutOrderNotes(storedNotes);
+    setCheckoutFieldErrors({});
     setLastCartItemId(readLastCartItemId());
+    setLastCartLineKey(readLastCartLineKey());
     setMessages([]);
+    setOptionsPickerItem(null);
 
     if (isBrowseOnly) {
       return;
     }
 
     const sync = () => {
-      const nextCart = asAiOrderCart(readSkyCartFromCookie());
+      const nextCart = readSkyCartFromCookie();
       setCartSnapshot(nextCart);
       setConversationState((prev) =>
         syncStateWithCart(prev, Object.keys(nextCart).length > 0),
@@ -518,13 +640,8 @@ export default function OrderChatbot({
     }
   }, [customerName]);
 
-  const aiMenuCatalog = useMemo<AiMenuCatalogItem[]>(
-    () =>
-      menuItems.map((item: MenuItem) => ({
-        id: item.id,
-        nameAr: item.nameAr ?? item.name ?? "",
-        price: item.price,
-      })),
+  const aiMenuCatalog = useMemo(
+    () => buildAiMenuCatalog(menuItems),
     [menuItems],
   );
 
@@ -556,14 +673,16 @@ export default function OrderChatbot({
   );
 
   const refreshQuickChips = useCallback(() => {
-    setQuickChips(pickRandomQuickChips(menuItems, isArabic, 4));
+    setQuickChips(
+      buildAllCategoryQuickChips(menuItems, isArabic, storeCategories),
+    );
     setQuickChipsEpoch((n) => n + 1);
-  }, [menuItems, isArabic]);
+  }, [menuItems, isArabic, storeCategories]);
 
   useEffect(() => {
     if (!open) return;
     refreshQuickChips();
-  }, [open, menuItems, refreshQuickChips]);
+  }, [open, refreshQuickChips]);
 
   const suggestionContext = useMemo(
     () => ({
@@ -571,6 +690,7 @@ export default function OrderChatbot({
       localMenuById,
       displayName: displayNameForItem,
       defaultCurrency: menuCurrencyCode,
+      locale: isArabic ? "ar" : "en",
     }),
     [validMenuIds, localMenuById, isArabic, menuCurrencyCode],
   );
@@ -651,14 +771,18 @@ export default function OrderChatbot({
     return () => window.clearTimeout(t);
   }, [showCheckoutNameStep]);
 
-  const persistLastCartItemId = (itemId: number) => {
+  const persistLastCartLine = (itemId: number, lineKey?: string) => {
     if (!validMenuIds.has(itemId)) return;
     setLastCartItemId(itemId);
     writeLastCartItemId(itemId);
+    if (lineKey?.trim()) {
+      setLastCartLineKey(lineKey);
+      writeLastCartLineKey(lineKey);
+    }
   };
 
   const syncCartFromCookie = () => {
-    const nextCart = asAiOrderCart(readSkyCartFromCookie());
+    const nextCart = readSkyCartFromCookie();
     setCartSnapshot(nextCart);
     setConversationState((prev) =>
       syncStateWithCart(prev, Object.keys(nextCart).length > 0),
@@ -669,7 +793,7 @@ export default function OrderChatbot({
     candidateCart: AiOrderCart | undefined,
   ): boolean => {
     if (!candidateCart || typeof candidateCart !== "object") return false;
-    const next: Record<string, SkyCartItem> = {};
+    const next: SkyCart = {};
 
     for (const [key, value] of Object.entries(candidateCart)) {
       const id = Number(value?.id ?? key);
@@ -681,9 +805,11 @@ export default function OrderChatbot({
 
       const localItem = localMenuById.get(id);
       if (!localItem) continue;
+      if (hasMenuItemOptions(localItem)) continue;
 
-      next[String(id)] = {
-        lineKey: String(id),
+      const lineKey = String(id);
+      next[lineKey] = {
+        lineKey,
         id,
         quantity: Math.floor(quantity),
         name: displayNameForItem(localItem),
@@ -694,50 +820,66 @@ export default function OrderChatbot({
 
     writeSkyCartToCookie(next);
     notifySkyCartUpdated();
-    setCartSnapshot(asAiOrderCart(next));
+    setCartSnapshot(next);
     setConversationState(
       Object.keys(next).length > 0 ? "ordering" : "browsing",
     );
-    const lastKey = Object.keys(next).map(Number).pop();
-    if (lastKey) persistLastCartItemId(lastKey);
+    const lastLine = Object.values(next).pop();
+    if (lastLine) persistLastCartLine(lastLine.id, lastLine.lineKey);
     return true;
   };
 
-  const beginCheckoutFlow = () => {
-    const tableNumber = searchParams.get("table")?.trim() || "";
+  const openOrderDetailsStep = () => {
     const currentCart = readSkyCartFromCookie();
     const items = Object.values(currentCart).filter((item) =>
       validMenuIds.has(item.id),
     );
-
     if (!items.length) {
       setErrorText(labels.emptyCart);
       setConversationState("browsing");
       return;
     }
-    if (!tableNumber) {
+    if (!canOrderViaChat) {
+      setErrorText(isDeliveryOrder ? labels.askDelivery : labels.askTable);
+      return;
+    }
+    if (!isDeliveryOrder && !orderingTableNumber) {
       setErrorText(labels.askTable);
       return;
     }
     setErrorText("");
-    setPendingOrderSubmit(false);
+    setCheckoutFieldErrors({});
+    setCheckoutNameInput(customerName.trim());
     setShowInlineCartEditor(false);
-    setConversationState("waiting_for_confirmation");
+    catalogBrowse.clearBrowse();
+    setPendingOrderSubmit(true);
+    setConversationState("waiting_for_name");
     setOrderSummarySheetOpen(true);
+  };
+
+  const beginCheckoutFlow = () => {
+    openOrderDetailsStep();
   };
 
   const submitOrderToStaff = async (
     nameOverride?: string,
+    notesOverride?: string,
   ): Promise<boolean> => {
     setErrorText("");
-    const tableNumber = searchParams.get("table")?.trim() || "";
     const currentCart = readSkyCartFromCookie();
     const items = Object.values(currentCart).filter((item) =>
       validMenuIds.has(item.id),
     );
     const resolvedName = (nameOverride ?? customerName).trim();
+    const resolvedNotes = (notesOverride ?? checkoutOrderNotes).trim();
+    const resolvedPhone = checkoutPhone.trim();
+    const resolvedAddress = checkoutAddress.trim();
 
-    if (!tableNumber) {
+    if (!canOrderViaChat) {
+      setErrorText(isDeliveryOrder ? labels.askDelivery : labels.askTable);
+      return false;
+    }
+    if (!isDeliveryOrder && !orderingTableNumber) {
       setErrorText(labels.askTable);
       return false;
     }
@@ -748,13 +890,51 @@ export default function OrderChatbot({
     if (!resolvedName) {
       return false;
     }
+    if (isDeliveryOrder) {
+      if (!resolvedPhone) {
+        setCheckoutFieldErrors({ phone: labels.phoneRequired });
+        return false;
+      }
+      if (!isValidPhoneNumber(resolvedPhone)) {
+        setCheckoutFieldErrors({ phone: labels.phoneInvalid });
+        return false;
+      }
+      if (!resolvedAddress) {
+        setCheckoutFieldErrors({ address: labels.addressRequired });
+        return false;
+      }
+    }
 
     setIsSending(true);
     try {
       const payload: StaffCallPayload = {
         menuId: menuInfo.id,
-        tableNumber,
+        type: isDeliveryOrder ? "delivery" : "table",
+        tableNumber: isDeliveryOrder ? "" : orderingTableNumber,
         customerName: resolvedName,
+        ...(isDeliveryOrder
+          ? {
+              customerPhone: resolvedPhone,
+              customerAddress: resolvedAddress,
+            }
+          : resolvedPhone
+            ? { customerPhone: resolvedPhone }
+            : {}),
+        ...(resolvedNotes ? { orderNotes: resolvedNotes } : {}),
+        ...(isDeliveryOrder && governorateId && !isDistanceDelivery
+          ? { governorateId }
+          : {}),
+        ...(isDeliveryOrder &&
+        isDistanceDelivery &&
+        deliveryBranchId != null &&
+        deliveryLat != null &&
+        deliveryLng != null
+          ? {
+              branchId: deliveryBranchId,
+              customerLat: deliveryLat,
+              customerLng: deliveryLng,
+            }
+          : {}),
         items: items.map((item) => ({
           menuItemId: item.id,
           quantity: item.quantity,
@@ -779,9 +959,20 @@ export default function OrderChatbot({
       writeSkyCartToCookie({});
       notifySkyCartUpdated();
       setCartSnapshot({});
+      setCheckoutOrderNotes("");
+      setCheckoutPhone("");
+      setCheckoutAddress("");
+      localStorage.removeItem(NOTES_STORAGE_KEY);
+      localStorage.removeItem(PHONE_STORAGE_KEY);
+      localStorage.removeItem(ADDRESS_STORAGE_KEY);
+      catalogBrowse.clearBrowse();
+      setExpandedSuggestionQtyKeys(new Set());
       setConversationState("order_completed");
       setPendingOrderSubmit(false);
       setOrderSummarySheetOpen(false);
+      if (!isDeliveryOrder) {
+        notifyOpenTableOrderRefresh();
+      }
       appendMessage("bot", labels.success);
       return true;
     } catch {
@@ -797,12 +988,12 @@ export default function OrderChatbot({
   const applyNameFromChat = async (name: string) => {
     const trimmed = name.trim();
     setCustomerName(trimmed);
+    setCheckoutNameInput(trimmed);
     localStorage.setItem(NAME_STORAGE_KEY, trimmed);
 
     if (pendingOrderSubmit) {
-      setPendingOrderSubmit(false);
-      setConversationState("waiting_for_confirmation");
-      await submitOrderToStaff(trimmed);
+      // Keep user on step-2 form; chat only prefills the name field.
+      setOrderSummarySheetOpen(true);
       return;
     }
 
@@ -827,17 +1018,32 @@ export default function OrderChatbot({
     ]);
   };
 
-  const handleQuickConfirm = () => {
-    if (!cartNotEmpty) return;
-    setShowInlineCartEditor(false);
-    beginCheckoutFlow();
+  const handleCategoryChipClick = (chip: QuickChip) => {
+    if (isSending) return;
+
+    if (typeof chip.categoryId === "number") {
+      appendMessage("user", chip.message);
+      void catalogBrowse.startBrowse({
+        categoryId: chip.categoryId,
+        title: chip.message,
+      });
+      scrollMessagesToBottom("smooth");
+      return;
+    }
+
+    void sendMessage(chip.message);
   };
 
-  const applyInlineCartQuantity = (itemId: number, nextQty: number) => {
+  const applyInlineCartLineQuantity = (lineKey: string, nextQty: number) => {
+    const line = readSkyCartFromCookie()[lineKey];
+    if (!line) return;
     if (nextQty <= 0) {
-      removeCartItem(itemId, { validMenuIds });
+      updateSkyCartLineQuantity(lineKey, -line.quantity);
     } else {
-      setCartItemQuantity(itemId, nextQty, suggestionContext);
+      setCartLineQuantity(line.id, nextQty, suggestionContext, {
+        size: line.size ?? null,
+        variant: line.variant ?? null,
+      });
     }
     syncLastCartItemAfterCartChange();
     syncCartFromCookie();
@@ -848,27 +1054,16 @@ export default function OrderChatbot({
     scrollMessagesToBottom("smooth");
   };
 
-  const handleInlineCartIncrease = (itemId: number) => {
-    const current = readSkyCartFromCookie()[itemId]?.quantity ?? 0;
+  const handleInlineCartIncrease = (lineKey: string) => {
+    const current = readSkyCartFromCookie()[lineKey]?.quantity ?? 0;
     if (current <= 0) return;
-    applyInlineCartQuantity(itemId, current + 1);
+    applyInlineCartLineQuantity(lineKey, current + 1);
   };
 
-  const handleInlineCartDecrease = (itemId: number) => {
-    const current = readSkyCartFromCookie()[itemId]?.quantity ?? 0;
+  const handleInlineCartDecrease = (lineKey: string) => {
+    const current = readSkyCartFromCookie()[lineKey]?.quantity ?? 0;
     if (current <= 0) return;
-    applyInlineCartQuantity(itemId, current - 1);
-  };
-
-  const handleInlineCartRemove = (itemId: number) => {
-    removeCartItem(itemId, { validMenuIds });
-    syncLastCartItemAfterCartChange();
-    syncCartFromCookie();
-    if (!Object.keys(readSkyCartFromCookie()).length) {
-      setShowInlineCartEditor(false);
-      setConversationState("browsing");
-    }
-    scrollMessagesToBottom("smooth");
+    applyInlineCartLineQuantity(lineKey, current - 1);
   };
 
   const clearN8nPendingState = () => {
@@ -876,16 +1071,64 @@ export default function OrderChatbot({
     clearPendingSuggestions();
   };
 
+  const resolveChatMenuItem = (itemId: number): MenuItem | null => {
+    return (
+      localMenuById.get(itemId) ??
+      catalogBrowse.items.find((item) => item.id === itemId) ??
+      null
+    );
+  };
+
+  const openOptionsPicker = (itemId: number) => {
+    const menuItem = resolveChatMenuItem(itemId);
+    if (!menuItem || !hasMenuItemOptions(menuItem)) return;
+    setOptionsPickerItem(menuItem);
+  };
+
+  const closeOptionsPicker = () => {
+    setOptionsPickerItem(null);
+  };
+
+  const handleModalAddToCart = (
+    item: MenuItem,
+    quantity: number,
+    options?: MenuItemCartOptions,
+  ) => {
+    const size = options?.size ?? null;
+    const variant = options?.variant ?? null;
+    upsertSkyCartFromMenuItemWithOptions(item, quantity, {
+      locale: isArabic ? "ar" : "en",
+      size,
+      variant,
+    });
+    persistLastCartLine(
+      item.id,
+      buildSkyCartLineKey(item.id, size, variant),
+    );
+    openSuggestionQty(lastQtyMessageIdRef.current, item.id);
+    syncCartFromCookie();
+    setConversationState("ordering");
+    closeOptionsPicker();
+    scrollMessagesToBottom("smooth");
+  };
+
+  const handleCompleteOrder = () => {
+    openOrderDetailsStep();
+  };
+
   const syncLastCartItemAfterCartChange = () => {
     const remaining = readSkyCartFromCookie();
-    const ids = Object.keys(remaining)
-      .map(Number)
-      .filter((id) => validMenuIds.has(id) && remaining[id]);
-    if (ids.length) {
-      persistLastCartItemId(ids[ids.length - 1]!);
+    const lines = Object.values(remaining).filter((line) =>
+      validMenuIds.has(line.id),
+    );
+    if (lines.length) {
+      const last = lines[lines.length - 1]!;
+      persistLastCartLine(last.id, last.lineKey);
     } else {
       setLastCartItemId(null);
+      setLastCartLineKey(null);
       clearLastCartItemId();
+      clearLastCartLineKey();
     }
   };
 
@@ -916,9 +1159,7 @@ export default function OrderChatbot({
   };
 
   const getSuggestionCartQty = (itemId: number) =>
-    cartSnapshot[itemId]?.quantity ??
-    readSkyCartFromCookie()[itemId]?.quantity ??
-    0;
+    getCartQuantityForMenuItem(cartSnapshot, itemId);
 
   const suggestionQtyKey = (messageId: string, itemId: number) =>
     `${messageId}_${itemId}`;
@@ -946,31 +1187,11 @@ export default function OrderChatbot({
     });
   };
 
-  const handleSuggestionCartAdjust = (
-    messageId: string,
-    itemId: number,
-    delta: number,
-  ) => {
-    const menuItem = localMenuById.get(itemId);
-    const current = getSuggestionCartQty(itemId);
-    const nextQty = current + delta;
-
-    if (nextQty <= 0) {
-      if (current > 0) {
-        removeCartItem(itemId, { validMenuIds });
-        syncLastCartItemAfterCartChange();
-        syncCartFromCookie();
-        setConversationState(
-          Object.keys(readSkyCartFromCookie()).length > 0
-            ? "ordering"
-            : "browsing",
-        );
-      }
-      collapseSuggestionQty(messageId, itemId);
-      return;
-    }
-
+  const handleSuggestionAddClick = (messageId: string, itemId: number) => {
+    const menuItem = resolveChatMenuItem(itemId);
     if (!menuItem) return;
+
+    lastQtyMessageIdRef.current = messageId;
 
     if (pendingRemovePick) {
       setPendingRemovePick(false);
@@ -985,13 +1206,98 @@ export default function OrderChatbot({
       return;
     }
 
-    if (current <= 0) {
-      setPendingRemovePick(false);
-      clearN8nPendingState();
+    if (hasMenuItemOptions(menuItem)) {
+      openOptionsPicker(itemId);
+      return;
     }
 
-    setCartItemQuantity(itemId, nextQty, suggestionContext);
-    persistLastCartItemId(itemId);
+    openSuggestionQty(messageId, itemId);
+    handleSuggestionCartAdjust(messageId, itemId, 1);
+  };
+
+  const handleSuggestionCartAdjust = (
+    messageId: string,
+    itemId: number,
+    delta: number,
+  ) => {
+    const menuItem = resolveChatMenuItem(itemId);
+    if (!menuItem) return;
+
+    lastQtyMessageIdRef.current = messageId;
+
+    const current = getSuggestionCartQty(itemId);
+    const locale = isArabic ? "ar" : "en";
+
+    if (pendingRemovePick) {
+      setPendingRemovePick(false);
+      removeCartItem(itemId, { validMenuIds });
+      syncLastCartItemAfterCartChange();
+      syncCartFromCookie();
+      setConversationState(
+        Object.keys(readSkyCartFromCookie()).length > 0
+          ? "ordering"
+          : "browsing",
+      );
+      return;
+    }
+
+    // Sizes / add-ons: first + opens the popup; later +/- adjust the last line.
+    if (hasMenuItemOptions(menuItem)) {
+      if (delta > 0 && current <= 0) {
+        openOptionsPicker(itemId);
+        return;
+      }
+
+      const lines = Object.values(readSkyCartFromCookie()).filter(
+        (line) => line.id === itemId,
+      );
+      const line =
+        lines.find((l) => l.lineKey === lastCartLineKey) ??
+        lines[lines.length - 1];
+
+      if (!line) {
+        if (delta > 0) openOptionsPicker(itemId);
+        return;
+      }
+
+      updateSkyCartLineQuantity(line.lineKey, delta);
+      const nextCart = readSkyCartFromCookie();
+      if (!nextCart[line.lineKey]) {
+        collapseSuggestionQty(messageId, itemId);
+      } else {
+        openSuggestionQty(messageId, itemId);
+        persistLastCartLine(itemId, line.lineKey);
+      }
+      syncLastCartItemAfterCartChange();
+      syncCartFromCookie();
+      setConversationState(
+        Object.keys(readSkyCartFromCookie()).length > 0
+          ? "ordering"
+          : "browsing",
+      );
+      return;
+    }
+
+    const nextQty = current + delta;
+    if (nextQty <= 0) {
+      if (current > 0) {
+        removeCartItem(itemId, { validMenuIds });
+        syncLastCartItemAfterCartChange();
+        syncCartFromCookie();
+      }
+      collapseSuggestionQty(messageId, itemId);
+      setConversationState(
+        Object.keys(readSkyCartFromCookie()).length > 0
+          ? "ordering"
+          : "browsing",
+      );
+      return;
+    }
+
+    // Use the resolved menu item (browse API) — do not require Redux id maps.
+    upsertSkyCartFromMenuItemWithOptions(menuItem, delta, { locale });
+    persistLastCartLine(itemId, buildSkyCartLineKey(itemId, null, null));
+    openSuggestionQty(messageId, itemId);
     syncCartFromCookie();
     setConversationState("ordering");
   };
@@ -1058,17 +1364,30 @@ export default function OrderChatbot({
 
     if (cartNotEmpty && isIncreaseQuantityIntent(trimmed)) {
       const delta = parseIncreaseDeltaFromMessage(trimmed);
-      const candidateId = lastCartItemId ?? readLastCartItemId();
-      const itemId =
-        candidateId && validMenuIds.has(candidateId) && cart[candidateId]
-          ? candidateId
+      const candidateLineKey = lastCartLineKey ?? readLastCartLineKey();
+      const lineFromKey =
+        candidateLineKey && cart[candidateLineKey]
+          ? cart[candidateLineKey]
           : null;
 
+      if (lineFromKey && increaseCartLineQuantity(lineFromKey.lineKey, delta)) {
+        persistLastCartLine(lineFromKey.id, lineFromKey.lineKey);
+        syncCartFromCookie();
+        setConversationState("ordering");
+        return true;
+      }
+
+      const candidateId = lastCartItemId ?? readLastCartItemId();
+      const linesForItem =
+        candidateId && validMenuIds.has(candidateId)
+          ? Object.values(cart).filter((line) => line.id === candidateId)
+          : [];
+      const fallbackLine = linesForItem[linesForItem.length - 1];
       if (
-        itemId &&
-        increaseCartItemQuantity(itemId, delta, suggestionContext)
+        fallbackLine &&
+        increaseCartLineQuantity(fallbackLine.lineKey, delta)
       ) {
-        persistLastCartItemId(itemId);
+        persistLastCartLine(fallbackLine.id, fallbackLine.lineKey);
         syncCartFromCookie();
         setConversationState("ordering");
         return true;
@@ -1128,6 +1447,9 @@ export default function OrderChatbot({
       restaurantName: aiMenuIdentity.restaurantName,
       menuName: aiMenuIdentity.menuName,
       currency: menuCurrencyCode,
+      currentCartLines: canOrderViaChat
+        ? toRequestCartLines(readSkyCartFromCookie())
+        : [],
       currentCart: canOrderViaChat
         ? toRequestCartQuantities(readSkyCartFromCookie())
         : {},
@@ -1182,14 +1504,15 @@ export default function OrderChatbot({
 
       if (cartActions.length) {
         clearN8nPendingState();
-        const { changed, lastItemId } = applyCartActions(
-          cartActions,
-          suggestionContext,
-        );
+        const { changed, lastItemId, lastLineKey, needsOptions } =
+          applyCartActions(cartActions, suggestionContext);
         if (changed) {
           syncCartFromCookie();
-          if (lastItemId) persistLastCartItemId(lastItemId);
+          if (lastItemId) persistLastCartLine(lastItemId, lastLineKey);
           setConversationState("ordering");
+        }
+        if (needsOptions?.itemId) {
+          openOptionsPicker(needsOptions.itemId);
         }
       } else if (normalized.cart) {
         clearN8nPendingState();
@@ -1211,8 +1534,6 @@ export default function OrderChatbot({
         if (hasItems) beginCheckoutFlow();
       }
     }
-
-    refreshQuickChips();
   };
 
   const handleSubmit = async (e: FormEvent) => {
@@ -1229,35 +1550,53 @@ export default function OrderChatbot({
   };
 
   const confirmOrder = async () => {
-    setErrorText("");
-    if (customerName.trim()) {
-      await submitOrderToStaff();
-      return;
-    }
-    setPendingOrderSubmit(true);
-    setConversationState("waiting_for_name");
-    setCheckoutNameInput("");
-    setOrderSummarySheetOpen(true);
+    openOrderDetailsStep();
   };
 
-  const submitOrderWithCheckoutName = async () => {
+  const submitOrderWithDetails = async () => {
     const name = checkoutNameInput.trim();
+    const errors: {
+      name?: string;
+      phone?: string;
+      address?: string;
+      govArea?: string;
+    } = {};
     if (!name) {
-      setErrorText(labels.customerNameRequired);
-      checkoutNameInputRef.current?.focus();
+      errors.name = labels.customerNameRequired;
+    }
+    if (isDeliveryOrder) {
+      if (!deliveryAreaReady) {
+        errors.govArea = labels.deliveryAreaRequired;
+      }
+      if (!checkoutPhone.trim()) {
+        errors.phone = labels.phoneRequired;
+      } else if (!isValidPhoneNumber(checkoutPhone.trim())) {
+        errors.phone = labels.phoneInvalid;
+      }
+      if (!checkoutAddress.trim()) {
+        errors.address = labels.addressRequired;
+      }
+    }
+    if (Object.keys(errors).length) {
+      setCheckoutFieldErrors(errors);
+      if (errors.name) checkoutNameInputRef.current?.focus();
       return;
     }
+    setCheckoutFieldErrors({});
     setErrorText("");
     setCustomerName(name);
     localStorage.setItem(NAME_STORAGE_KEY, name);
+    localStorage.setItem(NOTES_STORAGE_KEY, checkoutOrderNotes.trim());
+    localStorage.setItem(PHONE_STORAGE_KEY, checkoutPhone.trim());
+    localStorage.setItem(ADDRESS_STORAGE_KEY, checkoutAddress.trim());
     setPendingOrderSubmit(false);
     setConversationState("waiting_for_confirmation");
-    await submitOrderToStaff(name);
+    await submitOrderToStaff(name, checkoutOrderNotes);
   };
 
   const handleCheckoutNameFormSubmit = (e: FormEvent) => {
     e.preventDefault();
-    void submitOrderWithCheckoutName();
+    void submitOrderWithDetails();
   };
 
   if (isFabDismissed) return null;
@@ -1365,7 +1704,9 @@ export default function OrderChatbot({
 
   const fabWrapperClass = resolvedPos
     ? `fixed z-99992`
-    : `fixed bottom-6 start-4 z-99992`;
+    : isMenuCornerDockSession
+      ? `fixed ${MENU_MOBILE_TAB_BAR_CLEARANCE_CLASS} start-4 z-99992 md:bottom-6`
+      : `fixed bottom-[calc(1.75rem+env(safe-area-inset-bottom,0px))] start-4 z-99992 md:bottom-6`;
 
   const fabWrapperStyle: CSSProperties = resolvedPos
     ? {
@@ -1386,16 +1727,16 @@ export default function OrderChatbot({
         dir={direction}
       >
         {open ? (
-          <div className="w-[min(92vw,390px)] rounded-3xl border border-zinc-200/80 bg-white shadow-[0_20px_45px_rgba(2,6,23,0.15)] ring-1 ring-black/5 overflow-hidden transition-all duration-300 animate-in fade-in zoom-in-95">
+          <div className="font-body w-[min(92vw,390px)] rounded-3xl border border-zinc-200/80 bg-white shadow-[0_20px_45px_rgba(2,6,23,0.15)] ring-1 ring-black/5 overflow-hidden transition-all duration-300 animate-in fade-in zoom-in-95">
             <div className="relative overflow-hidden bg-linear-to-br from-violet-600 via-violet-500 to-fuchsia-500 px-4 py-4 text-white">
               <div className="absolute -top-10 -end-10 h-24 w-24 rounded-full bg-white/15 blur-2xl" />
               <div className="absolute -bottom-6 start-0 h-16 w-16 rounded-full bg-fuchsia-300/20 blur-xl" />
               <div className="relative flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <p className="text-md sm:text-[17px] font-semibold leading-snug tracking-tight">
+                  <p className="text-base sm:text-[17px] font-semibold leading-snug tracking-tight">
                     {labels.title}
                   </p>
-                  <p className="text-[11px] text-white/90 mt-2 flex items-center gap-2 font-medium">
+                  <p className="mt-2 flex items-center gap-2 text-sm font-medium text-white/90">
                     <span className="inline-flex h-2 w-2 shrink-0 rounded-full bg-emerald-300 shadow-[0_0_0_3px_rgba(16,185,129,0.28)]" />
                     {labels.online}
                   </p>
@@ -1463,10 +1804,9 @@ export default function OrderChatbot({
                                     localMenuById.get(s.id)?.image ??
                                     "";
                                   const cartQty = getSuggestionCartQty(s.id);
-                                  const showQty = isSuggestionQtyVisible(
-                                    m.id,
-                                    s.id,
-                                  );
+                                  const showQty =
+                                    cartQty > 0 ||
+                                    isSuggestionQtyVisible(m.id, s.id);
 
                                   return (
                                     <div
@@ -1569,7 +1909,7 @@ export default function OrderChatbot({
                                           type="button"
                                           disabled={isSending}
                                           onClick={() =>
-                                            openSuggestionQty(m.id, s.id)
+                                            handleSuggestionAddClick(m.id, s.id)
                                           }
                                           className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-violet-600 px-2.5 py-1.5 text-[11px] font-semibold text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-60"
                                         >
@@ -1603,73 +1943,219 @@ export default function OrderChatbot({
                     </div>
                   </div>
                 ) : null}
-                {!isBrowseOnly && showInlineCartEditor && cartItems.length > 0 ? (
+                {catalogBrowse.isBrowsing ? (
                   <div className="rounded-xl border border-violet-200/90 bg-white p-3 shadow-[0_4px_14px_rgba(124,58,237,0.08)]">
-                    <p className="mb-2 text-xs font-semibold text-zinc-800">
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <p className="truncate text-xs font-semibold text-zinc-800">
+                        {catalogBrowse.title}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => catalogBrowse.clearBrowse()}
+                        className="shrink-0 rounded-md px-2 py-1 text-[11px] font-medium text-zinc-500 transition hover:bg-zinc-100"
+                      >
+                        {isArabic ? "إغلاق" : "Close"}
+                      </button>
+                    </div>
+                    {catalogBrowse.loading && !catalogBrowse.items.length ? (
+                      <p className="py-3 text-center text-xs text-zinc-500">
+                        {labels.loadingProducts}
+                      </p>
+                    ) : null}
+                    {!catalogBrowse.loading &&
+                    !catalogBrowse.items.length ? (
+                      <p className="py-3 text-center text-xs text-zinc-500">
+                        {labels.emptyCategory}
+                      </p>
+                    ) : null}
+                    {catalogBrowse.items.length > 0 ? (
+                      <div className="grid max-h-64 gap-2 overflow-y-auto pe-0.5">
+                        {catalogBrowse.items.map((item) => {
+                          const name = displayNameForItem(item);
+                          const price = getMenuItemMinPrice(item);
+                          const cartQty = getSuggestionCartQty(item.id);
+                          const showQty =
+                            cartQty > 0 ||
+                            isSuggestionQtyVisible("catalog_browse", item.id);
+                          return (
+                            <div
+                              key={`browse_${item.id}`}
+                              className="flex flex-wrap items-center gap-2 rounded-xl border border-zinc-200 bg-white p-2 shadow-[0_1px_6px_rgba(2,6,23,0.06)]"
+                            >
+                              <LoadImage
+                                src={item.image ?? ""}
+                                alt={name}
+                                className="h-11 w-11 shrink-0 rounded-lg object-cover border border-zinc-200"
+                                width={44}
+                                height={44}
+                              />
+                              <div className="min-w-0 flex-1 basis-0 grow">
+                                <p className="truncate text-xs font-semibold text-zinc-800">
+                                  {name}
+                                </p>
+                                <p className="text-[11px] text-zinc-500">
+                                  {price.toFixed(2)} {currencyDisplay}
+                                </p>
+                              </div>
+                              {!canOrderViaChat ? null : showQty ? (
+                                <div className="flex shrink-0 flex-col items-center gap-0.5">
+                                  <div
+                                    className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-zinc-50/80 px-1 py-0.5"
+                                    role="group"
+                                    aria-label={
+                                      isArabic ? "الكمية" : "Quantity"
+                                    }
+                                  >
+                                    <button
+                                      type="button"
+                                      aria-label={
+                                        isArabic
+                                          ? "تقليل الكمية"
+                                          : "Decrease quantity"
+                                      }
+                                      disabled={cartQty <= 0 || isSending}
+                                      onClick={() => {
+                                        if (cartQty <= 0) return;
+                                        handleSuggestionCartAdjust(
+                                          "catalog_browse",
+                                          item.id,
+                                          -1,
+                                        );
+                                      }}
+                                      className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                    >
+                                      −
+                                    </button>
+                                    <span className="min-w-6 text-center text-sm font-semibold tabular-nums text-zinc-800">
+                                      {cartQty}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      aria-label={
+                                        isArabic
+                                          ? "زيادة الكمية"
+                                          : "Increase quantity"
+                                      }
+                                      disabled={cartQty >= 999 || isSending}
+                                      onClick={() =>
+                                        handleSuggestionCartAdjust(
+                                          "catalog_browse",
+                                          item.id,
+                                          1,
+                                        )
+                                      }
+                                      className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
+                                    >
+                                      +
+                                    </button>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    disabled={isSending}
+                                    aria-label={
+                                      isArabic
+                                        ? "إخفاء الكمية"
+                                        : "Hide quantity"
+                                    }
+                                    onClick={() =>
+                                      collapseSuggestionQty(
+                                        "catalog_browse",
+                                        item.id,
+                                      )
+                                    }
+                                    className="flex h-6 w-8 items-center justify-center rounded-md text-violet-600 transition hover:bg-violet-50 disabled:opacity-50"
+                                  >
+                                    <FiChevronDown
+                                      className="h-4 w-4"
+                                      aria-hidden
+                                    />
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  type="button"
+                                  disabled={isSending}
+                                  onClick={() =>
+                                    handleSuggestionAddClick(
+                                      "catalog_browse",
+                                      item.id,
+                                    )
+                                  }
+                                  className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-violet-600 px-2.5 py-1.5 text-[11px] font-semibold text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                  <span>{labels.add}</span>
+                                  {cartQty > 0 ? (
+                                    <span className="rounded-full bg-white/25 px-1.5 py-0.5 text-[10px] font-bold tabular-nums leading-none">
+                                      {cartQty}
+                                    </span>
+                                  ) : null}
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                    {catalogBrowse.hasMore ? (
+                      <button
+                        type="button"
+                        disabled={
+                          catalogBrowse.loadingMore || catalogBrowse.loading
+                        }
+                        onClick={() => void catalogBrowse.loadMore()}
+                        className="mt-2 w-full rounded-lg border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold text-violet-800 transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {catalogBrowse.loadingMore
+                          ? labels.loadingProducts
+                          : labels.showMore}
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
+                {!isBrowseOnly && optionsPickerItem ? (
+                  <MenuItemDetailModal
+                    item={optionsPickerItem}
+                    currencyLabel={currencyDisplay}
+                    isTableOrder={canOrderViaChat}
+                    cartQuantity={getSuggestionCartQty(optionsPickerItem.id)}
+                    primary="#7c3aed"
+                    secondary="#d946ef"
+                    onClose={closeOptionsPicker}
+                    onAddToCart={handleModalAddToCart}
+                  />
+                ) : null}
+                {!isBrowseOnly && showInlineCartEditor && cartItems.length > 0 ? (
+                  <div className="rounded-xl border border-(--bg-main)/15 bg-white p-3 shadow-[0_4px_14px_rgba(124,58,237,0.08)]">
+                    <p className="mb-2 text-base font-semibold text-(--bg-main)">
                       {labels.inlineCartTitle}
                     </p>
-                    <ul className="max-h-44 space-y-2 overflow-y-auto pe-0.5">
-                      {cartItems.map((item) => {
-                        const localItem = localMenuById.get(item.id);
-                        const name = localItem
-                          ? displayNameForItem(localItem)
-                          : item.name;
-                        return (
-                          <li
-                            key={item.id}
-                            className="flex flex-wrap items-center gap-2 rounded-lg border border-zinc-100 bg-zinc-50/90 p-2 sm:flex-nowrap"
-                          >
-                            <div className="min-w-0 flex-1 basis-full sm:basis-auto">
-                              <p className="truncate text-xs font-semibold text-zinc-800">
-                                {name}
-                              </p>
-                              <p className="text-[11px] text-zinc-500">
-                                {formatPrice(item.price)} × {item.quantity} —{" "}
-                                <span className="font-medium text-zinc-700">
-                                  {formatPrice(item.price * item.quantity)}
-                                </span>
-                              </p>
-                            </div>
-                            <div className="flex shrink-0 items-center gap-1">
-                              <button
-                                type="button"
-                                aria-label={
-                                  isArabic ? "تقليل الكمية" : "Decrease quantity"
-                                }
-                                onClick={() => handleInlineCartDecrease(item.id)}
-                                className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100"
-                              >
-                                −
-                              </button>
-                              <span className="min-w-6 text-center text-sm font-semibold tabular-nums text-zinc-800">
-                                {item.quantity}
-                              </span>
-                              <button
-                                type="button"
-                                aria-label={
-                                  isArabic ? "زيادة الكمية" : "Increase quantity"
-                                }
-                                disabled={item.quantity >= 999}
-                                onClick={() => handleInlineCartIncrease(item.id)}
-                                className="flex h-8 w-8 items-center justify-center rounded-md border border-zinc-200 bg-white text-base font-semibold text-zinc-700 transition hover:bg-zinc-100 disabled:opacity-40"
-                              >
-                                +
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleInlineCartRemove(item.id)}
-                                className="rounded-md border border-rose-200 bg-rose-50 px-2 py-1.5 text-[10px] font-semibold text-rose-700 transition hover:bg-rose-100"
-                              >
-                                {labels.removeFromCart}
-                              </button>
-                            </div>
-                          </li>
-                        );
-                      })}
+                    <ul className="max-h-56 space-y-2 overflow-y-auto pe-0.5">
+                      {cartItems.map((item) => (
+                        <SkyCartLineItem
+                          key={item.lineKey}
+                          item={item}
+                          isArabic={isArabic}
+                          currencyLabel={currencyDisplay}
+                          editable
+                          onDecrease={handleInlineCartDecrease}
+                          onIncrease={handleInlineCartIncrease}
+                          decreaseLabel={
+                            isArabic ? "تقليل الكمية" : "Decrease quantity"
+                          }
+                          increaseLabel={
+                            isArabic ? "زيادة الكمية" : "Increase quantity"
+                          }
+                        />
+                      ))}
                     </ul>
-                    <p className="mt-2 border-t border-violet-100 pt-2 text-xs font-bold text-zinc-800">
-                      {labels.orderTotal(formatPrice(totalPrice))}
-                    </p>
+                    <div className="mt-3 flex items-center justify-between border-t border-(--bg-main)/15 pt-2 text-base">
+                      <span className="font-medium text-zinc-600">
+                        {isArabic ? "الإجمالي" : "Total"}
+                      </span>
+                      <strong className="text-base text-(--bg-main)">
+                        {totalPrice.toFixed(2)} {currencyDisplay}
+                      </strong>
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -1686,10 +2172,14 @@ export default function OrderChatbot({
               {!isBrowseOnly && showOrderSummarySheet ? (
                 <div
                   ref={orderSummaryPanelRef}
-                  className="absolute inset-x-0 bottom-0 z-20 flex max-h-[min(62vh,340px)] flex-col rounded-t-2xl border border-violet-200/90 border-b-0 bg-white shadow-[0_-10px_28px_rgba(124,58,237,0.2)]"
+                  className="absolute inset-x-0 bottom-0 z-20 flex max-h-[min(78vh,520px)] flex-col rounded-t-2xl border border-violet-200/90 border-b-0 bg-white shadow-[0_-10px_28px_rgba(124,58,237,0.2)]"
                   role="dialog"
                   aria-modal="true"
-                  aria-label={labels.orderSummaryTitle}
+                  aria-label={
+                    showCheckoutNameStep
+                      ? labels.step2Title
+                      : labels.orderSummaryTitle
+                  }
                 >
                   <div className="flex shrink-0 flex-col items-center border-b border-violet-100/80 px-3 pb-2 pt-2.5">
                     <div
@@ -1697,8 +2187,10 @@ export default function OrderChatbot({
                       aria-hidden
                     />
                     <div className="flex w-full items-center justify-between gap-2">
-                      <p className="text-xs font-semibold text-zinc-800">
-                        {labels.orderSummaryTitle}
+                      <p className="text-base font-semibold text-(--bg-main)">
+                        {showCheckoutNameStep
+                          ? labels.step2Title
+                          : labels.orderSummaryTitle}
                       </p>
                       <button
                         type="button"
@@ -1710,81 +2202,207 @@ export default function OrderChatbot({
                       </button>
                     </div>
                   </div>
-                  <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-3 py-2.5">
+                  <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-2.5">
                     {cartItems.length ? (
                       <>
                         <ul className="space-y-2 pe-0.5">
-                          {cartItems.map((item) => {
-                            const localItem = localMenuById.get(item.id);
-                            const name = localItem
-                              ? displayNameForItem(localItem)
-                              : item.name;
-                            const subtotal = item.price * item.quantity;
-                            return (
-                              <li
-                                key={item.id}
-                                className="flex gap-2 rounded-lg border border-zinc-100 bg-zinc-50/80 p-2"
-                              >
-                                <LoadImage
-                                  src={localItem?.image ?? ""}
-                                  alt={name}
-                                  className="h-10 w-10 shrink-0 rounded-md border border-zinc-200 object-cover"
-                                  width={40}
-                                  height={40}
-                                />
-                                <div className="min-w-0 flex-1 text-start">
-                                  <p className="text-xs font-semibold text-zinc-800 leading-snug">
-                                    {name} × {item.quantity}
-                                  </p>
-                                  <p className="mt-0.5 text-[11px] text-zinc-500 leading-snug">
-                                    {formatPrice(item.price)} × {item.quantity} —{" "}
-                                    <span className="font-medium text-zinc-700">
-                                      {formatPrice(subtotal)}
-                                    </span>
-                                  </p>
-                                </div>
-                              </li>
-                            );
-                          })}
+                          {cartItems.map((item) => (
+                            <SkyCartLineItem
+                              key={item.lineKey}
+                              item={item}
+                              isArabic={isArabic}
+                              currencyLabel={currencyDisplay}
+                            />
+                          ))}
                         </ul>
-                        <p className="border-t border-violet-100 pt-2 text-xs font-bold text-zinc-800">
-                          {labels.orderTotal(formatPrice(totalPrice))}
-                        </p>
+                        <div className="flex items-center justify-between border-t border-(--bg-main)/15 pt-2 text-base">
+                          <span className="font-medium text-zinc-600">
+                            {isArabic ? "الإجمالي" : "Total"}
+                          </span>
+                          <strong className="text-base text-(--bg-main)">
+                            {totalPrice.toFixed(2)} {currencyDisplay}
+                          </strong>
+                        </div>
                       </>
                     ) : (
-                      <p className="text-xs font-semibold text-zinc-700">
+                      <p className="rounded-lg border border-dashed border-zinc-300 p-4 text-center text-base text-zinc-500">
                         {labels.emptyCart}
                       </p>
                     )}
                     {showCheckoutNameStep ? (
                       <form
                         onSubmit={handleCheckoutNameFormSubmit}
-                        className="space-y-2.5 rounded-lg border border-violet-100 bg-violet-50/40 p-2.5"
+                        className="space-y-4 border-t border-(--bg-main)/15 pt-3"
                       >
-                        <label
-                          htmlFor="checkout-customer-name"
-                          className="block text-xs font-semibold text-zinc-800"
-                        >
-                          {labels.customerNameLabel}
-                        </label>
-                        <input
-                          id="checkout-customer-name"
-                          ref={checkoutNameInputRef}
-                          type="text"
-                          value={checkoutNameInput}
-                          onChange={(e) => setCheckoutNameInput(e.target.value)}
-                          placeholder={labels.customerNamePlaceholder}
-                          autoComplete="name"
-                          disabled={isSending}
-                          className="w-full rounded-lg border border-violet-200 bg-white px-3 py-2.5 text-sm text-zinc-800 outline-none transition focus:border-violet-400 focus:ring-2 focus:ring-violet-300/60"
-                        />
-                        <button
-                          type="submit"
-                          disabled={isSending || !checkoutNameInput.trim()}
-                          className="w-full rounded-lg bg-linear-to-r from-violet-600 to-fuchsia-500 px-3 py-2.5 text-sm font-semibold text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                          {labels.sendOrder}
-                        </button>
+                        <div>
+                          <label
+                            htmlFor="checkout-customer-name"
+                            className="mb-2 block text-base font-semibold text-(--bg-main)"
+                          >
+                            {labels.customerNameLabel} *
+                          </label>
+                          <input
+                            id="checkout-customer-name"
+                            ref={checkoutNameInputRef}
+                            type="text"
+                            value={checkoutNameInput}
+                            onChange={(e) => {
+                              setCheckoutNameInput(e.target.value);
+                              if (checkoutFieldErrors.name) {
+                                setCheckoutFieldErrors((prev) => ({
+                                  ...prev,
+                                  name: undefined,
+                                }));
+                              }
+                            }}
+                            placeholder={labels.customerNamePlaceholder}
+                            autoComplete="name"
+                            disabled={isSending}
+                            className={`w-full rounded-lg border px-3 py-2 text-base outline-none transition focus:ring-2 ${
+                              checkoutFieldErrors.name
+                                ? "border-rose-400 ring-rose-200 focus:ring-rose-300"
+                                : "border-(--bg-main)/30 ring-(--bg-main)/30 focus:ring-2"
+                            }`}
+                          />
+                          {checkoutFieldErrors.name ? (
+                            <p className="mt-1.5 flex items-center gap-1 text-sm text-rose-500">
+                              <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-[10px] font-bold text-rose-500">
+                                !
+                              </span>
+                              {checkoutFieldErrors.name}
+                            </p>
+                          ) : null}
+                        </div>
+                        {isDeliveryOrder ? (
+                          <>
+                            <DeliveryOrderAreaSection
+                              currencyLabel={currencyDisplay}
+                              error={checkoutFieldErrors.govArea}
+                              onClearError={() =>
+                                setCheckoutFieldErrors((prev) => ({
+                                  ...prev,
+                                  govArea: undefined,
+                                }))
+                              }
+                            />
+                            <div>
+                              <label
+                                htmlFor="checkout-customer-phone"
+                                className="mb-2 block text-base font-semibold text-(--bg-main)"
+                              >
+                                {labels.phoneLabel} *
+                              </label>
+                              <div
+                                className={`w-full rounded-lg border px-3 py-2 text-base transition focus-within:ring-2 ${
+                                  checkoutFieldErrors.phone
+                                    ? "border-rose-400 focus-within:ring-rose-200"
+                                    : "border-(--bg-main)/30 focus-within:ring-(--bg-main)/25"
+                                }`}
+                              >
+                                <PhoneInput
+                                  id="checkout-customer-phone"
+                                  labels={
+                                    isArabic ? arPhoneLabels : enPhoneLabels
+                                  }
+                                  defaultCountry="EG"
+                                  value={checkoutPhone}
+                                  onChange={(val) => {
+                                    setCheckoutPhone(val ?? "");
+                                    if (checkoutFieldErrors.phone) {
+                                      setCheckoutFieldErrors((prev) => ({
+                                        ...prev,
+                                        phone: undefined,
+                                      }));
+                                    }
+                                  }}
+                                  className="phone-input-cart"
+                                  disabled={isSending}
+                                />
+                              </div>
+                              {checkoutFieldErrors.phone ? (
+                                <p className="mt-1.5 flex items-center gap-1 text-sm text-rose-500">
+                                  <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-[10px] font-bold text-rose-500">
+                                    !
+                                  </span>
+                                  {checkoutFieldErrors.phone}
+                                </p>
+                              ) : null}
+                            </div>
+                            <div>
+                              <label
+                                htmlFor="checkout-customer-address"
+                                className="mb-2 block text-base font-semibold text-(--bg-main)"
+                              >
+                                {labels.addressLabel} *
+                              </label>
+                              <textarea
+                                id="checkout-customer-address"
+                                value={checkoutAddress}
+                                onChange={(e) => {
+                                  setCheckoutAddress(e.target.value);
+                                  if (checkoutFieldErrors.address) {
+                                    setCheckoutFieldErrors((prev) => ({
+                                      ...prev,
+                                      address: undefined,
+                                    }));
+                                  }
+                                }}
+                                placeholder={labels.addressPlaceholder}
+                                rows={3}
+                                disabled={isSending}
+                                className={`w-full resize-none rounded-lg border px-3 py-2 text-base outline-none transition focus:ring-2 ${
+                                  checkoutFieldErrors.address
+                                    ? "border-rose-400 ring-rose-200 focus:ring-rose-300"
+                                    : "border-(--bg-main)/30 ring-(--bg-main)/30"
+                                }`}
+                              />
+                              {checkoutFieldErrors.address ? (
+                                <p className="mt-1.5 flex items-center gap-1 text-sm text-rose-500">
+                                  <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-rose-100 text-[10px] font-bold text-rose-500">
+                                    !
+                                  </span>
+                                  {checkoutFieldErrors.address}
+                                </p>
+                              ) : null}
+                            </div>
+                          </>
+                        ) : null}
+                        <div>
+                          <label
+                            htmlFor="checkout-order-notes"
+                            className="mb-2 block text-base font-semibold text-(--bg-main)"
+                          >
+                            {labels.notesLabel}
+                          </label>
+                          <textarea
+                            id="checkout-order-notes"
+                            value={checkoutOrderNotes}
+                            onChange={(e) =>
+                              setCheckoutOrderNotes(e.target.value)
+                            }
+                            placeholder={labels.notesPlaceholder}
+                            rows={3}
+                            disabled={isSending}
+                            className="w-full resize-none rounded-lg border border-(--bg-main)/30 px-3 py-2 text-base outline-none ring-(--bg-main)/30 transition focus:ring-2"
+                          />
+                        </div>
+                        <div className="space-y-2 pb-0.5">
+                          <button
+                            type="submit"
+                            disabled={isSending}
+                            className="w-full rounded-lg bg-(--bg-main) px-4 py-2.5 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {labels.sendOrder}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleEditOrder}
+                            disabled={isSending}
+                            className="w-full rounded-lg border border-(--bg-main)/20 px-4 py-2.5 text-base font-medium text-(--bg-main) transition hover:bg-(--bg-main)/10 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {labels.backToSummary}
+                          </button>
+                        </div>
                       </form>
                     ) : (
                       <div className="flex gap-2 pb-0.5">
@@ -1842,17 +2460,17 @@ export default function OrderChatbot({
                 aria-label={isArabic ? "إجراءات سريعة" : "Quick actions"}
               >
                 {!isBrowseOnly &&
-                  cartNotEmpty &&
-                  !showOrderSummarySheet &&
-                  !isSending ? (
+                cartNotEmpty &&
+                !showOrderSummarySheet &&
+                !isSending ? (
                   <div className="flex justify-center py-0.5">
                     <button
                       type="button"
-                      onClick={handleQuickConfirm}
+                      onClick={handleCompleteOrder}
                       disabled={isSending}
-                      className="inline-flex min-w-46 items-center justify-center gap-2 rounded-full border border-emerald-200/80 bg-gradient-to-r from-white via-emerald-50/90 to-white px-5 py-2.5 text-[12px] font-semibold tracking-tight text-emerald-900 shadow-[0_2px_12px_rgba(16,185,129,0.14)] ring-1 ring-emerald-100/80 transition hover:border-emerald-300 hover:shadow-[0_4px_16px_rgba(16,185,129,0.2)] hover:ring-emerald-200/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-55"
+                      className="inline-flex min-w-46 items-center justify-center gap-2 rounded-full border border-emerald-200/80 bg-linear-to-r from-white via-emerald-50/90 to-white px-5 py-2.5 text-sm font-semibold tracking-tight text-emerald-900 shadow-[0_2px_12px_rgba(16,185,129,0.14)] ring-1 ring-emerald-100/80 transition hover:border-emerald-300 hover:shadow-[0_4px_16px_rgba(16,185,129,0.2)] hover:ring-emerald-200/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-55"
                     >
-                      <span>{labels.quickConfirm}</span>
+                      <span>{labels.completeOrder}</span>
                       <span
                         className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-linear-to-br from-emerald-500 to-teal-600 text-white shadow-sm"
                         aria-hidden
@@ -1876,8 +2494,8 @@ export default function OrderChatbot({
                           <button
                             key={`${quickChipsEpoch}_${chip.id}`}
                             type="button"
-                            onClick={() => void sendMessage(chip.message)}
-                            disabled={isSending}
+                            onClick={() => handleCategoryChipClick(chip)}
+                            disabled={isSending || catalogBrowse.loading}
                             style={{ animationDelay: `${index * 70}ms` }}
                             className="shrink-0 snap-start whitespace-nowrap animate-in fade-in slide-in-from-bottom-2 rounded-full border border-violet-200/70 bg-white px-3.5 py-2 text-[11px] font-semibold text-violet-900 shadow-[0_2px_10px_rgba(124,58,237,0.1)] ring-1 ring-violet-100/60 transition duration-300 fill-mode-both hover:border-violet-300 hover:bg-violet-50/80 hover:shadow-[0_4px_14px_rgba(124,58,237,0.16)] active:scale-[0.97] disabled:opacity-50"
                           >

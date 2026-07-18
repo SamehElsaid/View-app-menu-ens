@@ -7,6 +7,7 @@ import { LanguageToggle } from "../Default/LanguageToggle";
 import { HieroglyphBorder } from "./PharaonicDecor";
 import LoadImage from "@/components/ImageLoad";
 import PharaonicMenuCta from "./PharaonicMenuCta";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
 
 export default function NavBar() {
   const locale = useLocale();
@@ -63,6 +64,10 @@ export default function NavBar() {
         </a>
 
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <MenuWifiDropdown
+            buttonClassName="border border-white/10 bg-white/5 text-[#c4b59a] hover:bg-white/10"
+            panelClassName="border-[#c4b59a]/25 bg-[#0c0a08]/95 text-[#c4b59a]"
+          />
           <LanguageToggle />
         </div>
       </div>

@@ -2,6 +2,8 @@
 
 Read-only assistant on **free-plan** Arabic menus only. Paid menus (including browse without `?table=`) use the [ai-order webhook](./ai-order-n8n-contract.md). Same payload shape; frontend uses `reply` + `suggestions` (cards without Add on free).
 
+Paste-ready agent instructions: [ai-lina-n8n-system-prompt.md](./ai-lina-n8n-system-prompt.md) (discovery section).
+
 ## Environment
 
 ```env
@@ -25,14 +27,32 @@ Premium ordering uses `NEXT_PUBLIC_N8N_AI_ORDER_WEBHOOK_URL` (see [ai-order-n8n-
   "restaurantName": "Flower Cafe",
   "menuName": "Flower Cafe",
   "currency": "SAR",
+  "currentCartLines": [],
   "currentCart": {},
-  "menuCatalog": [{ "id": 211, "nameAr": "...", "price": 66 }]
+  "menuCatalog": [
+    {
+      "id": 211,
+      "nameAr": "بيتزا",
+      "nameEn": "Pizza",
+      "price": 40,
+      "minPrice": 40,
+      "categoryId": 3,
+      "categoryNameAr": "بيتزا",
+      "categoryNameEn": "Pizza",
+      "available": true,
+      "sizes": [
+        { "nameAr": "وسط", "nameEn": "Medium", "price": 50 }
+      ],
+      "variants": []
+    }
+  ]
 }
 ```
 
 - `source` is `menu_discovery_chat` on free menus only.
-- `currentCart` is always `{}` (no cart is sent or updated from chat).
+- `currentCart` / `currentCartLines` are always empty (no cart is sent or updated from chat).
 - `restaurantName` / `menuName` come from loaded `menuInfo` (same as ordering).
+- Catalog includes sizes/variants/categories so you can answer price and option questions accurately.
 - **Quick chips** — up to 4 random menu category names; click sends the category name as `message` (same as premium).
 
 ## Response shape
@@ -74,6 +94,7 @@ Same JSON as ordering chat:
 4. Return `"cartActions": []` — discovery / browse UI has no Add button.
 5. Frontend shows reply bubble + up to 3 cards (name, price, image; no quantity controls). Bare id arrays are enriched from the local menu.
 6. Use `restaurantName` / `menuName` in prompts for branded menu Q&A.
+7. When answering prices for sized items, use the catalog size prices / `minPrice` — never invent numbers.
 
 ## Legacy suggestions
 

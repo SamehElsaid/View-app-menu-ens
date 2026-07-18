@@ -11,6 +11,7 @@ import {
   hexToRgba,
 } from "./ArcaneThemeContext";
 import LoadImage from "@/components/ImageLoad";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
 
 function LangToggle({ onHero }: { onHero: boolean }) {
   const locale = useLocale() as "ar" | "en";
@@ -129,6 +130,18 @@ export default function Navbar() {
         </Link>
 
         <div className="flex shrink-0 items-center gap-2">
+          <MenuWifiDropdown
+            buttonClassName={
+              onHero
+                ? "border border-white/20 bg-white/10 text-white hover:bg-white/20"
+                : "border border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"
+            }
+            panelClassName={
+              onHero
+                ? "border-white/15 bg-[#1a1224]/95 text-white"
+                : "border-zinc-200 bg-white text-zinc-800"
+            }
+          />
           <LangToggle onHero={onHero} />
         </div>
       </div>

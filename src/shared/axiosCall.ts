@@ -129,6 +129,51 @@ export const axiosPost = async <T, U>(
   }
 };
 
+/** PATCH request API (public endpoints pass close: true to skip Bearer). */
+export const axiosPatch = async <T, U>(
+  url: string,
+  locale: string,
+  data: T,
+  close?: boolean,
+) => {
+  const authToken = Cookies.get("sub") ?? "";
+  const tokenDecrypted = decryptData(authToken) as DecryptedToken;
+  const headerToken: HeadersPost = {};
+  headerToken.Authorization = `Bearer ${tokenDecrypted?.token}`;
+
+  const utcTime = await getApiKey();
+  const apiKey = `${process.env.NEXT_PUBLIC_SECRET_KEY}///${utcTime}`;
+  const apiKeyEncrypt = encryptDataApi(
+    apiKey,
+    process.env.NEXT_PUBLIC_SECRET_KEY as string,
+  );
+
+  if (close) {
+    delete headerToken.Authorization;
+  }
+
+  try {
+    const fetchData = await axios.patch<U>(
+      `${process.env.NEXT_PUBLIC_BASE_URL}${url}`,
+      data,
+      {
+        withCredentials: true,
+        headers: {
+          ...headerToken,
+          "Accept-Language": locale,
+          "X-API-KEY": apiKeyEncrypt,
+        },
+      },
+    );
+    return { data: fetchData.data, status: true };
+  } catch (err) {
+    return {
+      data: (err as AxiosError)?.response?.data as U,
+      status: false,
+    };
+  }
+};
+
 // ! Get from getServerSideProps
 export const getFromGetServerSideProps = async <T>(
   url: string,

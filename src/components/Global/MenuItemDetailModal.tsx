@@ -54,7 +54,7 @@ type OptionPickerProps = {
 
 function OptionPicker({ title, primary, children }: OptionPickerProps) {
   return (
-    <div className="mb-4 text-start">
+    <div className="mt-4 text-start">
       <h4 className="mb-2 text-sm font-bold" style={{ color: primary }}>
         {title}
       </h4>
@@ -63,9 +63,52 @@ function OptionPicker({ title, primary, children }: OptionPickerProps) {
   );
 }
 
+type StickyPriceBarProps = {
+  unitPrice: number;
+  currencyLabel: string;
+  primary: string;
+  strikethroughPrice?: number | null;
+  discountPercent?: number | null;
+};
+
+/** Sticky price when cart actions are unavailable (browse-only menus). */
+function StickyPriceBar({
+  unitPrice,
+  currencyLabel,
+  primary,
+  strikethroughPrice,
+  discountPercent,
+}: StickyPriceBarProps) {
+  return (
+    <div className="flex items-center justify-center gap-x-2 gap-y-1">
+      {strikethroughPrice ? (
+        <span className="text-sm tabular-nums text-zinc-400 line-through">
+          {strikethroughPrice} {currencyLabel}
+        </span>
+      ) : null}
+      <p
+        className="text-xl font-black tabular-nums sm:text-2xl"
+        style={{ color: primary }}
+      >
+        {unitPrice} {currencyLabel}
+      </p>
+      {discountPercent ? (
+        <span
+          className="rounded-full px-2 py-0.5 text-xs font-bold text-white"
+          style={{ backgroundColor: primary }}
+        >
+          -{discountPercent}%
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
 type CartQuantityControlsProps = {
   quantity: number;
   cartQuantity: number;
+  unitPrice: number;
+  currencyLabel: string;
   isAr: boolean;
   primary: string;
   secondary: string;
@@ -78,6 +121,8 @@ type CartQuantityControlsProps = {
 function CartQuantityControls({
   quantity,
   cartQuantity,
+  unitPrice,
+  currencyLabel,
   isAr,
   primary,
   secondary,
@@ -86,6 +131,8 @@ function CartQuantityControls({
   onIncrease,
   onAdd,
 }: CartQuantityControlsProps) {
+  const lineTotal = Math.round(unitPrice * quantity * 100) / 100;
+
   return (
     <div className="flex flex-col gap-2">
       {cartQuantity > 0 ? (
@@ -135,13 +182,21 @@ function CartQuantityControls({
           type="button"
           onClick={onAdd}
           disabled={disabled}
-          className="flex min-h-10 w-full items-center justify-center gap-1.5 rounded-2xl px-3 py-2.5 text-xs font-bold text-white shadow-md transition active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-11 sm:text-sm"
+          className="flex min-h-10 w-full items-center justify-center gap-1.5 rounded-2xl px-2.5 py-2.5 text-xs font-bold text-white shadow-md transition active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-50 sm:min-h-11 sm:gap-2 sm:px-3 sm:text-sm"
           style={{
             background: `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)`,
           }}
         >
           <IoCartOutline className="h-4 w-4 shrink-0" aria-hidden />
-          {isAr ? "أضف" : "Add"}
+          <span className="truncate">
+            {isAr ? "أضف" : "Add"}
+            <span className="mx-1 opacity-70" aria-hidden>
+              ·
+            </span>
+            <span className="tabular-nums">
+              {lineTotal} {currencyLabel}
+            </span>
+          </span>
         </button>
       </div>
     </div>
@@ -251,7 +306,7 @@ function MenuItemDetailModalInner({
         </button>
 
         {/* Image */}
-        <div className="relative aspect-4/3 w-full shrink-0 bg-zinc-100">
+        <div className="relative aspect-4/2 w-full shrink-0 bg-zinc-100">
           <LoadImage
             src={productImageSrc}
             alt={name}
@@ -281,25 +336,6 @@ function MenuItemDetailModalInner({
               {description}
             </p>
           ) : null}
-
-          <div className="mt-3 flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            {selectedTotalStrikethrough ? (
-              <span className="text-base tabular-nums text-zinc-400 line-through">
-                {selectedTotalStrikethrough} {currencyLabel}
-              </span>
-            ) : null}
-            <p
-              className="text-2xl font-black tabular-nums"
-              style={{ color: primary }}
-            >
-              {selectedUnitPrice} {currencyLabel}
-            </p>
-            {hasDiscount && discountPercent ? (
-              <span className="rounded-full px-2 py-0.5 text-xs font-bold text-white" style={{ backgroundColor: primary }}>
-                -{discountPercent}%
-              </span>
-            ) : null}
-          </div>
 
           {sizes.length > 0 ? (
             <OptionPicker title={isAr ? "الحجم" : "Size"} primary={primary}>
@@ -428,12 +464,14 @@ function MenuItemDetailModalInner({
           ) : null}
         </div>
 
-        {/* Sticky footer — always visible at the bottom */}
-        {isTableOrder && item.available ? (
-          <div className="shrink-0 border-t border-zinc-100 bg-white px-5 py-4 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] sm:px-6">
+        {/* Sticky footer — price always visible; cart actions only for table orders */}
+        <div className="shrink-0 border-t border-zinc-100 bg-white px-5 py-4 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] sm:px-6">
+          {isTableOrder && item.available ? (
             <CartQuantityControls
               quantity={qty}
               cartQuantity={cartQuantity}
+              unitPrice={selectedUnitPrice}
+              currencyLabel={currencyLabel}
               isAr={isAr}
               primary={primary}
               secondary={secondary}
@@ -442,8 +480,16 @@ function MenuItemDetailModalInner({
               onIncrease={() => setQty((q) => q + 1)}
               onAdd={handleAdd}
             />
-          </div>
-        ) : null}
+          ) : (
+            <StickyPriceBar
+              unitPrice={selectedUnitPrice}
+              currencyLabel={currencyLabel}
+              primary={primary}
+              strikethroughPrice={selectedTotalStrikethrough}
+              discountPercent={hasDiscount ? discountPercent : null}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useAppSelector } from "@/store/hooks";
 import { useLocale } from "next-intl";
 import { LanguageToggle } from "../Default/LanguageToggle";
+import MenuWifiDropdown from "@/components/Global/MenuWifiDropdown";
 import { useMenuSocialLinks } from "@/hooks/useMenuSocialLinks";
 import { useOneCardTheme } from "../OneCardTemplate/OneCardThemeContext";
 import LoadImage from "@/components/ImageLoad";
@@ -20,11 +21,18 @@ export default function NavBar() {
       dir="ltr"
       className="relative z-20 flex items-center justify-between gap-3 px-3 pt-2"
     >
-      <div
-        className="vanilla-lang-pill inline-flex shrink-0 items-center gap-1.5 rounded-full bg-white px-2 py-1.5 text-sm font-bold shadow-[0_4px_14px_-6px_rgba(60,30,90,0.25)]"
-        style={{ color: primary }}
-      >
-        <LanguageToggle />
+      <div className="flex shrink-0 items-center gap-1.5">
+        <div
+          className="vanilla-lang-pill inline-flex items-center gap-1.5 rounded-full bg-white px-2 py-1.5 text-sm font-bold shadow-[0_4px_14px_-6px_rgba(60,30,90,0.25)]"
+          style={{ color: primary }}
+        >
+          <LanguageToggle />
+        </div>
+        <MenuWifiDropdown
+          buttonClassName="border border-(--vanilla-gold,#b8893a)/35 bg-white/80 text-[15px] hover:bg-white"
+          panelClassName="border-(--vanilla-gold,#b8893a)/25 bg-white text-zinc-800"
+          iconClassName="text-[16px]"
+        />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col items-center justify-center text-center">

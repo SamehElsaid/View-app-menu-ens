@@ -14,7 +14,7 @@ import { createPortal } from "react-dom";
 import { useLocale } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { arabCurrencies, Currency } from "@/constants/currencies";
 import { axiosPost } from "@/shared/axiosCall";
 import { FiX, FiSearch, FiMapPin } from "react-icons/fi";
@@ -23,10 +23,12 @@ import {
   IoBagOutline,
   IoBasketOutline,
   IoCafeOutline,
+  IoReceiptOutline,
 } from "react-icons/io5";
 import { MdLocationOn, MdMyLocation } from "react-icons/md";
 import type { DeliveryGovernorate } from "@/types/menu";
 import LoadImage from "@/components/ImageLoad";
+import SkyCartLineItem from "@/components/Global/SkyCartLineItem";
 import {
   notifySkyCartUpdated,
   readSkyCartFromCookie,
@@ -35,15 +37,44 @@ import {
   type SkyCart,
   type SkyCartItem,
 } from "@/lib/skyTemplateCart";
+import {
+  buildOpenTableOrderLineKey,
+  isGuestEditableOpenOrderStatus,
+  notifyOpenTableOrderRefresh,
+  type OpenTableOrderItem,
+} from "@/lib/openTableOrder";
+import { sendStaffServiceRequest } from "@/lib/sendStaffServiceRequest";
 import { useIsOrderingEnabled } from "@/hooks/useIsOrderingEnabled";
+import { useOpenTableOrder } from "@/hooks/useOpenTableOrder";
 import { useTableCartAllowed } from "@/hooks/useTableCartAllowed";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import arLabels from "react-phone-number-input/locale/ar";
 import enLabels from "react-phone-number-input/locale/en";
+import { fetchBranchDeliveryQuote } from "@/lib/fetchDeliveryQuote";
+import { resolveDeliveryLocation } from "@/lib/resolveDeliveryLocation";
+import {
+  resolveDeliveryAreaLabelSync,
+  resolveDeliveryAreaNames,
+  isGenericDeliveryAreaLabel,
+} from "@/lib/deliveryAreaName";
+import {
+  SET_DELIVERY_DISTANCE,
+  SET_DELIVERY_GOVERNORATE,
+} from "@/store/authMenu/authMenu";
+import { applyMenuOrderCharges } from "@/lib/menuOrderCharges";
+import {
+  getMenuFabSideClass,
+  getMenuMobileTabCartColumnClasses,
+  getMenuMobileTabCartIconClasses,
+  getMenuMobileTabCartLabelClasses,
+  MENU_CART_FAB_BOTTOM_CLASS,
+} from "@/lib/menuFabLayout";
 
 const DEFAULT_ACCENT = "hsl(271, 81%, 56%)";
 const DEFAULT_CART_SHAPE = "rounded-full";
 const DEFAULT_CART_ICON: CartIconKey = "cart";
+/** Shared with OrderChatbot so table guests are not asked for name twice. */
+const TABLE_ORDER_NAME_STORAGE_KEY = "ensmenu_ai_order_customer_name";
 
 type CartIconKey = "cart" | "bag" | "basket" | "cafe";
 
@@ -54,6 +85,29 @@ const CART_ICON_MAP: Record<CartIconKey, ElementType> = {
   cafe: IoCafeOutline,
 };
 
+function openOrderItemToSkyCartItem(
+  item: OpenTableOrderItem,
+  index: number,
+): SkyCartItem {
+  const unit =
+    item.price ??
+    (item.total != null && item.quantity > 0
+      ? item.total / item.quantity
+      : 0);
+  return {
+    lineKey: buildOpenTableOrderLineKey(item, index),
+    id: item.menuItemId ?? 0,
+    quantity: item.quantity,
+    name: item.name,
+    nameAr: item.name,
+    nameEn: item.name,
+    price: unit,
+    image: "",
+    size: item.size ?? null,
+    variant: item.variant ?? null,
+  };
+}
+
 type StaffCallPayload = {
   menuId: number;
   type: "table" | "delivery";
@@ -63,6 +117,9 @@ type StaffCallPayload = {
   customerAddress?: string;
   orderNotes?: string;
   governorateId?: number | null;
+  branchId?: number;
+  customerLat?: number;
+  customerLng?: number;
   items: Array<{
     menuItemId: number;
     quantity: number;
@@ -79,6 +136,28 @@ type StaffCallPayload = {
     } | null;
   }>;
 };
+
+function resolveDeliveryWhatsAppPhone(
+  delivery: { deliveryPhone?: string | null } | null,
+): string {
+  if (!delivery) return "";
+  return String(delivery.deliveryPhone ?? "")
+    .trim()
+    .replace(/[^0-9]/g, "");
+}
+
+function shouldSendDeliveryWhatsApp(
+  delivery: { deliveryWhatsAppOn?: boolean } | null,
+): boolean {
+  return delivery?.deliveryWhatsAppOn !== false;
+}
+
+function buildWhatsAppOrderUrl(
+  cleanPhone: string,
+  message: string,
+): string {
+  return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+}
 
 const updateURL = (
   menuOpen: boolean,
@@ -134,18 +213,26 @@ const useClosePopupWithPopstate = ({
   }, [mainQuery, setOpen]);
 };
 
-export default function RequestStaffButton() {
+type RequestStaffButtonProps = {
+  /** `inline` = render FAB column only (used by MenuCornerFabs flex row). */
+  variant?: "fixed" | "inline";
+};
+
+export default function RequestStaffButton({
+  variant = "fixed",
+}: RequestStaffButtonProps = {}) {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const dispatch = useAppDispatch();
   const menuInfo = useAppSelector((s) => s.menu.menuInfo);
   const menuCustomizations = useAppSelector((s) => s.menu.menuCustomizations);
   const storeMenu = useAppSelector((s) => s.menu.menu);
   const isMenuActive = menuInfo?.isActive !== false;
   const isArabic = locale === "ar";
   const tableCartAllowed = useTableCartAllowed();
-  const { isOrderingEnabled, isDeliveryOrder, tableNumber, governorateId } =
+  const { isOrderingEnabled, isDeliveryOrder, isDistanceDelivery, tableNumber, governorateId, deliveryBranchId, deliveryLat, deliveryLng } =
     useIsOrderingEnabled();
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [open, setOpen] = useState(false);
@@ -158,6 +245,7 @@ export default function RequestStaffButton() {
   /** Empty initial state avoids SSR/client mismatch (cookies only exist on client). */
   const [cart, setCart] = useState<SkyCart>({});
   const [isConfirming, setIsConfirming] = useState(false);
+  const [isRequestingBill, setIsRequestingBill] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -169,15 +257,71 @@ export default function RequestStaffButton() {
   const CartIcon = CART_ICON_MAP[DEFAULT_CART_ICON];
 
   const delivery = useAppSelector((s) => s.menu.delivery);
+  const deliveryContext = useAppSelector((s) => s.menu.deliveryContext);
+  const branches = useAppSelector((s) => s.menu.branches);
   const [showGovSearch, setShowGovSearch] = useState(false);
   const [govSearchText, setGovSearchText] = useState("");
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
+  const [distanceDeliveryFee, setDistanceDeliveryFee] = useState<number | null>(
+    null,
+  );
+  const [distanceDeliveryKm, setDistanceDeliveryKm] = useState<number | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (
+      !isDistanceDelivery ||
+      !menuInfo?.slug ||
+      deliveryBranchId == null ||
+      deliveryLat == null ||
+      deliveryLng == null
+    ) {
+      setDistanceDeliveryFee(null);
+      setDistanceDeliveryKm(null);
+      return;
+    }
+
+    let cancelled = false;
+    void fetchBranchDeliveryQuote(
+      menuInfo.slug,
+      deliveryBranchId,
+      deliveryLat,
+      deliveryLng,
+      locale,
+    ).then((quote) => {
+      if (cancelled) return;
+      setDistanceDeliveryFee(quote?.inRange ? quote.deliveryFee : null);
+      setDistanceDeliveryKm(quote?.distanceKm ?? null);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    deliveryBranchId,
+    deliveryLat,
+    deliveryLng,
+    isDistanceDelivery,
+    locale,
+    menuInfo?.slug,
+  ]);
 
   const currentGovernorate = useMemo<DeliveryGovernorate | null>(() => {
-    if (!isDeliveryOrder || !governorateId || !delivery?.governorates?.length)
+    if (
+      !isDeliveryOrder ||
+      isDistanceDelivery ||
+      !governorateId ||
+      !delivery?.governorates?.length
+    )
       return null;
     return delivery.governorates.find((g) => g.id === governorateId) ?? null;
-  }, [isDeliveryOrder, governorateId, delivery?.governorates]);
+  }, [
+    isDeliveryOrder,
+    isDistanceDelivery,
+    governorateId,
+    delivery?.governorates,
+  ]);
 
   const filteredGovernorates = useMemo<DeliveryGovernorate[]>(() => {
     if (!delivery?.governorates?.length) return [];
@@ -192,51 +336,98 @@ export default function RequestStaffButton() {
 
   const changeGovernorate = useCallback(
     (id: number) => {
-      const nextParams = new URLSearchParams(searchParams.toString());
-      nextParams.set("deliveryZone", String(id));
-      const path = nextParams.toString()
-        ? `${pathname}?${nextParams.toString()}`
-        : pathname;
-      router.replace(path, { scroll: false });
+      dispatch(SET_DELIVERY_GOVERNORATE(id));
       setShowGovSearch(false);
       setGovSearchText("");
       setFieldErrors((p) => ({ ...p, govArea: "" }));
     },
-    [pathname, router, searchParams],
+    [dispatch],
+  );
+
+  const applyDistanceDelivery = useCallback(
+    (
+      branchId: number,
+      lat: number,
+      lng: number,
+      fee: number,
+      km: number,
+      areaNameAr?: string,
+      areaNameEn?: string,
+    ) => {
+      dispatch(
+        SET_DELIVERY_DISTANCE({
+          branchId,
+          lat,
+          lng,
+          ...(areaNameAr?.trim() ? { areaNameAr: areaNameAr.trim() } : {}),
+          ...(areaNameEn?.trim() ? { areaNameEn: areaNameEn.trim() } : {}),
+        }),
+      );
+      setDistanceDeliveryFee(fee);
+      setDistanceDeliveryKm(km);
+      setShowGovSearch(false);
+      setGovSearchText("");
+      setFieldErrors((p) => ({ ...p, govArea: "" }));
+    },
+    [dispatch],
   );
 
   const detectLocation = useCallback(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation || !menuInfo?.slug) return;
     setIsDetectingLocation(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const { latitude, longitude } = pos.coords;
-        const govs = delivery?.governorates ?? [];
-        let nearest: DeliveryGovernorate | null = null;
-        let minDist = Infinity;
-        for (const g of govs) {
-          const dLat = ((g.lat - latitude) * Math.PI) / 180;
-          const dLon = ((g.lan - longitude) * Math.PI) / 180;
-          const a =
-            Math.sin(dLat / 2) ** 2 +
-            Math.cos((latitude * Math.PI) / 180) *
-              Math.cos((g.lat * Math.PI) / 180) *
-              Math.sin(dLon / 2) ** 2;
-          const dist = 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          if (dist < minDist) {
-            minDist = dist;
-            nearest = g;
-          }
+        const nextParams = new URLSearchParams(searchParams.toString());
+
+        const result = await resolveDeliveryLocation({
+          menuSlug: menuInfo.slug,
+          lat: latitude,
+          lng: longitude,
+          locale,
+          pathname,
+          search: nextParams.toString(),
+          deliveryMode: delivery?.deliveryMode,
+          branches,
+          governorates: delivery?.governorates ?? [],
+          branchDisplayName: (branch) => branch.name?.trim() || menuInfo.name,
+        });
+
+        if (result.kind === "redirecting") {
+          setIsDetectingLocation(false);
+          return;
         }
-        if (nearest && minDist <= 10) {
-          changeGovernorate(nearest.id);
-        } else {
-          toast.warning(
-            isArabic
-              ? "موقعك خارج نطاق التوصيل"
-              : "Location outside delivery range",
+
+        if (result.kind === "distance") {
+          const areaNames = await resolveDeliveryAreaNames(
+            result.lat,
+            result.lng,
+            delivery?.governorates ?? [],
           );
+          applyDistanceDelivery(
+            result.branchId,
+            result.lat,
+            result.lng,
+            result.quote.deliveryFee ?? 0,
+            result.quote.distanceKm,
+            areaNames.nameAr,
+            areaNames.nameEn,
+          );
+          setIsDetectingLocation(false);
+          return;
         }
+
+        if (result.kind === "governorate") {
+          changeGovernorate(result.governorate.id);
+          setIsDetectingLocation(false);
+          return;
+        }
+
+        toast.warning(
+          isArabic
+            ? "موقعك خارج نطاق التوصيل"
+            : "Location outside delivery range",
+        );
         setIsDetectingLocation(false);
       },
       () => {
@@ -249,7 +440,19 @@ export default function RequestStaffButton() {
       },
       { enableHighAccuracy: true, timeout: 10_000 },
     );
-  }, [changeGovernorate, delivery?.governorates, isArabic]);
+  }, [
+    applyDistanceDelivery,
+    branches,
+    changeGovernorate,
+    delivery?.deliveryMode,
+    delivery?.governorates,
+    isArabic,
+    locale,
+    menuInfo?.name,
+    menuInfo?.slug,
+    pathname,
+    searchParams,
+  ]);
 
   const labels = useMemo(
     () =>
@@ -275,6 +478,8 @@ export default function RequestStaffButton() {
             notesPlaceholder: "ملاحظات إضافية",
             confirm: "تأكيد الطلب",
             success: "تم تأكيد الطلب بنجاح",
+            whatsAppPopupBlocked:
+              "تم حفظ الطلب. اسمح بالنوافذ المنبثقة أو افتح واتساب يدوياً لإرسال الطلب.",
             enterName: "يرجى إدخال الاسم",
             enterPhone: "يرجى إدخال رقم الهاتف",
             enterAddress: "يرجى إدخال تفاصيل العنوان",
@@ -291,6 +496,28 @@ export default function RequestStaffButton() {
             searchArea: "ابحث عن المنطقة...",
             detectLocation: "اسمح لنا بتحديد موقعك",
             deliveryFee: "رسوم التوصيل",
+            tax: "الضريبة",
+            service: "الخدمة",
+            subtotal: "المجموع الفرعي",
+            grandTotal: "المجموع الكلي",
+            tableOrder: "طلب الترابيزة",
+            tableOrderPending: "بانتظار تأكيد الويتر — يمكنك التعديل",
+            tableOrderConfirmed: "تم التأكيد — يمكنك طلب أصناف جديدة فقط",
+            tableOrderNewItems: "أصناف جديدة",
+            tableOrderAddHint: "أضف من القائمة ثم أرسل",
+            tableEnded: "تم إنهاء طلب الترابيزة",
+            updateFailed: "تعذر تحديث الطلب",
+            tableOrderConfirmChanges: "تأكيد التعديل",
+            tableOrderDiscardChanges: "تراجع",
+            tableOrderChangesSaved: "تم حفظ تعديلات الطلب",
+            requestBill: "طلب الفاتورة",
+            requestBillPending:
+              "انتظر تأكيد الطلب من الويتر قبل طلب الفاتورة",
+            requestBillUnsentCart:
+              "أكد الأصناف الجديدة في السلة قبل طلب الفاتورة",
+            requestBillSuccess: "تم طلب الحساب — طاولة {table}",
+            requestBillError: "تعذر طلب الفاتورة",
+            requestBillInvalidTable: "رقم الطاولة غير مسجل في هذا المطعم",
           }
         : {
             cart: "Cart",
@@ -313,6 +540,8 @@ export default function RequestStaffButton() {
             notesPlaceholder: "Additional notes",
             confirm: "Confirm order",
             success: "Order confirmed successfully",
+            whatsAppPopupBlocked:
+              "Order saved. Allow pop-ups or open WhatsApp manually to send the order.",
             enterName: "Please enter your name",
             enterPhone: "Please enter your phone number",
             enterAddress: "Please enter address details",
@@ -329,9 +558,142 @@ export default function RequestStaffButton() {
             searchArea: "Search area...",
             detectLocation: "Allow us to detect your location",
             deliveryFee: "Delivery fee",
+            tax: "Tax",
+            service: "Service",
+            subtotal: "Subtotal",
+            grandTotal: "Grand total",
+            tableOrder: "Table order",
+            tableOrderPending: "Awaiting waiter confirmation — you can edit",
+            tableOrderConfirmed: "Confirmed — you can only add new items",
+            tableOrderNewItems: "New items",
+            tableOrderAddHint: "Add from the menu, then send",
+            tableEnded: "Table order has been closed",
+            updateFailed: "Could not update the order",
+            tableOrderConfirmChanges: "Confirm changes",
+            tableOrderDiscardChanges: "Discard",
+            tableOrderChangesSaved: "Order changes saved",
+            requestBill: "Request the bill",
+            requestBillPending:
+              "Wait for the waiter to confirm the order before requesting the bill",
+            requestBillUnsentCart:
+              "Confirm the new cart items before requesting the bill",
+            requestBillSuccess: "Bill requested — table {table}",
+            requestBillError: "Could not request the bill",
+            requestBillInvalidTable:
+              "This table is not registered for this restaurant",
           },
     [isArabic],
   );
+
+  const tableOrderEnabled =
+    Boolean(menuInfo?.id) &&
+    isOrderingEnabled &&
+    !isDeliveryOrder &&
+    Boolean(tableNumber);
+  const {
+    openOrder,
+    saving: openOrderSaving,
+    refresh: refreshOpenOrder,
+    patchItems: patchOpenOrderItems,
+  } = useOpenTableOrder({
+    menuId: menuInfo?.id,
+    tableNumber,
+    enabled: tableOrderEnabled,
+    tableEndedMessage: labels.tableEnded,
+  });
+  const openOrderEditable = isGuestEditableOpenOrderStatus(openOrder?.status);
+  /** Local draft of pending table-order lines; null = mirror server. */
+  const [openOrderDraft, setOpenOrderDraft] = useState<
+    OpenTableOrderItem[] | null
+  >(null);
+
+  useEffect(() => {
+    if (!openOrder || !openOrderEditable) {
+      setOpenOrderDraft(null);
+      return;
+    }
+    setOpenOrderDraft((prev) => {
+      const serverItems = openOrder.items;
+      if (prev == null) {
+        return serverItems.map((item) => ({ ...item }));
+      }
+      const dirty =
+        prev.length !== serverItems.length ||
+        prev.some((item, index) => {
+          const s = serverItems[index];
+          if (!s) return true;
+          return (
+            item.quantity !== s.quantity ||
+            item.menuItemId !== s.menuItemId ||
+            (item.price ?? null) !== (s.price ?? null)
+          );
+        });
+      if (!dirty) {
+        return serverItems.map((item) => ({ ...item }));
+      }
+      // Keep local qty edits, but always pick up newly appended server lines.
+      if (serverItems.length > prev.length) {
+        return [
+          ...prev,
+          ...serverItems.slice(prev.length).map((item) => ({ ...item })),
+        ];
+      }
+      return prev;
+    });
+  }, [openOrder, openOrderEditable]);
+
+  // Prefill guest name from open order / localStorage (skip re-asking).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const stored = localStorage.getItem(TABLE_ORDER_NAME_STORAGE_KEY)?.trim();
+    if (stored) {
+      setCustomerName((prev) => prev.trim() || stored);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fromOrder = openOrder?.customerName?.trim();
+    if (!fromOrder) return;
+    setCustomerName((prev) => {
+      if (prev.trim()) return prev;
+      localStorage.setItem(TABLE_ORDER_NAME_STORAGE_KEY, fromOrder);
+      return fromOrder;
+    });
+  }, [openOrder?.customerName]);
+
+  const displayOpenOrderItems = useMemo(() => {
+    if (!openOrder) return [];
+    if (openOrderEditable && openOrderDraft) return openOrderDraft;
+    return openOrder.items;
+  }, [openOrder, openOrderEditable, openOrderDraft]);
+
+  const openOrderDraftDirty = useMemo(() => {
+    if (!openOrder || !openOrderEditable || !openOrderDraft) return false;
+    const server = openOrder.items;
+    if (server.length !== openOrderDraft.length) return true;
+    return openOrderDraft.some((item, index) => {
+      const s = server[index];
+      if (!s) return true;
+      return (
+        item.quantity !== s.quantity ||
+        item.menuItemId !== s.menuItemId ||
+        (item.price ?? null) !== (s.price ?? null)
+      );
+    });
+  }, [openOrder, openOrderEditable, openOrderDraft]);
+
+  const displayOpenOrderTotal = useMemo(() => {
+    if (!openOrder) return 0;
+    if (!openOrderDraftDirty) return Number(openOrder.orderTotal) || 0;
+    return displayOpenOrderItems.reduce((sum, item) => {
+      const unit =
+        item.price ??
+        (item.total != null && item.quantity > 0
+          ? item.total / item.quantity
+          : 0);
+      return sum + unit * item.quantity;
+    }, 0);
+  }, [displayOpenOrderItems, openOrder, openOrderDraftDirty]);
 
   const getCurrency = () => {
     const currencyCode = menuInfo?.currency || "AED";
@@ -381,6 +743,83 @@ export default function RequestStaffButton() {
     () => cartItemsForOrder.reduce((sum, item) => sum + item.quantity, 0),
     [cartItemsForOrder],
   );
+  const openOrderQuantity = useMemo(
+    () =>
+      displayOpenOrderItems.reduce(
+        (sum, item) => sum + (item.quantity || 0),
+        0,
+      ),
+    [displayOpenOrderItems],
+  );
+  const fabBadgeQuantity =
+    totalQuantity > 0 ? totalQuantity : openOrderQuantity;
+
+  const handleOpenOrderQty = useCallback(
+    (lineKey: string, delta: number) => {
+      if (!openOrder || !openOrderEditable || openOrderSaving) return;
+      const index = Number(lineKey.split(":").pop());
+      if (
+        !Number.isFinite(index) ||
+        index < 0 ||
+        index >= displayOpenOrderItems.length
+      ) {
+        return;
+      }
+      setOpenOrderDraft((prev) => {
+        const base =
+          prev ?? openOrder.items.map((item) => ({ ...item }));
+        return base
+          .map((item, i) =>
+            i === index
+              ? {
+                  ...item,
+                  quantity: Math.max(0, Math.floor(item.quantity + delta)),
+                }
+              : item,
+          )
+          .filter((item) => item.quantity > 0);
+      });
+    },
+    [
+      displayOpenOrderItems.length,
+      openOrder,
+      openOrderEditable,
+      openOrderSaving,
+    ],
+  );
+
+  const discardOpenOrderDraft = useCallback(() => {
+    if (!openOrder) {
+      setOpenOrderDraft(null);
+      return;
+    }
+    setOpenOrderDraft(openOrder.items.map((item) => ({ ...item })));
+  }, [openOrder]);
+
+  const confirmOpenOrderDraft = useCallback(async () => {
+    if (!openOrder || !openOrderEditable || !openOrderDraftDirty) return;
+    const items = openOrderDraft ?? [];
+    const result = await patchOpenOrderItems(items);
+    if (!result.ok) {
+      toast.error(result.message || labels.updateFailed);
+      return;
+    }
+    if (result.cancelled || !result.call) {
+      setOpenOrderDraft(null);
+      toast.success(labels.tableOrderChangesSaved);
+      return;
+    }
+    setOpenOrderDraft(result.call.items.map((item) => ({ ...item })));
+    toast.success(labels.tableOrderChangesSaved);
+  }, [
+    labels.tableOrderChangesSaved,
+    labels.updateFailed,
+    openOrder,
+    openOrderDraft,
+    openOrderDraftDirty,
+    openOrderEditable,
+    patchOpenOrderItems,
+  ]);
 
   const totalPrice = useMemo(
     () =>
@@ -389,6 +828,22 @@ export default function RequestStaffButton() {
         0,
       ),
     [cartItemsForOrder],
+  );
+
+  const deliveryFeeAmount = useMemo(() => {
+    if (!isDeliveryOrder) return 0;
+    if (isDistanceDelivery) return distanceDeliveryFee ?? 0;
+    return currentGovernorate?.price ?? 0;
+  }, [
+    currentGovernorate?.price,
+    distanceDeliveryFee,
+    isDeliveryOrder,
+    isDistanceDelivery,
+  ]);
+
+  const orderCharges = useMemo(
+    () => applyMenuOrderCharges(totalPrice, menuInfo, deliveryFeeAmount),
+    [deliveryFeeAmount, menuInfo, totalPrice],
   );
 
   const syncDrawerWithURL = useCallback((shouldOpen: boolean) => {
@@ -442,15 +897,90 @@ export default function RequestStaffButton() {
     }
   }, [syncDrawerWithURL]);
 
-  const goToStep2 = () => {
-    if (!cartItemsForOrder.length) return;
-    setStep(2);
-  };
-
   const updateItemQuantity = (lineKey: string, delta: number) => {
     updateSkyCartLineQuantity(lineKey, delta);
     setCart(readSkyCartFromCookie());
   };
+
+  const deliveryAreaLabel = useMemo(() => {
+    if (currentGovernorate) {
+      return isArabic
+        ? currentGovernorate.nameAr
+        : currentGovernorate.nameEn;
+    }
+    if (isDistanceDelivery) {
+      return resolveDeliveryAreaLabelSync(
+        isArabic,
+        deliveryLat,
+        deliveryLng,
+        deliveryContext.distance
+          ? {
+              nameAr: deliveryContext.distance.areaNameAr ?? "",
+              nameEn: deliveryContext.distance.areaNameEn ?? "",
+            }
+          : null,
+        delivery?.governorates ?? [],
+      );
+    }
+    return "";
+  }, [
+    currentGovernorate,
+    delivery?.governorates,
+    deliveryContext.distance,
+    deliveryLat,
+    deliveryLng,
+    isArabic,
+    isDistanceDelivery,
+  ]);
+
+  useEffect(() => {
+    if (
+      !isDistanceDelivery ||
+      deliveryLat == null ||
+      deliveryLng == null ||
+      deliveryBranchId == null
+    ) {
+      return;
+    }
+    const storedLabel =
+      deliveryContext.distance?.areaNameAr?.trim() ||
+      deliveryContext.distance?.areaNameEn?.trim() ||
+      "";
+    if (storedLabel && !isGenericDeliveryAreaLabel(storedLabel)) {
+      return;
+    }
+
+    let cancelled = false;
+    void resolveDeliveryAreaNames(
+      deliveryLat,
+      deliveryLng,
+      delivery?.governorates ?? [],
+    ).then((areaNames) => {
+      if (cancelled || (!areaNames.nameAr && !areaNames.nameEn)) return;
+      dispatch(
+        SET_DELIVERY_DISTANCE({
+          branchId: deliveryBranchId,
+          lat: deliveryLat,
+          lng: deliveryLng,
+          areaNameAr: areaNames.nameAr,
+          areaNameEn: areaNames.nameEn,
+        }),
+      );
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    delivery?.governorates,
+    deliveryBranchId,
+    deliveryContext.distance?.areaNameAr,
+    deliveryContext.distance?.areaNameEn,
+    deliveryLat,
+    deliveryLng,
+    dispatch,
+    isDistanceDelivery,
+  ]);
 
   const buildWhatsAppMessage = useCallback(
     (
@@ -462,12 +992,11 @@ export default function RequestStaffButton() {
       total: number,
     ): string => {
       const currency = menuInfo?.currency ?? "";
-      const govName = currentGovernorate
-        ? isArabic
-          ? currentGovernorate.nameAr
-          : currentGovernorate.nameEn
-        : "";
-      const govFee = currentGovernorate?.price ?? 0;
+      const deliveryFee = isDistanceDelivery
+        ? (distanceDeliveryFee ?? 0)
+        : (currentGovernorate?.price ?? 0);
+      const charges = applyMenuOrderCharges(total, menuInfo, deliveryFee);
+      const areaName = deliveryAreaLabel;
 
       const lines: string[] = [];
 
@@ -476,7 +1005,7 @@ export default function RequestStaffButton() {
         lines.push("─────────────────");
         lines.push(`👤 *الاسم:* ${name}`);
         if (phone) lines.push(`📞 *التليفون:* ${phone}`);
-        if (govName) lines.push(`📍 *المنطقة:* ${govName}`);
+        if (areaName) lines.push(`📍 *المنطقة:* ${areaName}`);
         if (address) lines.push(`🏠 *تفاصيل العنوان:* ${address}`);
         if (notes) lines.push(`📝 *ملاحظات:* ${notes}`);
         lines.push("─────────────────");
@@ -494,17 +1023,28 @@ export default function RequestStaffButton() {
           );
         }
         lines.push("─────────────────");
-        lines.push(`💵 *الإجمالي:* ${total.toFixed(2)} ${currency}`);
-        if (govFee > 0) lines.push(`🚚 *رسوم التوصيل:* ${govFee} ${currency}`);
         lines.push(
-          `💰 *المجموع الكلي:* ${(total + govFee).toFixed(2)} ${currency}`,
+          `💵 *المجموع الفرعي:* ${charges.subtotal.toFixed(2)} ${currency}`,
+        );
+        if (charges.taxAmount > 0)
+          lines.push(`🧾 *الضريبة:* ${charges.taxAmount.toFixed(2)} ${currency}`);
+        if (charges.serviceAmount > 0)
+          lines.push(
+            `🛎️ *الخدمة:* ${charges.serviceAmount.toFixed(2)} ${currency}`,
+          );
+        if (deliveryFee > 0)
+          lines.push(
+            `🚚 *رسوم التوصيل:* ${Number(deliveryFee).toFixed(2)} ${currency}`,
+          );
+        lines.push(
+          `💰 *المجموع الكلي:* ${charges.grandTotal.toFixed(2)} ${currency}`,
         );
       } else {
         lines.push("🛵 *New Delivery Order*");
         lines.push("─────────────────");
         lines.push(`👤 *Name:* ${name}`);
         if (phone) lines.push(`📞 *Phone:* ${phone}`);
-        if (govName) lines.push(`📍 *Area:* ${govName}`);
+        if (areaName) lines.push(`📍 *Area:* ${areaName}`);
         if (address) lines.push(`🏠 *Address:* ${address}`);
         if (notes) lines.push(`📝 *Notes:* ${notes}`);
         lines.push("─────────────────");
@@ -522,16 +1062,32 @@ export default function RequestStaffButton() {
           );
         }
         lines.push("─────────────────");
-        lines.push(`💵 *Subtotal:* ${total.toFixed(2)} ${currency}`);
-        if (govFee > 0) lines.push(`🚚 *Delivery fee:* ${govFee} ${currency}`);
+        lines.push(`💵 *Subtotal:* ${charges.subtotal.toFixed(2)} ${currency}`);
+        if (charges.taxAmount > 0)
+          lines.push(`🧾 *Tax:* ${charges.taxAmount.toFixed(2)} ${currency}`);
+        if (charges.serviceAmount > 0)
+          lines.push(
+            `🛎️ *Service:* ${charges.serviceAmount.toFixed(2)} ${currency}`,
+          );
+        if (deliveryFee > 0)
+          lines.push(
+            `🚚 *Delivery fee:* ${Number(deliveryFee).toFixed(2)} ${currency}`,
+          );
         lines.push(
-          `💰 *Grand total:* ${(total + govFee).toFixed(2)} ${currency}`,
+          `💰 *Grand total:* ${charges.grandTotal.toFixed(2)} ${currency}`,
         );
       }
 
       return lines.join("\n");
     },
-    [currentGovernorate, isArabic, menuInfo?.currency],
+    [
+      currentGovernorate,
+      deliveryAreaLabel,
+      distanceDeliveryFee,
+      isArabic,
+      isDistanceDelivery,
+      menuInfo,
+    ],
   );
 
   const sendWhatsAppNotification = useCallback(
@@ -542,11 +1098,10 @@ export default function RequestStaffButton() {
       notes: string,
       items: typeof cartItemsForOrder,
       total: number,
-    ) => {
-      if (delivery?.deliveryWhatsAppOn === false) return;
-      const waPhone = delivery?.deliveryPhone ?? delivery?.phoneNumber ?? "";
-      if (!waPhone) return;
-      const cleanPhone = waPhone.replace(/[^0-9]/g, "");
+    ): boolean => {
+      if (!shouldSendDeliveryWhatsApp(delivery)) return false;
+      const cleanPhone = resolveDeliveryWhatsAppPhone(delivery);
+      if (!cleanPhone) return false;
       const message = buildWhatsAppMessage(
         name,
         phone,
@@ -555,21 +1110,22 @@ export default function RequestStaffButton() {
         items,
         total,
       );
-      const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
-      window.open(url, "_blank", "noopener,noreferrer");
+      const url = buildWhatsAppOrderUrl(cleanPhone, message);
+      return Boolean(window.open(url, "_blank"));
     },
-    [
-      buildWhatsAppMessage,
-      delivery?.deliveryPhone,
-      delivery?.deliveryWhatsAppOn,
-      delivery?.phoneNumber,
-    ],
+    [buildWhatsAppMessage, delivery],
   );
 
-  const confirmOrder = async () => {
+  const confirmOrder = async (nameOverride?: string) => {
     const errors: Record<string, string> = {};
+    const resolvedName =
+      (nameOverride ?? customerName).trim() ||
+      openOrder?.customerName?.trim() ||
+      (typeof window !== "undefined"
+        ? localStorage.getItem(TABLE_ORDER_NAME_STORAGE_KEY)?.trim() || ""
+        : "");
 
-    if (!customerName.trim()) {
+    if (!resolvedName) {
       errors.name = labels.enterName;
     }
     if (isDeliveryOrder) {
@@ -578,7 +1134,10 @@ export default function RequestStaffButton() {
       } else if (!isValidPhoneNumber(customerPhone)) {
         errors.phone = labels.invalidPhone;
       }
-      if (!currentGovernorate) {
+      if (!isDistanceDelivery && !currentGovernorate) {
+        errors.govArea = labels.enterDeliveryArea;
+      }
+      if (isDistanceDelivery && distanceDeliveryFee == null) {
         errors.govArea = labels.enterDeliveryArea;
       }
       if (!customerAddress.trim()) {
@@ -588,6 +1147,10 @@ export default function RequestStaffButton() {
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      if (errors.name && tableOrderEnabled && openOrder) {
+        setStep(2);
+        openDrawer();
+      }
       return;
     }
 
@@ -603,13 +1166,35 @@ export default function RequestStaffButton() {
       return;
     }
 
+    const orderItems = cartItemsForOrder;
+    const orderTotal = totalPrice;
+    const orderName = resolvedName;
+    const orderPhone = customerPhone.trim();
+    const orderAddress = customerAddress.trim();
+    const orderNotesText = orderNotes.trim();
+    const notifyWhatsApp =
+      isDeliveryOrder &&
+      shouldSendDeliveryWhatsApp(delivery) &&
+      resolveDeliveryWhatsAppPhone(delivery) !== "";
+    /** Open WhatsApp in the same click handler so pop-up blockers allow it. */
+    const whatsAppOpened =
+      notifyWhatsApp &&
+      sendWhatsAppNotification(
+        orderName,
+        orderPhone,
+        orderAddress,
+        orderNotesText,
+        orderItems,
+        orderTotal,
+      );
+
     setIsConfirming(true);
     try {
       const payload: StaffCallPayload = {
         menuId: menuInfo.id,
         type: isDeliveryOrder ? "delivery" : "table",
         tableNumber: isDeliveryOrder ? "" : tableNumber,
-        customerName: customerName.trim(),
+        customerName: orderName,
         ...(isDeliveryOrder
           ? {
               customerPhone: customerPhone.trim(),
@@ -619,7 +1204,20 @@ export default function RequestStaffButton() {
             ? { customerPhone: customerPhone.trim() }
             : {}),
         ...(orderNotes.trim() ? { orderNotes: orderNotes.trim() } : {}),
-        ...(isDeliveryOrder && governorateId ? { governorateId } : {}),
+        ...(isDeliveryOrder && governorateId && !isDistanceDelivery
+          ? { governorateId }
+          : {}),
+        ...(isDeliveryOrder &&
+        isDistanceDelivery &&
+        deliveryBranchId != null &&
+        deliveryLat != null &&
+        deliveryLng != null
+          ? {
+              branchId: deliveryBranchId,
+              customerLat: deliveryLat,
+              customerLng: deliveryLng,
+            }
+          : {}),
         items: cartItemsForOrder.map((item) => ({
           menuItemId: item.id,
           quantity: item.quantity,
@@ -686,23 +1284,29 @@ export default function RequestStaffButton() {
       writeSkyCartToCookie({});
       setCart({});
       notifySkyCartUpdated();
-
-      if (isDeliveryOrder) {
-        sendWhatsAppNotification(
-          customerName.trim(),
-          customerPhone.trim(),
-          customerAddress.trim(),
-          orderNotes.trim(),
-          cartItemsForOrder,
-          totalPrice,
-        );
+      if (tableOrderEnabled) {
+        localStorage.setItem(TABLE_ORDER_NAME_STORAGE_KEY, orderName);
+        setCustomerName(orderName);
+        setOpenOrderDraft(null);
+        await refreshOpenOrder();
+        notifyOpenTableOrderRefresh();
       }
 
-      setCustomerName("");
+      if (notifyWhatsApp && !whatsAppOpened) {
+        toast.info(labels.whatsAppPopupBlocked);
+      }
+
+      if (!tableOrderEnabled) {
+        setCustomerName("");
+      }
       setCustomerPhone("");
       setCustomerAddress("");
       setOrderNotes("");
-      closeDrawer();
+      if (tableOrderEnabled) {
+        setStep(1);
+      } else {
+        closeDrawer();
+      }
       toast.success(labels.success);
     } catch {
       toast.error(labels.orderFailed);
@@ -711,34 +1315,124 @@ export default function RequestStaffButton() {
     }
   };
 
+  const goToStep2 = () => {
+    if (!cartItemsForOrder.length) return;
+    // Existing table order: send new lines immediately (no name form again).
+    if (tableOrderEnabled && openOrder) {
+      const resolvedName =
+        customerName.trim() ||
+        openOrder.customerName?.trim() ||
+        (typeof window !== "undefined"
+          ? localStorage.getItem(TABLE_ORDER_NAME_STORAGE_KEY)?.trim() || ""
+          : "");
+      if (resolvedName) {
+        if (!customerName.trim()) setCustomerName(resolvedName);
+        void confirmOrder(resolvedName);
+        return;
+      }
+      setStep(2);
+      return;
+    }
+    setStep(2);
+  };
+
+  const canRequestBill =
+    tableOrderEnabled && Boolean(openOrder) && displayOpenOrderItems.length > 0;
+  /** Bill only after staff confirmed the order, and no unsent cart lines. */
+  const billRequestEnabled =
+    canRequestBill && !openOrderEditable && cartItemsForOrder.length === 0;
+
+  const requestBill = async () => {
+    if (!billRequestEnabled || !menuInfo?.id || isRequestingBill) return;
+    setIsRequestingBill(true);
+    try {
+      const response = await sendStaffServiceRequest(locale, {
+        menuId: menuInfo.id,
+        type: "table",
+        tableNumber,
+        requestKind: "bill",
+      });
+
+      if (!response.status) {
+        const errBody = response.data;
+        if (errBody?.error === "INVALID_TABLE") {
+          toast.error(labels.requestBillInvalidTable);
+        } else {
+          const apiMsg = isArabic
+            ? errBody?.errorAr || errBody?.message
+            : errBody?.errorEn || errBody?.message;
+          toast.error(apiMsg || labels.requestBillError);
+        }
+        return;
+      }
+
+      toast.success(
+        labels.requestBillSuccess.replace("{table}", tableNumber),
+      );
+    } catch {
+      toast.error(labels.requestBillError);
+    } finally {
+      setIsRequestingBill(false);
+    }
+  };
+
   if (!isMenuActive || !menuInfo?.id) return null;
   if (!tableCartAllowed && !isDeliveryOrder) return null;
   /** After mount: searchParams and locale match the browser; avoids hydration mismatch. */
   if (!hasMounted || !isOrderingEnabled) return null;
 
-  const cartAnchorClass = isArabic
-    ? "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] left-3"
-    : "bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] right-3";
+  const cartAnchorClass = `${MENU_CART_FAB_BOTTOM_CLASS} ${getMenuFabSideClass(isArabic)}`;
+  /** Theme chrome only when seated in the shared phone dock. */
+  const phoneTabTheme = variant === "inline" ? menuInfo.theme : null;
 
-  return createPortal(
+  const fabColumn = (
     <div
-      className={`fixed z-99990 flex flex-col items-center gap-1 ${cartAnchorClass}`}
+      className={[
+        "flex flex-col items-center",
+        // Phone: equal-width tab inside full-width bar
+        "max-md:min-w-0 max-md:flex-1 max-md:justify-center max-md:gap-0.5 max-md:rounded-lg max-md:px-1 max-md:py-1.5 max-md:transition",
+        getMenuMobileTabCartColumnClasses(phoneTabTheme),
+        // Desktop FAB stack
+        "md:gap-1",
+      ].join(" ")}
       style={{ "--bg-main": accentMain } as CSSProperties}
     >
       <button
         type="button"
         onClick={openDrawer}
         title={labels.openCart}
-        className={`flex h-14 w-14 items-center justify-center ${DEFAULT_CART_SHAPE} bg-(--bg-main) text-white shadow-lg transition hover:opacity-90`}
+        className={[
+          "flex items-center justify-center transition",
+          // Phone tab bar item
+          "max-md:h-7 max-md:w-7 max-md:rounded-none max-md:bg-transparent max-md:shadow-none",
+          getMenuMobileTabCartIconClasses(phoneTabTheme),
+          // Desktop FAB
+          `md:h-14 md:w-14 ${DEFAULT_CART_SHAPE} md:bg-(--bg-main) md:text-white md:shadow-lg md:hover:opacity-90`,
+        ].join(" ")}
         aria-label={labels.cart}
       >
-        <CartIcon className="h-6 w-6" />
+        <CartIcon className="h-5 w-5 md:h-6 md:w-6" />
       </button>
-      <span className="max-w-40 truncate rounded-full border border-(--bg-main)/20 bg-white/95 px-3 py-1 text-center text-base font-medium text-(--bg-main) shadow-base">
-        {labels.cart}: {totalQuantity}
+      <span
+        className={[
+          "w-full truncate px-0.5 text-center text-[10px] font-medium leading-tight sm:text-[11px]",
+          getMenuMobileTabCartLabelClasses(phoneTabTheme),
+          "md:max-w-40 md:rounded-full md:border md:border-(--bg-main)/20 md:bg-white/95 md:px-3 md:py-1 md:text-base md:shadow-base",
+        ].join(" ")}
+      >
+        <span className="md:hidden">
+          {labels.cart}
+          {fabBadgeQuantity > 0 ? ` (${fabBadgeQuantity})` : ""}
+        </span>
+        <span className="hidden md:inline">
+          {labels.cart}: {fabBadgeQuantity}
+        </span>
       </span>
+    </div>
+  );
 
-      {isDrawerVisible ? (
+  const drawer =
+    isDrawerVisible ? (
         <>
           <div
             className={`fixed h-dvh inset-0 z-99990 bg-black/40 transition-opacity duration-300 ${
@@ -785,120 +1479,216 @@ export default function RequestStaffButton() {
               {step === 1 ? (
                 <div className="flex flex-1 flex-col overflow-hidden">
                   <div className="flex-1 overflow-y-auto px-4 py-3">
-                    <h3 className="mb-2 text-base font-semibold text-(--bg-main)">
-                      {labels.products}
-                    </h3>
-                    {cartItemsForOrder.length ? (
-                      <ul className="space-y-2">
-                        {cartItemsForOrder.map((item) => (
-                          <li
-                            key={item.lineKey}
-                            className="rounded-xl border border-(--bg-main)/15 bg-(--bg-main)/2 p-3"
+                    <section>
+                      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-2">
+                        <h3 className="text-base font-semibold text-(--bg-main)">
+                          {openOrder ? labels.tableOrder : labels.products}
+                        </h3>
+                        {openOrder ? (
+                          <span className="text-xs font-medium text-zinc-500">
+                            {openOrderEditable
+                              ? labels.tableOrderPending
+                              : labels.tableOrderConfirmed}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      {displayOpenOrderItems.length ||
+                      cartItemsForOrder.length ? (
+                        <ul className="space-y-2">
+                          {displayOpenOrderItems.map((item, index) => {
+                            const skyItem = openOrderItemToSkyCartItem(
+                              item,
+                              index,
+                            );
+                            return (
+                              <SkyCartLineItem
+                                key={`open-${skyItem.lineKey}`}
+                                item={skyItem}
+                                isArabic={isArabic}
+                                currencyLabel={getCurrency()}
+                                editable={
+                                  openOrderEditable && !openOrderSaving
+                                }
+                                onDecrease={(lineKey) =>
+                                  handleOpenOrderQty(lineKey, -1)
+                                }
+                                onIncrease={(lineKey) =>
+                                  handleOpenOrderQty(lineKey, 1)
+                                }
+                                decreaseLabel={labels.decrease}
+                                increaseLabel={labels.increase}
+                              />
+                            );
+                          })}
+                          {cartItemsForOrder.map((item) => (
+                            <SkyCartLineItem
+                              key={`cart-${item.lineKey}`}
+                              item={item}
+                              isArabic={isArabic}
+                              currencyLabel={getCurrency()}
+                              editable={!isConfirming}
+                              onDecrease={(lineKey) =>
+                                updateItemQuantity(lineKey, -1)
+                              }
+                              onIncrease={(lineKey) =>
+                                updateItemQuantity(lineKey, 1)
+                              }
+                              decreaseLabel={labels.decrease}
+                              increaseLabel={labels.increase}
+                            />
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="rounded-lg border border-dashed border-zinc-300 p-4 text-center text-base text-zinc-500">
+                          {labels.empty}
+                        </p>
+                      )}
+
+                      {(displayOpenOrderItems.length > 0 ||
+                        cartItemsForOrder.length > 0) && (
+                        <p className="mt-2 text-end text-sm font-semibold text-(--bg-main)">
+                          {labels.total}:{" "}
+                          {(displayOpenOrderTotal + totalPrice).toFixed(2)}{" "}
+                          {getCurrency()}
+                        </p>
+                      )}
+
+                      {openOrderEditable && openOrderDraftDirty ? (
+                        <div className="mt-3 flex gap-2">
+                          <button
+                            type="button"
+                            disabled={openOrderSaving}
+                            onClick={() => void confirmOpenOrderDraft()}
+                            className="flex-1 rounded-lg bg-(--bg-main) px-3 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
                           >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex items-start gap-3">
-                                <LoadImage
-                                  src={item.image}
-                                  alt={
-                                    isArabic
-                                      ? item.nameAr || item.name
-                                      : item.nameEn || item.name
-                                  }
-                                  className="h-12 w-12 rounded-lg object-cover border border-(--bg-main)/15 bg-white"
-                                  width={48}
-                                  height={48}
-                                />
-                                <div>
-                                  <p className="line-clamp-1 text-base font-semibold text-zinc-900">
-                                    {isArabic
-                                      ? item.nameAr || item.name
-                                      : item.nameEn || item.name}
-                                  </p>
-                                  {item.size || item.variant ? (
-                                    <p className="mt-0.5 text-sm text-zinc-500">
-                                      {[
-                                        item.size
-                                          ? isArabic
-                                            ? item.size.nameAr ||
-                                              item.size.nameEn
-                                            : item.size.nameEn ||
-                                              item.size.nameAr
-                                          : null,
-                                        item.variant
-                                          ? isArabic
-                                            ? item.variant.labelAr ||
-                                              item.variant.labelEn
-                                            : item.variant.labelEn ||
-                                              item.variant.labelAr
-                                          : null,
-                                      ]
-                                        .filter(Boolean)
-                                        .join(" · ")}
-                                    </p>
-                                  ) : null}
-                                  <p className="mt-1 text-base text-zinc-600">
-                                    {item.price.toFixed(2)} {getCurrency()}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="rounded-lg bg-white p-1 shadow-base">
-                                <div className="flex items-center gap-1">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      updateItemQuantity(item.lineKey, -1)
-                                    }
-                                    className="h-7 w-7 rounded-md border border-(--bg-main)/20 text-(--bg-main) transition hover:bg-(--bg-main)/10"
-                                    aria-label={labels.decrease}
-                                  >
-                                    -
-                                  </button>
-                                  <span className="min-w-6 text-center text-base font-semibold text-(--bg-main)">
-                                    {item.quantity}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      updateItemQuantity(item.lineKey, 1)
-                                    }
-                                    className="h-7 w-7 rounded-md border border-(--bg-main)/20 text-(--bg-main) transition hover:bg-(--bg-main)/10"
-                                    aria-label={labels.increase}
-                                  >
-                                    +
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                            <p className="mt-2 text-base font-medium text-zinc-700">
-                              {(item.quantity * item.price).toFixed(2)}{" "}
-                              {getCurrency()}
-                            </p>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="rounded-lg border border-dashed border-zinc-300 p-4 text-center text-base text-zinc-500">
-                        {labels.empty}
-                      </p>
-                    )}
+                            {openOrderSaving
+                              ? "..."
+                              : labels.tableOrderConfirmChanges}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={openOrderSaving}
+                            onClick={discardOpenOrderDraft}
+                            className="rounded-lg border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:opacity-60"
+                          >
+                            {labels.tableOrderDiscardChanges}
+                          </button>
+                        </div>
+                      ) : null}
+
+                      {openOrder && isConfirming && cartItemsForOrder.length > 0 ? (
+                        <p className="mt-2 text-center text-xs text-zinc-500">
+                          {isArabic
+                            ? "جاري إرسال الأصناف للويتر..."
+                            : "Sending items to the waiter..."}
+                        </p>
+                      ) : null}
+                    </section>
                   </div>
                   <div className="border-t border-(--bg-main)/15 bg-white px-4 py-3">
-                    <div className="mb-3 flex items-center justify-between text-base">
-                      <span className="font-medium text-zinc-600">
-                        {labels.total}
-                      </span>
-                      <strong className="text-base text-(--bg-main)">
-                        {totalPrice.toFixed(2)} {getCurrency()}
-                      </strong>
+                    <div className="mb-3 space-y-1.5 text-base">
+                      {(orderCharges.taxAmount > 0 ||
+                        orderCharges.serviceAmount > 0 ||
+                        deliveryFeeAmount > 0) && (
+                        <div className="flex items-center justify-between text-sm text-zinc-500">
+                          <span>{labels.subtotal}</span>
+                          <span>
+                            {orderCharges.subtotal.toFixed(2)} {getCurrency()}
+                          </span>
+                        </div>
+                      )}
+                      {orderCharges.taxAmount > 0 && (
+                        <div className="flex items-center justify-between text-sm text-zinc-500">
+                          <span>{labels.tax}</span>
+                          <span>
+                            {orderCharges.taxAmount.toFixed(2)} {getCurrency()}
+                          </span>
+                        </div>
+                      )}
+                      {orderCharges.serviceAmount > 0 && (
+                        <div className="flex items-center justify-between text-sm text-zinc-500">
+                          <span>{labels.service}</span>
+                          <span>
+                            {orderCharges.serviceAmount.toFixed(2)}{" "}
+                            {getCurrency()}
+                          </span>
+                        </div>
+                      )}
+                      {deliveryFeeAmount > 0 && (
+                        <div className="flex items-center justify-between text-sm text-zinc-500">
+                          <span>{labels.deliveryFee}</span>
+                          <span>
+                            {deliveryFeeAmount.toFixed(2)} {getCurrency()}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-zinc-600">
+                          {orderCharges.taxAmount > 0 ||
+                          orderCharges.serviceAmount > 0 ||
+                          deliveryFeeAmount > 0
+                            ? labels.grandTotal
+                            : labels.total}
+                        </span>
+                        <strong className="text-base text-(--bg-main)">
+                          {(
+                            (openOrder ? displayOpenOrderTotal : 0) +
+                            orderCharges.grandTotal
+                          ).toFixed(2)}{" "}
+                          {getCurrency()}
+                        </strong>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={goToStep2}
-                      disabled={!cartItemsForOrder.length}
-                      className="w-full rounded-lg bg-(--bg-main) px-4 py-2.5 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:bg-zinc-400"
-                    >
-                      {labels.next}
-                    </button>
+                    <div className="space-y-2">
+                      {cartItemsForOrder.length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={goToStep2}
+                          disabled={isConfirming}
+                          className="w-full rounded-lg bg-(--bg-main) px-4 py-2.5 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                          {isConfirming
+                            ? "..."
+                            : openOrder
+                              ? labels.confirm
+                              : labels.next}
+                        </button>
+                      ) : null}
+                      {canRequestBill ? (
+                        <button
+                          type="button"
+                          onClick={() => void requestBill()}
+                          disabled={
+                            !billRequestEnabled ||
+                            isRequestingBill ||
+                            isConfirming
+                          }
+                          title={
+                            billRequestEnabled
+                              ? undefined
+                              : openOrderEditable
+                                ? labels.requestBillPending
+                                : cartItemsForOrder.length > 0
+                                  ? labels.requestBillUnsentCart
+                                  : labels.requestBillPending
+                          }
+                          className={[
+                            "flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-base font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
+                            billRequestEnabled
+                              ? "bg-(--bg-main) text-white hover:opacity-90"
+                              : "border border-zinc-200 bg-zinc-100 text-zinc-400",
+                          ].join(" ")}
+                        >
+                          {isRequestingBill ? (
+                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                          ) : (
+                            <IoReceiptOutline className="h-5 w-5" aria-hidden />
+                          )}
+                          {labels.requestBill}
+                        </button>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -999,31 +1789,49 @@ export default function RequestStaffButton() {
                             </span>
                           </div>
 
-                          {!showGovSearch && currentGovernorate ? (
+                          {!showGovSearch &&
+                          ((isDistanceDelivery && distanceDeliveryFee != null) ||
+                            currentGovernorate) ? (
                             <div className="bg-white px-3 py-3 space-y-2.5">
                               <div className="flex items-center justify-between gap-3">
                                 <div className="min-w-0">
                                   <p className="truncate text-base font-bold text-zinc-900">
-                                    {isArabic
-                                      ? currentGovernorate.nameAr
-                                      : currentGovernorate.nameEn}
+                                    {isDistanceDelivery
+                                      ? deliveryAreaLabel ||
+                                        (isArabic
+                                          ? "منطقة التوصيل"
+                                          : "Delivery area")
+                                      : isArabic
+                                        ? currentGovernorate!.nameAr
+                                        : currentGovernorate!.nameEn}
                                   </p>
                                   <p className="text-sm text-zinc-400">
                                     🚚 {labels.deliveryFee}:{" "}
                                     <span className="font-semibold text-zinc-600">
-                                      {currentGovernorate.price}{" "}
+                                      {isDistanceDelivery
+                                        ? distanceDeliveryFee
+                                        : currentGovernorate!.price}{" "}
                                       {menuInfo?.currency ?? ""}
                                     </span>
+                                    {isDistanceDelivery &&
+                                    distanceDeliveryKm != null ? (
+                                      <span className="ms-1">
+                                        (≈ {distanceDeliveryKm.toFixed(1)}{" "}
+                                        {isArabic ? "كم" : "km"})
+                                      </span>
+                                    ) : null}
                                   </p>
                                 </div>
-                                <button
-                                  type="button"
-                                  onClick={() => setShowGovSearch(true)}
-                                  className="shrink-0 flex items-center gap-1.5 rounded-full border border-(--bg-main)/30 bg-(--bg-main)/6 px-3 py-1 text-sm font-semibold text-(--bg-main) transition hover:bg-(--bg-main)/15 active:scale-95"
-                                >
-                                  <FiMapPin className="h-3.5 w-3.5" />
-                                  {labels.changeArea}
-                                </button>
+                                {!isDistanceDelivery ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowGovSearch(true)}
+                                    className="shrink-0 flex items-center gap-1.5 rounded-full border border-(--bg-main)/30 bg-(--bg-main)/6 px-3 py-1 text-sm font-semibold text-(--bg-main) transition hover:bg-(--bg-main)/15 active:scale-95"
+                                  >
+                                    <FiMapPin className="h-3.5 w-3.5" />
+                                    {labels.changeArea}
+                                  </button>
+                                ) : null}
                               </div>
 
                               <div className="border-t border-zinc-100" />
@@ -1049,7 +1857,7 @@ export default function RequestStaffButton() {
                                 )}
                               </button>
                             </div>
-                          ) : (
+                          ) : !isDistanceDelivery ? (
                             <div className="bg-white">
                               <div className="flex items-center gap-2 border-b border-zinc-100 px-3 py-2.5">
                                 <FiSearch className="h-4 w-4 shrink-0 text-(--bg-main)/60" />
@@ -1133,6 +1941,29 @@ export default function RequestStaffButton() {
                                 )}
                               </ul>
                             </div>
+                          ) : (
+                            <div className="bg-white px-3 py-3">
+                              <button
+                                type="button"
+                                onClick={detectLocation}
+                                disabled={isDetectingLocation}
+                                className="flex w-full items-center justify-center gap-2 rounded-xl border border-(--bg-main)/25 bg-(--bg-main)/5 py-2.5 text-sm font-medium text-(--bg-main) transition hover:bg-(--bg-main)/12 active:scale-[0.98] disabled:opacity-50"
+                              >
+                                {isDetectingLocation ? (
+                                  <>
+                                    <span className="h-4 w-4 rounded-full border-2 border-t-transparent border-(--bg-main) animate-spin" />
+                                    {isArabic
+                                      ? "جاري التحديد..."
+                                      : "Detecting..."}
+                                  </>
+                                ) : (
+                                  <>
+                                    <MdMyLocation className="h-4 w-4" />
+                                    {labels.detectLocation}
+                                  </>
+                                )}
+                              </button>
+                            </div>
                           )}
                         </div>
                         {fieldErrors.govArea && (
@@ -1201,9 +2032,55 @@ export default function RequestStaffButton() {
                     </div>
                   </div>
                   <div className="shrink-0 space-y-2 border-t border-(--bg-main)/15 px-4 pt-3 pb-3 bg-white">
+                    {(orderCharges.taxAmount > 0 ||
+                      orderCharges.serviceAmount > 0 ||
+                      deliveryFeeAmount > 0) && (
+                      <div className="mb-1 space-y-1.5 text-sm text-zinc-500">
+                        <div className="flex items-center justify-between">
+                          <span>{labels.subtotal}</span>
+                          <span>
+                            {orderCharges.subtotal.toFixed(2)} {getCurrency()}
+                          </span>
+                        </div>
+                        {orderCharges.taxAmount > 0 && (
+                          <div className="flex items-center justify-between">
+                            <span>{labels.tax}</span>
+                            <span>
+                              {orderCharges.taxAmount.toFixed(2)}{" "}
+                              {getCurrency()}
+                            </span>
+                          </div>
+                        )}
+                        {orderCharges.serviceAmount > 0 && (
+                          <div className="flex items-center justify-between">
+                            <span>{labels.service}</span>
+                            <span>
+                              {orderCharges.serviceAmount.toFixed(2)}{" "}
+                              {getCurrency()}
+                            </span>
+                          </div>
+                        )}
+                        {deliveryFeeAmount > 0 && (
+                          <div className="flex items-center justify-between">
+                            <span>{labels.deliveryFee}</span>
+                            <span>
+                              {deliveryFeeAmount.toFixed(2)} {getCurrency()}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between text-base text-zinc-700">
+                          <span className="font-medium">
+                            {labels.grandTotal}
+                          </span>
+                          <strong className="text-(--bg-main)">
+                            {orderCharges.grandTotal.toFixed(2)} {getCurrency()}
+                          </strong>
+                        </div>
+                      </div>
+                    )}
                     <button
                       type="button"
-                      onClick={confirmOrder}
+                      onClick={() => void confirmOrder()}
                       disabled={isConfirming}
                       className="flex w-full items-center justify-center gap-2 rounded-lg bg-(--bg-main) px-4 py-2.5 text-base font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
                     >
@@ -1229,8 +2106,19 @@ export default function RequestStaffButton() {
             </div>
           </aside>
         </>
-      ) : null}
-    </div>,
+      ) : null;
+
+  if (variant === "inline") {
+    return (
+      <>
+        {fabColumn}
+        {drawer ? createPortal(drawer, document.body) : null}
+      </>
+    );
+  }
+
+  return createPortal(
+    <div className={`fixed z-99990 ${cartAnchorClass}`}>{fabColumn}{drawer}</div>,
     document.body,
   );
 }
