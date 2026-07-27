@@ -120,6 +120,9 @@ type StaffCallPayload = {
   branchId?: number;
   customerLat?: number;
   customerLng?: number;
+  /** Delivery area label for distance mode (dashboard منطقة التوصيل). */
+  governorateNameAr?: string;
+  governorateNameEn?: string;
   items: Array<{
     menuItemId: number;
     quantity: number;
@@ -1190,6 +1193,28 @@ export default function RequestStaffButton({
 
     setIsConfirming(true);
     try {
+      let areaNameAr = deliveryContext.distance?.areaNameAr?.trim() || "";
+      let areaNameEn = deliveryContext.distance?.areaNameEn?.trim() || "";
+      if (
+        isDeliveryOrder &&
+        isDistanceDelivery &&
+        deliveryLat != null &&
+        deliveryLng != null &&
+        (!areaNameAr || !areaNameEn || isGenericDeliveryAreaLabel(areaNameAr))
+      ) {
+        try {
+          const resolved = await resolveDeliveryAreaNames(
+            deliveryLat,
+            deliveryLng,
+            delivery?.governorates ?? [],
+          );
+          if (resolved.nameAr) areaNameAr = resolved.nameAr;
+          if (resolved.nameEn) areaNameEn = resolved.nameEn;
+        } catch {
+          /* keep whatever we already have */
+        }
+      }
+
       const payload: StaffCallPayload = {
         menuId: menuInfo.id,
         type: isDeliveryOrder ? "delivery" : "table",
@@ -1216,6 +1241,8 @@ export default function RequestStaffButton({
               branchId: deliveryBranchId,
               customerLat: deliveryLat,
               customerLng: deliveryLng,
+              ...(areaNameAr ? { governorateNameAr: areaNameAr } : {}),
+              ...(areaNameEn ? { governorateNameEn: areaNameEn } : {}),
             }
           : {}),
         items: cartItemsForOrder.map((item) => ({

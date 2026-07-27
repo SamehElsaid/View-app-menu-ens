@@ -21,6 +21,10 @@ import enPhoneLabels from "react-phone-number-input/locale/en";
 import { useAppSelector } from "@/store/hooks";
 import { axiosPost } from "@/shared/axiosCall";
 import {
+  resolveDeliveryAreaNames,
+  isGenericDeliveryAreaLabel,
+} from "@/lib/deliveryAreaName";
+import {
   buildSkyCartLineKey,
   getCartQuantityForMenuItem,
   notifySkyCartUpdated,
@@ -141,6 +145,8 @@ type StaffCallPayload = {
   branchId?: number;
   customerLat?: number;
   customerLng?: number;
+  governorateNameAr?: string;
+  governorateNameEn?: string;
   items: Array<{
     menuItemId: number;
     quantity: number;
@@ -250,6 +256,8 @@ export default function OrderChatbot({
     deliveryBranchId,
     deliveryLat,
     deliveryLng,
+    deliveryAreaNameAr,
+    deliveryAreaNameEn,
   } = useIsOrderingEnabled();
   const isMenuCornerDockSession = useIsMenuCornerDockSession();
   const deliveryAreaReady = useDeliveryAreaReady();
@@ -907,6 +915,28 @@ export default function OrderChatbot({
 
     setIsSending(true);
     try {
+      let areaNameAr = deliveryAreaNameAr?.trim() || "";
+      let areaNameEn = deliveryAreaNameEn?.trim() || "";
+      if (
+        isDeliveryOrder &&
+        isDistanceDelivery &&
+        deliveryLat != null &&
+        deliveryLng != null &&
+        (!areaNameAr || !areaNameEn || isGenericDeliveryAreaLabel(areaNameAr))
+      ) {
+        try {
+          const resolved = await resolveDeliveryAreaNames(
+            deliveryLat,
+            deliveryLng,
+            [],
+          );
+          if (resolved.nameAr) areaNameAr = resolved.nameAr;
+          if (resolved.nameEn) areaNameEn = resolved.nameEn;
+        } catch {
+          /* keep existing labels */
+        }
+      }
+
       const payload: StaffCallPayload = {
         menuId: menuInfo.id,
         type: isDeliveryOrder ? "delivery" : "table",
@@ -933,6 +963,8 @@ export default function OrderChatbot({
               branchId: deliveryBranchId,
               customerLat: deliveryLat,
               customerLng: deliveryLng,
+              ...(areaNameAr ? { governorateNameAr: areaNameAr } : {}),
+              ...(areaNameEn ? { governorateNameEn: areaNameEn } : {}),
             }
           : {}),
         items: items.map((item) => ({
