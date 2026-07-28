@@ -21,6 +21,8 @@ export function useIsOrderingEnabled(): {
   deliveryBranchId: number | null;
   deliveryLat: number | null;
   deliveryLng: number | null;
+  deliveryAreaNameAr: string | null;
+  deliveryAreaNameEn: string | null;
 } {
   const tableCartAllowed = useTableCartAllowed();
   const delivery = useAppSelector((s) => s.menu.delivery);
@@ -51,6 +53,9 @@ export function useIsOrderingEnabled(): {
 
   const isDeliveryOrder = isDistanceDelivery || isGovernorateDelivery;
 
+  const areaAr = distance?.areaNameAr?.trim() || "";
+  const areaEn = distance?.areaNameEn?.trim() || "";
+
   return {
     isOrderingEnabled: isTableOrder || isDeliveryOrder,
     isDeliveryOrder,
@@ -60,5 +65,7 @@ export function useIsOrderingEnabled(): {
     deliveryBranchId: isDistanceDelivery ? distance?.branchId ?? null : null,
     deliveryLat: isDistanceDelivery ? distance?.lat ?? null : null,
     deliveryLng: isDistanceDelivery ? distance?.lng ?? null : null,
+    deliveryAreaNameAr: isDistanceDelivery && areaAr ? areaAr : null,
+    deliveryAreaNameEn: isDistanceDelivery && areaEn ? areaEn : null,
   };
 }
