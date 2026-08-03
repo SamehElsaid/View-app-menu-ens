@@ -16,7 +16,7 @@ import { useIsMenuCornerDockSession } from "@/hooks/useIsMenuCornerDockSession";
  */
 function MenuBottomScrollPadInner() {
   const hasMounted = useSyncExternalStore(
-    () => () => { },
+    () => () => {},
     () => true,
     () => false,
   );
@@ -31,7 +31,7 @@ function MenuBottomScrollPadInner() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none h-[calc(2.8rem+env(safe-area-inset-bottom,0px))] shrink-0 md:h-[calc(10rem+env(safe-area-inset-bottom,0px))]"
+      className="pointer-events-none h-[calc(2.8rem+env(safe-area-inset-bottom,0px))] shrink-0 md:h-0"
     />
   );
 }

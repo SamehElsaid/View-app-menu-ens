@@ -64,7 +64,9 @@ function CoffeeTemplate() {
         return (
           <div className="py-16 text-center">
             <p className="text-[#B6AA99] text-base">
-              {locale === "ar" ? "لا توجد منتجات في هذا التصنيف." : "No items in this category."}
+              {locale === "ar"
+                ? "لا توجد منتجات في هذا التصنيف."
+                : "No items in this category."}
             </p>
           </div>
         );
@@ -95,27 +97,29 @@ function CoffeeTemplate() {
 
     return (
       <Suspense fallback={null}>
-        {categorySections.filter((section) => section.items.length > 0).map((section) => {
-          const category = storeCategories.find(
-            (c) => c.id === section.categoryId,
-          );
-          if (!category) return null;
-          const categoryId = category.id
-            ? `category-${category.id}`
-            : `category-${category.name.replace(/\s+/g, "-").toLowerCase()}`;
-          return (
-            <div key={section.categoryId} id={categoryId}>
-              <MenuCategory
-                title={category.name}
-                titleAr={category.nameAr || ""}
-                description={category.description || ""}
-                descriptionAr={category.descriptionAr || ""}
-                items={section.items}
-                currency={menu?.menuInfo?.currency || "AED"}
-              />
-            </div>
-          );
-        })}
+        {categorySections
+          .filter((section) => section.items.length > 0)
+          .map((section) => {
+            const category = storeCategories.find(
+              (c) => c.id === section.categoryId,
+            );
+            if (!category) return null;
+            const categoryId = category.id
+              ? `category-${category.id}`
+              : `category-${category.name.replace(/\s+/g, "-").toLowerCase()}`;
+            return (
+              <div key={section.categoryId} id={categoryId}>
+                <MenuCategory
+                  title={category.name}
+                  titleAr={category.nameAr || ""}
+                  description={category.description || ""}
+                  descriptionAr={category.descriptionAr || ""}
+                  items={section.items}
+                  currency={menu?.menuInfo?.currency || "AED"}
+                />
+              </div>
+            );
+          })}
       </Suspense>
     );
   };
