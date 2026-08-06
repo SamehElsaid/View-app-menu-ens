@@ -15,6 +15,7 @@ import { useLocale } from "next-intl";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { requestGoogleReviewsAfterOrderPrompt } from "@/lib/googleReviewsAfterOrder";
 import { arabCurrencies, Currency } from "@/constants/currencies";
 import { axiosPost } from "@/shared/axiosCall";
 import { FiX, FiSearch, FiMapPin } from "react-icons/fi";
@@ -1335,6 +1336,7 @@ export default function RequestStaffButton({
         closeDrawer();
       }
       toast.success(labels.success);
+      requestGoogleReviewsAfterOrderPrompt();
     } catch {
       toast.error(labels.orderFailed);
     } finally {

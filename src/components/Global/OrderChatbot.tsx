@@ -20,6 +20,7 @@ import arPhoneLabels from "react-phone-number-input/locale/ar";
 import enPhoneLabels from "react-phone-number-input/locale/en";
 import { useAppSelector } from "@/store/hooks";
 import { axiosPost } from "@/shared/axiosCall";
+import { requestGoogleReviewsAfterOrderPrompt } from "@/lib/googleReviewsAfterOrder";
 import {
   resolveDeliveryAreaNames,
   isGenericDeliveryAreaLabel,
@@ -1006,6 +1007,7 @@ export default function OrderChatbot({
         notifyOpenTableOrderRefresh();
       }
       appendMessage("bot", labels.success);
+      requestGoogleReviewsAfterOrderPrompt();
       return true;
     } catch {
       const msg = labels.error;

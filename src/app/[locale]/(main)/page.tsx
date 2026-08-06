@@ -5,6 +5,7 @@ import { useAppSelector } from "@/store/hooks";
 import { useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import MenuCornerFabs from "@/components/Global/MenuCornerFabs";
+import GoogleReviewsCta from "@/components/Global/GoogleReviewsCta";
 import MenuBottomScrollPad from "@/components/Global/MenuBottomScrollPad";
 import DeliveryLocationModal from "@/components/Global/DeliveryLocationModal";
 import MenuGeoRedirect from "@/components/Global/MenuGeoRedirect";
@@ -92,6 +93,9 @@ export default function Page() {
         ) : null}
         <Suspense fallback={null}>
           <MenuCornerFabs />
+        </Suspense>
+        <Suspense fallback={null}>
+          <GoogleReviewsCta />
         </Suspense>
         {delivery?.deliveryOn && !tableParam ? (
           <Suspense fallback={null}>

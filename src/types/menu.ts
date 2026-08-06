@@ -50,6 +50,13 @@ export interface MenuInfo {
   socialInstagram: string | null;
   socialTwitter: string | null;
   workingHours: WorkingHours | null;
+  googleReviewsEnabled?: boolean;
+  googleReviewsUrl?: string | null;
+  googleReviewsPosition?: "top" | "bottom" | "after_order";
+  googleReviewsButtonTextAr?: string | null;
+  googleReviewsButtonTextEn?: string | null;
+  googleReviewsShowIcon?: boolean;
+  googleReviewsOpenInNewTab?: boolean;
   /** Resolved from `?table=` on public menu bootstrap */
   table?: {
     id?: number;
